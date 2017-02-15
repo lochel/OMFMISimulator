@@ -1,0 +1,8 @@
+.gitattributes text eol=lf
+.gitignore text eol=lf
+*.c text eol=native
+*.cpp text eol=native
+*.h text eol=native
+*.md text eol=native
+LICENSE text eol=native
+Makefile* text eol=native
