@@ -29,8 +29,8 @@
  *
  */
 
-#ifndef _OMSL_RESULTFILE_H_
-#define _OMSL_RESULTFILE_H_
+#ifndef _OMS_RESULTFILE_H_
+#define _OMS_RESULTFILE_H_
 
 #include <string>
 #include <fstream>

@@ -29,8 +29,8 @@
  *
  */
 
-#ifndef _OMSL_MODEL_H_
-#define _OMSL_MODEL_H_
+#ifndef _OMS_MODEL_H_
+#define _OMS_MODEL_H_
 
 #include <fmilib.h>
 #include <string>

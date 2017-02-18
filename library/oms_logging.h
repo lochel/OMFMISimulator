@@ -29,13 +29,13 @@
  *
  */
 
-#ifndef _OMSL_LOGGING_H_
-#define _OMSL_LOGGING_H_
+#ifndef _OMS_LOGGING_H_
+#define _OMS_LOGGING_H_
 
 #include <string>
 #include <fstream>
 
-#define OMSL_DEBUG_LOGGING
+#define OMS_DEBUG_LOGGING
 
 #ifndef __FUNCTION_NAME__
   #ifdef WIN32   //WINDOWS
@@ -72,7 +72,7 @@ private:
 #define logError(msg)   Log::getInstance().Error(msg)
 #define logFatal(msg)   Log::getInstance().Fatal(msg)
 
-#ifdef OMSL_DEBUG_LOGGING
+#ifdef OMS_DEBUG_LOGGING
   #define logInfo(msg)  Log::getInstance().Info(msg)
   #define logTrace()    Log::getInstance().Trace(__FUNCTION_NAME__, __FILE__, __LINE__)
 #else

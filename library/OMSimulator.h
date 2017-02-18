@@ -29,8 +29,8 @@
  *
  */
 
-#ifndef _OMSL_H_
-#define _OMSL_H_
+#ifndef _OMSIMULATOR_H_
+#define _OMSIMULATOR_H_
 
 #ifdef __cplusplus
 extern "C"
