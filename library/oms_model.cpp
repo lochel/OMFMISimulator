@@ -181,7 +181,7 @@ void oms_model::do_event_iteration()
     fmi2_import_new_discrete_states(fmu, &eventInfo);
 }
 
-void oms_model::simulate()
+void oms_model::simulate(double* startTime, double* stopTime, double* tolerance, const char* resultFile)
 {
   fmi2_status_t fmistatus;
 
@@ -255,10 +255,17 @@ void oms_model::simulate()
   callBackFunctions.freeMemory = free;
   callBackFunctions.componentEnvironment = fmu;
 
+  std::string finalResultFile;
+  if(resultFile)
+    finalResultFile = resultFile;
+  else
+    finalResultFile = std::string(fmi2_import_get_model_name(fmu)) + "_res.csv";
+  logInfo("result file: " + finalResultFile);
+
   if(fmi2_fmu_kind_me == fmuKind)
-    simulate_me();
+    simulate_me(startTime, stopTime, tolerance, finalResultFile);
   else if(fmi2_fmu_kind_cs == fmuKind)
-    simulate_cs();
+    simulate_cs(startTime, stopTime, tolerance, finalResultFile);
 
   fmistatus = fmi2_import_terminate(fmu);
   if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_terminate failed");
@@ -267,7 +274,7 @@ void oms_model::simulate()
   fmi2_import_free(fmu);
 }
 
-void oms_model::simulate_cs()
+void oms_model::simulate_cs(double* startTime, double* stopTime, double* tolerance, std::string resultFileName)
 {
   fmi2_status_t fmistatus;
   jm_status_enu_t jmstatus;
@@ -284,11 +291,11 @@ void oms_model::simulate_cs()
   jmstatus = fmi2_import_instantiate(fmu, instanceName, fmi2_cosimulation, NULL, fmi2_false);
   if (jm_status_error == jmstatus) logFatal("fmi2_import_instantiate failed");
 
-  fmi2_real_t relativeTolerance = fmi2_import_get_default_experiment_tolerance(fmu);
+  fmi2_real_t relativeTolerance = tolerance ? *tolerance : fmi2_import_get_default_experiment_tolerance(fmu);
   logInfo("relative tolerance: " + toString(relativeTolerance));
 
-  fmi2_real_t tstart = fmi2_import_get_default_experiment_start(fmu);
-  fmi2_real_t tend = fmi2_import_get_default_experiment_stop(fmu);
+  fmi2_real_t tstart = startTime ? *startTime : fmi2_import_get_default_experiment_start(fmu);
+  fmi2_real_t tend = stopTime ? *stopTime : fmi2_import_get_default_experiment_stop(fmu);
   fmi2_real_t tcur = tstart;
   fmi2_boolean_t toleranceControlled = fmi2_true;
   fmi2_boolean_t StopTimeDefined = fmi2_true;
@@ -302,7 +309,7 @@ void oms_model::simulate_cs()
   fmistatus = fmi2_import_exit_initialization_mode(fmu);
   if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_exit_initialization_mode failed");
 
-  oms_resultfile resultFile("omslresults.csv", fmu);
+  oms_resultfile resultFile(resultFileName, fmu);
   resultFile.emit(tcur);
 
   while (tcur < tend)
@@ -313,7 +320,7 @@ void oms_model::simulate_cs()
   }
 }
 
-void oms_model::simulate_me()
+void oms_model::simulate_me(double* startTime, double* stopTime, double* tolerance, std::string resultFileName)
 {
   fmi2_status_t fmistatus;
   jm_status_enu_t jmstatus;
@@ -336,11 +343,11 @@ void oms_model::simulate_me()
   jmstatus = fmi2_import_instantiate(fmu, instanceName, fmi2_model_exchange, NULL, fmi2_false);
   if (jm_status_error == jmstatus) logFatal("fmi2_import_instantiate failed");
 
-  fmi2_real_t relativeTolerance = fmi2_import_get_default_experiment_tolerance(fmu);
+  fmi2_real_t relativeTolerance = tolerance ? *tolerance : fmi2_import_get_default_experiment_tolerance(fmu);
   logInfo("relative tolerance: " + toString(relativeTolerance));
 
-  fmi2_real_t tstart = fmi2_import_get_default_experiment_start(fmu);
-  fmi2_real_t tend = fmi2_import_get_default_experiment_stop(fmu);
+  fmi2_real_t tstart = startTime ? *startTime : fmi2_import_get_default_experiment_start(fmu);
+  fmi2_real_t tend = stopTime ? *stopTime : fmi2_import_get_default_experiment_stop(fmu);
   fmi2_real_t tcur = tstart;
   fmi2_boolean_t toleranceControlled = fmi2_true;
   fmi2_boolean_t StopTimeDefined = fmi2_true;
@@ -354,7 +361,7 @@ void oms_model::simulate_me()
   if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_exit_initialization_mode failed");
 
   fmi2_boolean_t terminateSimulation = fmi2_false;
-  oms_resultfile resultFile("omslresults.csv", fmu);
+  oms_resultfile resultFile(resultFileName, fmu);
 
   eventInfo.newDiscreteStatesNeeded           = fmi2_false;
   eventInfo.terminateSimulation               = fmi2_false;

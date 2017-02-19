@@ -42,13 +42,13 @@ public:
   ~oms_model();
 
   void describe();
-  void simulate();
+  void simulate(double* startTime, double* stopTime, double* tolerance, const char* resultFile);
   void setWorkingDirectory(std::string tempDir);
 
 private:
   void do_event_iteration();
-  void simulate_cs();
-  void simulate_me();
+  void simulate_cs(double* startTime, double* stopTime, double* tolerance, std::string resultFileName);
+  void simulate_me(double* startTime, double* stopTime, double* tolerance, std::string resultFileName);
 
 private:
   std::string fmuPath;

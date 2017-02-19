@@ -50,14 +50,14 @@ void* oms_loadComposite(const char* filename)
   return NULL;
 }
 
-void oms_simulate(void* model)
+void oms_simulate(void* model, double* startTime, double* stopTime, double* tolerance, const char* resultFile)
 {
   logTrace();
   if(!model)
     return;
 
   oms_model* pModel = (oms_model*) model;
-  pModel->simulate();
+  pModel->simulate(startTime, stopTime, tolerance, resultFile);
 }
 
 void oms_describe(void* model)

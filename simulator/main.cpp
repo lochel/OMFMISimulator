@@ -32,15 +32,20 @@
 #include <OMSimulator.h>
 
 #include <iostream>
+#include <stdlib.h>
 using namespace std;
 
 void printUsage()
 {
   cout << "Usage: OMSimulator [OPTIONS] filename" << endl;
   cout << "OPTIONS" << endl;
-  cout << "  --describe     Displays brief summary of given FMU" << endl;
-  cout << "  --help         Displays the help text" << endl;
-  cout << "  --tempDir=DIR  Sets the working directory to DIR" << endl;
+  cout << "  --describe             Displays brief summary of given FMU" << endl;
+  cout << "  --help                 Displays the help text" << endl;
+  cout << "  --resultFile=<string>  Specifies the name of the output result file" << endl;
+  cout << "  --startTime=<double>   Specifies the start time" << endl;
+  cout << "  --stopTime=<double>    Specifies the stop time" << endl;
+  cout << "  --tempDir=<string>     Specifies the working directory" << endl;
+  cout << "  --tolerance=<double>   Specifies the relative tolerance" << endl;
 }
 
 int main(int argc, char *argv[])
@@ -48,6 +53,10 @@ int main(int argc, char *argv[])
   bool describe = false;
   string filename("");
   string tempDir("");
+  string resultFile("");
+  double* startTime = NULL;
+  double* stopTime = NULL;
+  double* tolerance = NULL;
 
   for(int i=1; i<argc; i++)
   {
@@ -59,9 +68,28 @@ int main(int argc, char *argv[])
       printUsage();
       return 0;
     }
+    else if(0 == arg.compare(0, 13, "--resultFile="))
+    {
+      resultFile = arg.substr(13);
+    }
+    else if(0 == arg.compare(0, 12, "--startTime="))
+    {
+      startTime = new double;
+      *startTime = atof(arg.substr(12).c_str());
+    }
+    else if(0 == arg.compare(0, 11, "--stopTime="))
+    {
+      stopTime = new double;
+      *stopTime = atof(arg.substr(11).c_str());
+    }
     else if(0 == arg.compare(0, 10, "--tempDir="))
     {
       tempDir = arg.substr(10);
+    }
+    else if(0 == arg.compare(0, 12, "--tolerance="))
+    {
+      tolerance = new double;
+      *tolerance = atof(arg.substr(12).c_str());
     }
     else if(filename.empty())
       filename = arg;
@@ -94,9 +122,16 @@ int main(int argc, char *argv[])
     void* pModel = oms_loadModel(filename.c_str());
     if(!tempDir.empty())
       oms_setWorkingDirectory(pModel, tempDir.c_str());
-    oms_simulate(pModel);
+    oms_simulate(pModel, startTime, stopTime, tolerance, resultFile.empty() ? NULL : resultFile.c_str());
     oms_unload(pModel);
   }
+
+  if(startTime)
+    delete startTime;
+  if(stopTime)
+    delete stopTime;
+  if(tolerance)
+    delete tolerance;
 
   return 0;
 }
