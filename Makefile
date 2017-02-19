@@ -1,7 +1,7 @@
 RM=rm -rf
 MKDIR=mkdir -p
 
-.PHONY: OMSimulator libOMSimulator fmil clean distclean
+.PHONY: OMSimulator libOMSimulator fmil clean distclean testsuite
 
 OMSimulator: libOMSimulator
 	@echo
@@ -38,3 +38,6 @@ distclean: clean
 	$(RM) build
 	$(RM) 3rdParty/FMIL/build-fmil
 	$(RM) 3rdParty/FMIL/install
+
+testsuite:
+	@$(MAKE) -C testsuite

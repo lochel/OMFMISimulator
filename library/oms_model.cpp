@@ -119,6 +119,7 @@ oms_model::oms_model(std::string fmuPath)
   callbacks.context = 0;
 
   context = fmi_import_allocate_context(&callbacks);
+  fmu = NULL;
 }
 
 oms_model::~oms_model()
@@ -142,7 +143,7 @@ void oms_model::describe()
   }
 
   // parse modelDescription.xml
-  fmi2_import_t* fmu = fmi2_import_parse_xml(context, tmpPath.c_str(), 0);
+  fmu = fmi2_import_parse_xml(context, tmpPath.c_str(), 0);
   if(!fmu)
   {
     logFatal("Error parsing modelDescription.xml");
@@ -172,16 +173,18 @@ void oms_model::describe()
   fmi2_import_free(fmu);
 }
 
-void do_event_iteration(fmi2_import_t* fmu, fmi2_event_info_t* eventInfo)
+void oms_model::do_event_iteration()
 {
-  eventInfo->newDiscreteStatesNeeded = fmi2_true;
-  eventInfo->terminateSimulation     = fmi2_false;
-  while (eventInfo->newDiscreteStatesNeeded && !eventInfo->terminateSimulation)
-    fmi2_import_new_discrete_states(fmu, eventInfo);
+  eventInfo.newDiscreteStatesNeeded = fmi2_true;
+  eventInfo.terminateSimulation     = fmi2_false;
+  while (eventInfo.newDiscreteStatesNeeded && !eventInfo.terminateSimulation)
+    fmi2_import_new_discrete_states(fmu, &eventInfo);
 }
 
 void oms_model::simulate()
 {
+  fmi2_status_t fmistatus;
+
   // check version of FMU
   fmi_version_enu_t version = fmi_import_get_fmi_version(context, fmuPath.c_str(), tmpPath.c_str());
   if(fmi_version_2_0_enu != version)
@@ -191,7 +194,7 @@ void oms_model::simulate()
   }
 
   // parse modelDescription.xml
-  fmi2_import_t* fmu = fmi2_import_parse_xml(context, tmpPath.c_str(), 0);
+  fmu = fmi2_import_parse_xml(context, tmpPath.c_str(), 0);
   if(!fmu)
     logFatal("Error parsing modelDescription.xml");
 
@@ -200,7 +203,7 @@ void oms_model::simulate()
   if(fmi2_fmu_kind_me == fmuKind)
     logInfo("FMU ME");
   else if(fmi2_fmu_kind_cs == fmuKind)
-    logWarning("FMU CS - not supported yet");
+    logInfo("FMU CS");
   else
     logError("Unsupported FMU kind: " + std::string(fmi2_fmu_kind_to_string(fmuKind)));
 
@@ -247,15 +250,73 @@ void oms_model::simulate()
     }
   }
 
-  // HANDLE ME
-  fmi2_status_t fmistatus;
-  jm_status_enu_t jmstatus;
-
-  fmi2_callback_functions_t callBackFunctions;
   callBackFunctions.logger = fmi2logger;
   callBackFunctions.allocateMemory = calloc;
   callBackFunctions.freeMemory = free;
   callBackFunctions.componentEnvironment = fmu;
+
+  if(fmi2_fmu_kind_me == fmuKind)
+    simulate_me();
+  else if(fmi2_fmu_kind_cs == fmuKind)
+    simulate_cs();
+
+  fmistatus = fmi2_import_terminate(fmu);
+  if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_terminate failed");
+  fmi2_import_free_instance(fmu);
+  fmi2_import_destroy_dllfmu(fmu);
+  fmi2_import_free(fmu);
+}
+
+void oms_model::simulate_cs()
+{
+  fmi2_status_t fmistatus;
+  jm_status_enu_t jmstatus;
+
+  //Load the FMU shared library
+  jmstatus = fmi2_import_create_dllfmu(fmu, fmi2_fmu_kind_cs, &callBackFunctions);
+  if (jm_status_error == jmstatus) logFatal("Could not create the DLL loading mechanism (C-API). Error: " + std::string(fmi2_import_get_last_error(fmu)));
+
+  logInfo("Version returned from FMU: " + std::string(fmi2_import_get_version(fmu)));
+  logInfo("Platform type returned: " + std::string(fmi2_import_get_types_platform(fmu)));
+  logInfo("GUID: " + std::string(fmi2_import_get_GUID(fmu)));
+
+  fmi2_string_t instanceName = "CS-FMU instance";
+  jmstatus = fmi2_import_instantiate(fmu, instanceName, fmi2_cosimulation, NULL, fmi2_false);
+  if (jm_status_error == jmstatus) logFatal("fmi2_import_instantiate failed");
+
+  fmi2_real_t relativeTolerance = fmi2_import_get_default_experiment_tolerance(fmu);
+  logInfo("relative tolerance: " + toString(relativeTolerance));
+
+  fmi2_real_t tstart = fmi2_import_get_default_experiment_start(fmu);
+  fmi2_real_t tend = fmi2_import_get_default_experiment_stop(fmu);
+  fmi2_real_t tcur = tstart;
+  fmi2_boolean_t toleranceControlled = fmi2_true;
+  fmi2_boolean_t StopTimeDefined = fmi2_true;
+  fmi2_real_t hdef = 1e-2;
+  fmistatus = fmi2_import_setup_experiment(fmu, toleranceControlled, relativeTolerance, tstart, StopTimeDefined, tend);
+  if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_setup_experiment failed");
+
+  fmistatus = fmi2_import_enter_initialization_mode(fmu);
+  if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_enter_initialization_mode failed");
+
+  fmistatus = fmi2_import_exit_initialization_mode(fmu);
+  if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_exit_initialization_mode failed");
+
+  oms_resultfile resultFile("omslresults.csv", fmu);
+  resultFile.emit(tcur);
+
+  while (tcur < tend)
+  {
+    fmistatus = fmi2_import_do_step(fmu, tcur, hdef, fmi2_true);
+    tcur += hdef;
+    resultFile.emit(tcur);
+  }
+}
+
+void oms_model::simulate_me()
+{
+  fmi2_status_t fmistatus;
+  jm_status_enu_t jmstatus;
 
   //Load the FMU shared library
   jmstatus = fmi2_import_create_dllfmu(fmu, fmi2_fmu_kind_me, &callBackFunctions);
@@ -278,8 +339,8 @@ void oms_model::simulate()
   fmi2_real_t relativeTolerance = fmi2_import_get_default_experiment_tolerance(fmu);
   logInfo("relative tolerance: " + toString(relativeTolerance));
 
-  fmi2_real_t tstart = 0.0;
-  fmi2_real_t tend = 1.0;
+  fmi2_real_t tstart = fmi2_import_get_default_experiment_start(fmu);
+  fmi2_real_t tend = fmi2_import_get_default_experiment_stop(fmu);
   fmi2_real_t tcur = tstart;
   fmi2_boolean_t toleranceControlled = fmi2_true;
   fmi2_boolean_t StopTimeDefined = fmi2_true;
@@ -295,7 +356,6 @@ void oms_model::simulate()
   fmi2_boolean_t terminateSimulation = fmi2_false;
   oms_resultfile resultFile("omslresults.csv", fmu);
 
-  fmi2_event_info_t eventInfo;
   eventInfo.newDiscreteStatesNeeded           = fmi2_false;
   eventInfo.terminateSimulation               = fmi2_false;
   eventInfo.nominalsOfContinuousStatesChanged = fmi2_false;
@@ -304,7 +364,7 @@ void oms_model::simulate()
   eventInfo.nextEventTime                     = -0.0;
 
   // fmi2_import_exit_initialization_mode leaves FMU in event mode
-  do_event_iteration(fmu, &eventInfo);
+  do_event_iteration();
   fmi2_import_enter_continuous_time_mode(fmu);
   resultFile.emit(tcur);
 
@@ -359,7 +419,7 @@ void oms_model::simulate()
       fmistatus = fmi2_import_enter_event_mode(fmu);
       if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_enter_event_mode failed");
 
-      do_event_iteration(fmu, &eventInfo);
+      do_event_iteration();
 
       fmistatus = fmi2_import_enter_continuous_time_mode(fmu);
       if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_enter_continuous_time_mode failed");
@@ -404,16 +464,8 @@ void oms_model::simulate()
     resultFile.emit(tcur);
   }
 
-  fmistatus = fmi2_import_terminate(fmu);
-  if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_free_instance failed");
-
   free(states);
   free(states_der);
-  fmi2_import_free_instance(fmu);
-  fmi2_import_destroy_dllfmu(fmu);
-  // END HANDLE ME
-
-  fmi2_import_free(fmu);
 }
 
 void oms_model::setWorkingDirectory(std::string tempDir)

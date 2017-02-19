@@ -46,10 +46,18 @@ public:
   void setWorkingDirectory(std::string tempDir);
 
 private:
+  void do_event_iteration();
+  void simulate_cs();
+  void simulate_me();
+
+private:
   std::string fmuPath;
   std::string tmpPath;
   jm_callbacks callbacks;
+  fmi2_callback_functions_t callBackFunctions;
   fmi_import_context_t* context;
+  fmi2_import_t* fmu;
+  fmi2_event_info_t eventInfo;
 };
 
 #endif
