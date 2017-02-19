@@ -107,7 +107,8 @@ oms_model::oms_model(std::string fmuPath)
   logTrace();
   setWorkingDirectory(".");
 
-  // TODO: Check if fmuPath is FMU.
+  if (!boost::filesystem::exists(fmuPath))
+    logFatal("Specified file name does not exist: \"" + fmuPath + "\"");
 
   callbacks.malloc = malloc;
   callbacks.calloc = calloc;
@@ -417,9 +418,16 @@ void oms_model::simulate()
 
 void oms_model::setWorkingDirectory(std::string tempDir)
 {
-  // TODO: Check if tempDir is valid directory.
-  boost::filesystem::path p(tempDir);
-  tmpPath = boost::filesystem::canonical(p).string();
-
-  logInfo("set working directory to \"" + tmpPath + "\"");
+  boost::filesystem::path path(tempDir);
+  if (boost::filesystem::is_directory(path))
+  {
+    path = boost::filesystem::canonical(path);
+    tmpPath = path.string();
+    logInfo("set working directory to \"" + tmpPath + "\"");
+  }
+  else
+  {
+    logError("set working directory to \"" + tempDir + "\" failed");
+    logWarning("working directory is \"" + tmpPath + "\"");
+  }
 }
