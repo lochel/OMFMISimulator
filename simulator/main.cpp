@@ -52,7 +52,6 @@ int main(int argc, char *argv[])
 {
   bool describe = false;
   string filename("");
-  string resultFile("");
 
   for(int i=1; i<argc; i++)
   {
@@ -66,7 +65,7 @@ int main(int argc, char *argv[])
     }
     else if(0 == arg.compare(0, 13, "--resultFile="))
     {
-      resultFile = arg.substr(13);
+      oms_setResultFile(arg.substr(13).c_str());
     }
     else if(0 == arg.compare(0, 12, "--startTime="))
     {
@@ -114,7 +113,7 @@ int main(int argc, char *argv[])
   {
     // OMSimulator example.fmu
     void* pModel = oms_loadModel(filename.c_str());
-    oms_simulate(pModel, resultFile.empty() ? NULL : resultFile.c_str());
+    oms_simulate(pModel);
     oms_unload(pModel);
   }
 

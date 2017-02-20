@@ -48,7 +48,7 @@ void* oms_loadComposite(const char* filename)
   return NULL;
 }
 
-void oms_simulate(void* model, const char* resultFile)
+void oms_simulate(void* model)
 {
   logTrace();
   if(!model)
@@ -58,7 +58,7 @@ void oms_simulate(void* model, const char* resultFile)
   }
 
   oms_model* pModel = (oms_model*) model;
-  pModel->simulate(resultFile);
+  pModel->simulate();
 }
 
 void oms_describe(void* model)
@@ -91,6 +91,12 @@ void oms_setWorkingDirectory(const char* filename)
 {
   logTrace();
   Settings::getInstance().SetTempDirectory(filename);
+}
+
+void oms_setResultFile(const char* filename)
+{
+  logTrace();
+  Settings::getInstance().SetResultFile(filename);
 }
 
 void oms_setStartTime(double startTime)

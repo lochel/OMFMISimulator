@@ -190,7 +190,7 @@ void oms_model::do_event_iteration()
     fmi2_import_new_discrete_states(fmu, &eventInfo);
 }
 
-void oms_model::simulate(const char* resultFile)
+void oms_model::simulate()
 {
   fmi2_status_t fmistatus;
 
@@ -264,6 +264,7 @@ void oms_model::simulate(const char* resultFile)
   callBackFunctions.freeMemory = free;
   callBackFunctions.componentEnvironment = fmu;
 
+  const char* resultFile = Settings::getInstance().GetResultFile();
   std::string finalResultFile;
   if(resultFile)
     finalResultFile = resultFile;

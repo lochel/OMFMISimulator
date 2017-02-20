@@ -42,7 +42,7 @@ public:
   ~oms_model();
 
   void describe();
-  void simulate(const char* resultFile);
+  void simulate();
 
 private:
   void do_event_iteration();
