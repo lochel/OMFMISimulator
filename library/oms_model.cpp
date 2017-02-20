@@ -32,6 +32,7 @@
 #include "oms_model.h"
 #include "oms_logging.h"
 #include "oms_resultfile.h"
+#include "Settings.h"
 
 #include <fmilib.h>
 #include <JM/jm_portability.h>
@@ -117,7 +118,10 @@ oms_model::oms_model(std::string fmuPath)
   callbacks.log_level = jm_log_level_warning;
   callbacks.context = 0;
 
-  setWorkingDirectory(".");
+  //set working directory
+  tempDir = fmi_import_mk_temp_dir(&callbacks, Settings::getInstance().GetTempDirectory(), "temp_");
+  logInfo("set working directory to \"" + tempDir + "\"");
+
   context = fmi_import_allocate_context(&callbacks);
   fmu = NULL;
 }
@@ -126,10 +130,10 @@ oms_model::~oms_model()
 {
   logTrace();
   fmi_import_free_context(context);
-  if (boost::filesystem::is_directory(tmpPath))
+  if (boost::filesystem::is_directory(tempDir))
   {
-    fmi_import_rmdir(&callbacks, tmpPath.c_str());
-    logInfo("removed working directory: \"" + tmpPath + "\"");
+    fmi_import_rmdir(&callbacks, tempDir.c_str());
+    logInfo("removed working directory: \"" + tempDir + "\"");
   }
 }
 
@@ -138,7 +142,7 @@ void oms_model::describe()
   logTrace();
 
   // check version of FMU
-  fmi_version_enu_t version = fmi_import_get_fmi_version(context, fmuPath.c_str(), tmpPath.c_str());
+  fmi_version_enu_t version = fmi_import_get_fmi_version(context, fmuPath.c_str(), tempDir.c_str());
   if(fmi_version_2_0_enu == version)
     std::cout << "FMI version: 2.0" << std::endl;
   else
@@ -148,7 +152,7 @@ void oms_model::describe()
   }
 
   // parse modelDescription.xml
-  fmu = fmi2_import_parse_xml(context, tmpPath.c_str(), 0);
+  fmu = fmi2_import_parse_xml(context, tempDir.c_str(), 0);
   if(!fmu)
   {
     logFatal("Error parsing modelDescription.xml");
@@ -186,12 +190,12 @@ void oms_model::do_event_iteration()
     fmi2_import_new_discrete_states(fmu, &eventInfo);
 }
 
-void oms_model::simulate(double* startTime, double* stopTime, double* tolerance, const char* resultFile)
+void oms_model::simulate(const char* resultFile)
 {
   fmi2_status_t fmistatus;
 
   // check version of FMU
-  fmi_version_enu_t version = fmi_import_get_fmi_version(context, fmuPath.c_str(), tmpPath.c_str());
+  fmi_version_enu_t version = fmi_import_get_fmi_version(context, fmuPath.c_str(), tempDir.c_str());
   if(fmi_version_2_0_enu != version)
   {
     logError("Unsupported FMI version: " + std::string(fmi_version_to_string(version)));
@@ -199,7 +203,7 @@ void oms_model::simulate(double* startTime, double* stopTime, double* tolerance,
   }
 
   // parse modelDescription.xml
-  fmu = fmi2_import_parse_xml(context, tmpPath.c_str(), 0);
+  fmu = fmi2_import_parse_xml(context, tempDir.c_str(), 0);
   if(!fmu)
     logFatal("Error parsing modelDescription.xml");
 
@@ -268,9 +272,9 @@ void oms_model::simulate(double* startTime, double* stopTime, double* tolerance,
   logInfo("result file: " + finalResultFile);
 
   if(fmi2_fmu_kind_me == fmuKind)
-    simulate_me(startTime, stopTime, tolerance, finalResultFile);
+    simulate_me(finalResultFile);
   else if(fmi2_fmu_kind_cs == fmuKind)
-    simulate_cs(startTime, stopTime, tolerance, finalResultFile);
+    simulate_cs(finalResultFile);
 
   fmistatus = fmi2_import_terminate(fmu);
   if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_terminate failed");
@@ -279,7 +283,7 @@ void oms_model::simulate(double* startTime, double* stopTime, double* tolerance,
   fmi2_import_free(fmu);
 }
 
-void oms_model::simulate_cs(double* startTime, double* stopTime, double* tolerance, std::string resultFileName)
+void oms_model::simulate_cs(std::string resultFileName)
 {
   fmi2_status_t fmistatus;
   jm_status_enu_t jmstatus;
@@ -296,15 +300,21 @@ void oms_model::simulate_cs(double* startTime, double* stopTime, double* toleran
   jmstatus = fmi2_import_instantiate(fmu, instanceName, fmi2_cosimulation, NULL, fmi2_false);
   if (jm_status_error == jmstatus) logFatal("fmi2_import_instantiate failed");
 
-  fmi2_real_t relativeTolerance = tolerance ? *tolerance : fmi2_import_get_default_experiment_tolerance(fmu);
-  logInfo("relative tolerance: " + toString(relativeTolerance));
-
-  fmi2_real_t tstart = startTime ? *startTime : fmi2_import_get_default_experiment_start(fmu);
-  fmi2_real_t tend = stopTime ? *stopTime : fmi2_import_get_default_experiment_stop(fmu);
+  double* pStartTime = Settings::getInstance().GetStartTime();
+  double* pStopTime = Settings::getInstance().GetStopTime();
+  double* pTolerance = Settings::getInstance().GetTolerance();
+  fmi2_real_t tstart = pStartTime ? *pStartTime : fmi2_import_get_default_experiment_start(fmu);
+  fmi2_real_t tend = pStopTime ? *pStopTime : fmi2_import_get_default_experiment_stop(fmu);
+  fmi2_real_t relativeTolerance = pTolerance ? *pTolerance : fmi2_import_get_default_experiment_tolerance(fmu);
   fmi2_real_t tcur = tstart;
   fmi2_boolean_t toleranceControlled = fmi2_true;
   fmi2_boolean_t StopTimeDefined = fmi2_true;
   fmi2_real_t hdef = 1e-2;
+
+  logInfo("start time: " + toString(tstart));
+  logInfo("stop time: " + toString(tend));
+  logInfo("relative tolerance: " + toString(relativeTolerance));
+
   fmistatus = fmi2_import_setup_experiment(fmu, toleranceControlled, relativeTolerance, tstart, StopTimeDefined, tend);
   if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_setup_experiment failed");
 
@@ -325,7 +335,7 @@ void oms_model::simulate_cs(double* startTime, double* stopTime, double* toleran
   }
 }
 
-void oms_model::simulate_me(double* startTime, double* stopTime, double* tolerance, std::string resultFileName)
+void oms_model::simulate_me(std::string resultFileName)
 {
   fmi2_status_t fmistatus;
   jm_status_enu_t jmstatus;
@@ -348,14 +358,20 @@ void oms_model::simulate_me(double* startTime, double* stopTime, double* toleran
   jmstatus = fmi2_import_instantiate(fmu, instanceName, fmi2_model_exchange, NULL, fmi2_false);
   if (jm_status_error == jmstatus) logFatal("fmi2_import_instantiate failed");
 
-  fmi2_real_t relativeTolerance = tolerance ? *tolerance : fmi2_import_get_default_experiment_tolerance(fmu);
-  logInfo("relative tolerance: " + toString(relativeTolerance));
-
-  fmi2_real_t tstart = startTime ? *startTime : fmi2_import_get_default_experiment_start(fmu);
-  fmi2_real_t tend = stopTime ? *stopTime : fmi2_import_get_default_experiment_stop(fmu);
+  double* pStartTime = Settings::getInstance().GetStartTime();
+  double* pStopTime = Settings::getInstance().GetStopTime();
+  double* pTolerance = Settings::getInstance().GetTolerance();
+  fmi2_real_t tstart = pStartTime ? *pStartTime : fmi2_import_get_default_experiment_start(fmu);
+  fmi2_real_t tend = pStopTime ? *pStopTime : fmi2_import_get_default_experiment_stop(fmu);
+  fmi2_real_t relativeTolerance = pTolerance ? *pTolerance : fmi2_import_get_default_experiment_tolerance(fmu);
   fmi2_real_t tcur = tstart;
   fmi2_boolean_t toleranceControlled = fmi2_true;
   fmi2_boolean_t StopTimeDefined = fmi2_true;
+
+  logInfo("start time: " + toString(tstart));
+  logInfo("stop time: " + toString(tend));
+  logInfo("relative tolerance: " + toString(relativeTolerance));
+
   fmistatus = fmi2_import_setup_experiment(fmu, toleranceControlled, relativeTolerance, tstart, StopTimeDefined, tend);
   if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_setup_experiment failed");
 
@@ -478,27 +494,4 @@ void oms_model::simulate_me(double* startTime, double* stopTime, double* toleran
 
   free(states);
   free(states_der);
-}
-
-void oms_model::setWorkingDirectory(std::string tempDir)
-{
-  if (boost::filesystem::is_directory(tmpPath))
-  {
-    fmi_import_rmdir(&callbacks, tmpPath.c_str());
-    logInfo("removed working directory: \"" + tmpPath + "\"");
-  }
-  tempDir = fmi_import_mk_temp_dir(&callbacks, tempDir.c_str(), "temp_");
-
-  boost::filesystem::path path(tempDir);
-  if (boost::filesystem::is_directory(path))
-  {
-    path = boost::filesystem::canonical(path);
-    tmpPath = path.string();
-    logInfo("set working directory to \"" + tmpPath + "\"");
-  }
-  else
-  {
-    logError("set working directory to \"" + tempDir + "\" failed");
-    logWarning("working directory is \"" + tmpPath + "\"");
-  }
 }

@@ -5,7 +5,7 @@ CP=cp
 MKDIR=mkdir -p
 CPPFLAGS=-I../3rdParty/FMIL/install/include
 
-SRCS=OMSimulator.cpp oms_model.cpp oms_logging.cpp oms_resultfile.cpp
+SRCS=OMSimulator.cpp oms_model.cpp oms_logging.cpp oms_resultfile.cpp Settings.cpp
 OBJS=$(subst .cpp,.o,$(SRCS))
 
 .PHONY: libOMSimulator clean distclean

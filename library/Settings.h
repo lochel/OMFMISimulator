@@ -29,34 +29,48 @@
  *
  */
 
-#ifndef _OMS_MODEL_H_
-#define _OMS_MODEL_H_
+#ifndef _OMS_SETTINGS_H_
+#define _OMS_SETTINGS_H_
 
-#include <fmilib.h>
 #include <string>
 
-class oms_model
+class Settings
 {
 public:
-  oms_model(std::string fmuPath);
-  ~oms_model();
+  static Settings& getInstance();
+  void SetStartTime(double startTime);
+  double* GetStartTime();
+  void ClearStartTime();
 
-  void describe();
-  void simulate(const char* resultFile);
+  void SetStopTime(double stopTime);
+  double* GetStopTime();
+  void ClearStopTime();
+
+  void SetTolerance(double tolerance);
+  double* GetTolerance();
+  void ClearTolerance();
+
+  void SetTempDirectory(const char* tempDir);
+  const char* GetTempDirectory();
+  void ClearTempDirectory();
+
+  void SetResultFile(const char* resultFile);
+  const char* GetResultFile();
+  void ClearResultFile();
 
 private:
-  void do_event_iteration();
-  void simulate_cs(std::string resultFileName);
-  void simulate_me(std::string resultFileName);
+  Settings();
+  ~Settings();
 
-private:
-  std::string fmuPath;
-  std::string tempDir;
-  jm_callbacks callbacks;
-  fmi2_callback_functions_t callBackFunctions;
-  fmi_import_context_t* context;
-  fmi2_import_t* fmu;
-  fmi2_event_info_t eventInfo;
+  // Stop the compiler generating methods of copy the object
+  Settings(Settings const& copy);            // Not Implemented
+  Settings& operator=(Settings const& copy); // Not Implemented
+
+  double* startTime;
+  double* stopTime;
+  double* tolerance;
+  char* tempDir;
+  char* resultFile;
 };
 
 #endif

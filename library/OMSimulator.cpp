@@ -32,9 +32,7 @@
 #include "OMSimulator.h"
 #include "oms_model.h"
 #include "oms_logging.h"
-
-#include <iostream>
-using namespace std;
+#include "Settings.h"
 
 void* oms_loadModel(const char* filename)
 {
@@ -46,25 +44,31 @@ void* oms_loadModel(const char* filename)
 void* oms_loadComposite(const char* filename)
 {
   logTrace();
-  cout << "Function not implemented yet: loadComposite" << endl;
+  logWarning("Function not implemented yet: loadComposite");
   return NULL;
 }
 
-void oms_simulate(void* model, double* startTime, double* stopTime, double* tolerance, const char* resultFile)
+void oms_simulate(void* model, const char* resultFile)
 {
   logTrace();
   if(!model)
+  {
+    logError("oms_simulate: invalid pointer");
     return;
+  }
 
   oms_model* pModel = (oms_model*) model;
-  pModel->simulate(startTime, stopTime, tolerance, resultFile);
+  pModel->simulate(resultFile);
 }
 
 void oms_describe(void* model)
 {
   logTrace();
   if(!model)
+  {
+    logError("oms_describe: invalid pointer");
     return;
+  }
 
   oms_model* pModel = (oms_model*) model;
   pModel->describe();
@@ -74,18 +78,35 @@ void oms_unload(void* model)
 {
   logTrace();
   if(!model)
+  {
+    logError("oms_unload: invalid pointer");
     return;
+  }
 
   oms_model* pModel = (oms_model*) model;
   delete pModel;
 }
 
-void oms_setWorkingDirectory(void* model, const char* filename)
+void oms_setWorkingDirectory(const char* filename)
 {
   logTrace();
-  if(!model)
-    return;
+  Settings::getInstance().SetTempDirectory(filename);
+}
 
-  oms_model* pModel = (oms_model*) model;
-  pModel->setWorkingDirectory(filename);
+void oms_setStartTime(double startTime)
+{
+  logTrace();
+  Settings::getInstance().SetStartTime(startTime);
+}
+
+void oms_setStopTime(double stopTime)
+{
+  logTrace();
+  Settings::getInstance().SetStopTime(stopTime);
+}
+
+void oms_setTolerance(double tolerance)
+{
+  logTrace();
+  Settings::getInstance().SetTolerance(tolerance);
 }

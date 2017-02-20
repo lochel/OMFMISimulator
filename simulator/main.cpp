@@ -52,11 +52,7 @@ int main(int argc, char *argv[])
 {
   bool describe = false;
   string filename("");
-  string tempDir("");
   string resultFile("");
-  double* startTime = NULL;
-  double* stopTime = NULL;
-  double* tolerance = NULL;
 
   for(int i=1; i<argc; i++)
   {
@@ -74,22 +70,22 @@ int main(int argc, char *argv[])
     }
     else if(0 == arg.compare(0, 12, "--startTime="))
     {
-      startTime = new double;
-      *startTime = atof(arg.substr(12).c_str());
+      double startTime = atof(arg.substr(12).c_str());
+      oms_setStartTime(startTime);
     }
     else if(0 == arg.compare(0, 11, "--stopTime="))
     {
-      stopTime = new double;
-      *stopTime = atof(arg.substr(11).c_str());
+      double stopTime = atof(arg.substr(11).c_str());
+      oms_setStopTime(stopTime);
     }
     else if(0 == arg.compare(0, 10, "--tempDir="))
     {
-      tempDir = arg.substr(10);
+      oms_setWorkingDirectory(arg.substr(10).c_str());
     }
     else if(0 == arg.compare(0, 12, "--tolerance="))
     {
-      tolerance = new double;
-      *tolerance = atof(arg.substr(12).c_str());
+      double tolerance = atof(arg.substr(12).c_str());
+      oms_setTolerance(tolerance);
     }
     else if(filename.empty())
       filename = arg;
@@ -111,8 +107,6 @@ int main(int argc, char *argv[])
   {
     // OMSimulator --describe example.fmu
     void* pModel = oms_loadModel(filename.c_str());
-    if(!tempDir.empty())
-      oms_setWorkingDirectory(pModel, tempDir.c_str());
     oms_describe(pModel);
     oms_unload(pModel);
   }
@@ -120,18 +114,9 @@ int main(int argc, char *argv[])
   {
     // OMSimulator example.fmu
     void* pModel = oms_loadModel(filename.c_str());
-    if(!tempDir.empty())
-      oms_setWorkingDirectory(pModel, tempDir.c_str());
-    oms_simulate(pModel, startTime, stopTime, tolerance, resultFile.empty() ? NULL : resultFile.c_str());
+    oms_simulate(pModel, resultFile.empty() ? NULL : resultFile.c_str());
     oms_unload(pModel);
   }
-
-  if(startTime)
-    delete startTime;
-  if(stopTime)
-    delete stopTime;
-  if(tolerance)
-    delete tolerance;
 
   return 0;
 }

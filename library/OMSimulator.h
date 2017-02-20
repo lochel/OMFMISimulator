@@ -39,10 +39,13 @@ extern "C"
 
 void* oms_loadModel(const char* filename);
 void* oms_loadComposite(const char* filename);
-void oms_simulate(void* model, double* startTime, double* stopTime, double* tolerance, const char* resultFile);
+void oms_simulate(void* model, const char* resultFile);
 void oms_describe(void* model);
 void oms_unload(void* model);
-void oms_setWorkingDirectory(void* model, const char* filename);
+void oms_setWorkingDirectory(const char* filename);
+void oms_setStartTime(double startTime);
+void oms_setStopTime(double stopTime);
+void oms_setTolerance(double tolerance);
 
 #ifdef __cplusplus
 }
