@@ -105,7 +105,6 @@ oms_model::oms_model(std::string fmuPath)
   : fmuPath(fmuPath)
 {
   logTrace();
-  setWorkingDirectory(".");
 
   if (!boost::filesystem::exists(fmuPath))
     logFatal("Specified file name does not exist: \"" + fmuPath + "\"");
@@ -118,6 +117,7 @@ oms_model::oms_model(std::string fmuPath)
   callbacks.log_level = jm_log_level_warning;
   callbacks.context = 0;
 
+  setWorkingDirectory(".");
   context = fmi_import_allocate_context(&callbacks);
   fmu = NULL;
 }
@@ -126,6 +126,11 @@ oms_model::~oms_model()
 {
   logTrace();
   fmi_import_free_context(context);
+  if (boost::filesystem::is_directory(tmpPath))
+  {
+    fmi_import_rmdir(&callbacks, tmpPath.c_str());
+    logInfo("removed working directory: \"" + tmpPath + "\"");
+  }
 }
 
 void oms_model::describe()
@@ -477,6 +482,13 @@ void oms_model::simulate_me(double* startTime, double* stopTime, double* toleran
 
 void oms_model::setWorkingDirectory(std::string tempDir)
 {
+  if (boost::filesystem::is_directory(tmpPath))
+  {
+    fmi_import_rmdir(&callbacks, tmpPath.c_str());
+    logInfo("removed working directory: \"" + tmpPath + "\"");
+  }
+  tempDir = fmi_import_mk_temp_dir(&callbacks, tempDir.c_str(), "temp_");
+
   boost::filesystem::path path(tempDir);
   if (boost::filesystem::is_directory(path))
   {

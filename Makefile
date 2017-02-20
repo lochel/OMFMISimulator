@@ -40,4 +40,7 @@ distclean: clean
 	$(RM) 3rdParty/FMIL/install
 
 testsuite:
-	@$(MAKE) -C testsuite
+	@echo
+	@echo "# make testsuite"
+	@echo
+	@$(MAKE) -C testsuite all
