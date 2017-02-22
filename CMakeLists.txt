@@ -17,15 +17,20 @@ ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 ##########################
 # Configuring for boost "FindBoost.cmake"
-# FIXME BTH arbitrary settings for boost. There is more what can be set. What do we want?
-set(Boost_USE_STATIC_LIBS OFF)
-set(Boost_USE_MULTITHREADED ON)
-set(Boost_USE_STATIC_RUNTIME OFF)
+#set(BOOST_ROOT "C:/local/boost_1_63_0")
+set(Boost_USE_STATIC_LIBS ON) # VS2013 seems to prefer static libs
+# BTH There is more what can be set. What do we want?
+#set(Boost_USE_MULTITHREADED ON)
+#set(Boost_USE_STATIC_RUNTIME OFF)
 # Boost v1.54 is the boost shipped with my Ubuntu 14.04, lower versions may work, too.
 find_package(Boost 1.54.0
   COMPONENTS system filesystem
   REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
+IF (Boost_FOUND)
+	include_directories(${Boost_INCLUDE_DIRS})
+ELSE()
+	MESSAGE(WARNING, "Boost library not found, please give a hint by setting the cmake variable BOOST_ROOT either in the cmake-gui or the command line, e.g., 'cmake -DBOOST_ROOT=C:/local/boost_1_63_0'")
+ENDIF()
 
 # Set where your FMILibrary is installed here
 set(FMILibrary_ROOT ${PROJECT_SOURCE_DIR}/3rdParty/FMIL/install)
