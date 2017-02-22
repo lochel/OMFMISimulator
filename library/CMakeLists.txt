@@ -1,6 +1,6 @@
 project(OMSimulatorLIb)
 
-set(OM_SIM_LIB_SOURCES oms_logging.cpp oms_model.cpp  oms_resultfile.cpp OMSimulator.cpp)
+set(OM_SIM_LIB_SOURCES oms_logging.cpp oms_model.cpp oms_resultfile.cpp OMSimulator.cpp Settings.cpp)
 
 # Shared library version
 # add_library(omsim_dynamic SHARED ${OM_SIM_LIB_SOURCES})

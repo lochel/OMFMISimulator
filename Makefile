@@ -1,46 +1,45 @@
 RM=rm -rf
 MKDIR=mkdir -p
 
-.PHONY: OMSimulator libOMSimulator fmil clean distclean testsuite
+.PHONY: OMSimulator config config-OMSimulator config-fmil distclean testsuite
 
-OMSimulator: libOMSimulator
+OMSimulator:
 	@echo
 	@echo "# make OMSimulator"
 	@echo
-	$(MAKE) -C simulator OMSimulator
+	@$(MAKE) -C build-cmake install
 
-libOMSimulator:
-	@echo
-	@echo "# make libOMSimulator"
-	@echo
-	$(MAKE) -C library libOMSimulator
+config: config-fmil config-OMSimulator
 
-fmil:
+config-OMSimulator:
 	@echo
-	@echo "# make fmil"
+	@echo "# config OMSimulator"
 	@echo
+	$(RM) build
+	$(RM) build-cmake
+	$(MKDIR) build-cmake
+	cd build-cmake && cmake .. && $(MAKE) install
+
+config-fmil:
+	@echo
+	@echo "# config fmil"
+	@echo
+	$(RM) 3rdParty/FMIL/build-fmil
+	$(RM) 3rdParty/FMIL/install
 	$(MKDIR) 3rdParty/FMIL/build-fmil
 	cd 3rdParty/FMIL/build-fmil && cmake .. && $(MAKE) install
 
-clean:
-	@echo
-	@echo "# make clean"
-	@echo
-	$(MAKE) -C library clean
-	$(MAKE) -C simulator clean
-
-distclean: clean
+distclean:
 	@echo
 	@echo "# make distclean"
 	@echo
-	$(MAKE) -C library distclean
-	$(MAKE) -C simulator distclean
 	$(RM) build
+	$(RM) build-cmake
 	$(RM) 3rdParty/FMIL/build-fmil
 	$(RM) 3rdParty/FMIL/install
 
 testsuite:
 	@echo
-	@echo "# make testsuite"
+	@echo "# run testsuite"
 	@echo
 	@$(MAKE) -C testsuite all
