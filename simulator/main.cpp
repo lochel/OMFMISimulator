@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
       filename = arg;
     else
     {
-      cout << "Not able to process argument: " << arg << endl;
+      cout << "Not able to process argument: " << arg.c_str() << endl;
       cout << "Use OMSimulator --help for more information." << endl;
       return 0;
     }
