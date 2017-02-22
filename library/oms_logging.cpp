@@ -30,6 +30,7 @@
  */
 
 #include "oms_logging.h"
+#include "oms_version.h"
 
 #include <iostream>
 #include <fstream>
@@ -55,7 +56,7 @@ Log::Log()
   numWarnings = 0;
   numErrors = 0;
   logFile.open("omsllog.txt");
-  Info("Initializing logging");
+  Info("Initializing logging (" + std::string(oms_git_version) + ")");
 }
 
 Log::~Log()

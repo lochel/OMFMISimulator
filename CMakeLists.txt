@@ -1,7 +1,10 @@
 cmake_minimum_required(VERSION 2.8)
 project(OMSimulator)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/")
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/config.cmake/")
+include(GetGitRevisionDescription)
+get_git_head_revision(GIT_REFSPEC GIT_VERSION_STRING)
+#git_describe(GIT_VERSION_STRING --tags --abbrev=7 --match=v*.*)
 
 #set(CMAKE_VERBOSE_MAKEFILE on)
 #set(CMAKE_BUILD_TYPE DEBUG)

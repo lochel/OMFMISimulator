@@ -29,28 +29,9 @@
  *
  */
 
-#ifndef _OMSIMULATOR_H_
-#define _OMSIMULATOR_H_
+#ifndef _OMS_CONFIG_H_
+#define _OMS_CONFIG_H_
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
-void* oms_loadModel(const char* filename);
-void* oms_loadComposite(const char* filename);
-void oms_simulate(void* model);
-void oms_describe(void* model);
-void oms_unload(void* model);
-void oms_setWorkingDirectory(const char* filename);
-void oms_setResultFile(const char* filename);
-void oms_setStartTime(double startTime);
-void oms_setStopTime(double stopTime);
-void oms_setTolerance(double tolerance);
-const char* oms_getVersion();
-
-#ifdef __cplusplus
-}
-#endif
+extern const char* oms_git_version;
 
 #endif

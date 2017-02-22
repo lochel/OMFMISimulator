@@ -33,6 +33,7 @@
 #include "oms_model.h"
 #include "oms_logging.h"
 #include "Settings.h"
+#include "oms_version.h"
 
 void* oms_loadModel(const char* filename)
 {
@@ -115,4 +116,9 @@ void oms_setTolerance(double tolerance)
 {
   logTrace();
   Settings::getInstance().SetTolerance(tolerance);
+}
+
+const char* oms_getVersion()
+{
+  return oms_git_version;
 }

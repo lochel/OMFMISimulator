@@ -2,6 +2,9 @@ project(OMSimulatorLib)
 
 set(OMSIMULATORLIB_SOURCES oms_logging.cpp oms_model.cpp oms_resultfile.cpp OMSimulator.cpp Settings.cpp)
 
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/oms_version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/oms_version.cpp" @ONLY)
+list(APPEND OMSIMULATORLIB_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/oms_version.cpp")
+
 # Shared library version
 # add_library(omsim_dynamic SHARED ${OMSIMULATORLIB_SOURCES})
 # install(TARGETS omsim_dynamic DESTINATION lib)

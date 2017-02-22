@@ -46,6 +46,7 @@ void printUsage()
   cout << "  --stopTime=<double>    Specifies the stop time" << endl;
   cout << "  --tempDir=<string>     Specifies the working directory" << endl;
   cout << "  --tolerance=<double>   Specifies the relative tolerance" << endl;
+  cout << "  --version              Displays version information" << endl;
 }
 
 int main(int argc, char *argv[])
@@ -85,6 +86,11 @@ int main(int argc, char *argv[])
     {
       double tolerance = atof(arg.substr(12).c_str());
       oms_setTolerance(tolerance);
+    }
+    else if(0 == arg.compare("--version"))
+    {
+      cout << oms_getVersion() << endl;
+      return 0;
     }
     else if(filename.empty())
       filename = arg;
