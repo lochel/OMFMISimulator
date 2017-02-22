@@ -1,6 +1,5 @@
 project(OMSimulatorExe)
 
-# include_directories(${FMILibrary_INCLUDEDIR})
 include_directories(../library)
 link_directories(${FMILibrary_LIBRARYDIR})
 
