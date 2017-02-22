@@ -34,10 +34,7 @@
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
-
-#if defined(__MINGW32__)
-  #include <time.h>
-#endif
+#include <ctime>
 
 using namespace std;
 
