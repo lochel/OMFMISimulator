@@ -64,7 +64,7 @@ Log::~Log()
   Info("Logging completed properly");
   logFile.close();
   cout << "Logging information has been saved to \"omsllog.txt\"" << endl;
-  if(numErrors > 0 || numWarnings > 0)
+  if(numWarnings + numErrors > 0)
   {
     cout << "  " << numWarnings << " warnings" << endl;
     cout << "  " << numErrors << " errors" << endl;
@@ -87,7 +87,6 @@ void Log::Warning(const std::string msg)
 {
   numWarnings++;
   logFile << TimeStr() << " | warning: " << msg << endl;
-  cerr << "warning: " << msg << endl;
 }
 
 void Log::Error(const std::string msg)

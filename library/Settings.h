@@ -32,8 +32,6 @@
 #ifndef _OMS_SETTINGS_H_
 #define _OMS_SETTINGS_H_
 
-#include <string>
-
 class Settings
 {
 public:
