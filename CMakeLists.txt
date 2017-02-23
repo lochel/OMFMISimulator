@@ -21,7 +21,8 @@ ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 ##########################
 # Configuring for boost "FindBoost.cmake"
 #set(BOOST_ROOT "C:/local/boost_1_63_0")
-set(Boost_USE_STATIC_LIBS ON) # VS2013 seems to prefer static libs
+# BTH FIXME I would prefer to link against static, but Ubuntu 14.04 ships static boost libraries which are compiled without -fPIC and thus cannot be linked into the OMSimulator shared library. Is it Possible to use static versions for linking against executables, but shared versions for linking against shared libraries?
+# set(Boost_USE_STATIC_LIBS ON)
 # BTH There is more what can be set. What do we want?
 #set(Boost_USE_MULTITHREADED ON)
 #set(Boost_USE_STATIC_RUNTIME OFF)

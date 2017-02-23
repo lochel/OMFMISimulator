@@ -1,7 +1,7 @@
 project(OMSimulatorExe)
 
 include_directories(../library)
-link_directories(${FMILibrary_LIBRARYDIR})
+link_directories(${FMILibrary_LIBRARYDIR} ${Boost_LIBRARY_DIRS})
 
 add_executable(OMSimulator main.cpp)
 
