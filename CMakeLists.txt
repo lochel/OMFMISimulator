@@ -42,8 +42,8 @@ find_package(FMILibrary REQUIRED)
 
 ##########################
 # Add project modules
-add_subdirectory(library)
-add_subdirectory(simulator)
+add_subdirectory(src/library)
+add_subdirectory(src/simulator)
 
 ##########################
 # TODO Add tests
