@@ -15,8 +15,8 @@ config-OMSimulator:
 	@echo
 	@echo "# config OMSimulator"
 	@echo
-	$(RM) build
 	$(RM) build-cmake
+	$(RM) install
 	$(MKDIR) build-cmake
 	cd build-cmake && cmake .. && $(MAKE) install
 
@@ -33,8 +33,8 @@ distclean:
 	@echo
 	@echo "# make distclean"
 	@echo
-	$(RM) build
 	$(RM) build-cmake
+	$(RM) install
 	$(RM) 3rdParty/FMIL/build-fmil
 	$(RM) 3rdParty/FMIL/install
 
