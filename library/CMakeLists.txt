@@ -12,9 +12,10 @@ list(APPEND OMSIMULATORLIB_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/oms_version.cpp"
 include_directories(${FMILibrary_INCLUDEDIR})
 
 # Static library version
-add_library(omsim STATIC ${OMSIMULATORLIB_SOURCES})
-target_link_libraries(omsim)
-# set_property(TARGET omsim PROPERTY CXX_STANDARD 11)
+add_library(libOMSimulator STATIC ${OMSIMULATORLIB_SOURCES})
+SET_TARGET_PROPERTIES(libOMSimulator PROPERTIES OUTPUT_NAME OMSimulator)
+target_link_libraries(libOMSimulator)
+# set_property(TARGET libOMSimulator PROPERTY CXX_STANDARD 11)
 
-install(TARGETS omsim DESTINATION lib)
+install(TARGETS libOMSimulator DESTINATION lib)
 install(FILES OMSimulator.h DESTINATION include)
