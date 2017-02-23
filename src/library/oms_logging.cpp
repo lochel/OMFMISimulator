@@ -78,25 +78,25 @@ Log& Log::getInstance()
   return instance;
 }
 
-void Log::Info(const std::string msg)
+void Log::Info(const std::string& msg)
 {
   logFile << TimeStr() << " | info:    " << msg << endl;
 }
 
-void Log::Warning(const std::string msg)
+void Log::Warning(const std::string& msg)
 {
   numWarnings++;
   logFile << TimeStr() << " | warning: " << msg << endl;
 }
 
-void Log::Error(const std::string msg)
+void Log::Error(const std::string& msg)
 {
   numErrors++;
   logFile << TimeStr() << " | error:   " << msg << endl;
   cerr << "error:   " << msg << endl;
 }
 
-void Log::Fatal(const std::string msg)
+void Log::Fatal(const std::string& msg)
 {
   numErrors++;
   logFile << TimeStr() << " | fatal:   " << msg << endl;
@@ -104,7 +104,7 @@ void Log::Fatal(const std::string msg)
   exit(1);
 }
 
-void Log::Trace(const std::string function, const std::string file, const long line)
+void Log::Trace(const std::string& function, const std::string& file, const long line)
 {
   logFile << TimeStr() << " | trace:   " << function << " (" << file << ":" << line << ")" << endl;
 }

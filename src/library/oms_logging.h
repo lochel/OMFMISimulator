@@ -49,11 +49,11 @@ class Log
 {
 public:
   static Log& getInstance();
-  void Info(const std::string msg);
-  void Warning(const std::string msg);
-  void Error(const std::string msg);
-  void Fatal(const std::string msg);
-  void Trace(const std::string function, const std::string file, const long line);
+  void Info(const std::string& msg);
+  void Warning(const std::string& msg);
+  void Error(const std::string& msg);
+  void Fatal(const std::string& msg);
+  void Trace(const std::string& function, const std::string& file, const long line);
 
 private:
   Log();
