@@ -43,6 +43,7 @@ find_package(FMILibrary REQUIRED)
 # Add project modules
 add_subdirectory(src/library)
 add_subdirectory(src/simulator)
+add_subdirectory(src/lua)
 
 ##########################
 # TODO Add tests
