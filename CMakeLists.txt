@@ -41,9 +41,9 @@ find_package(FMILibrary REQUIRED)
 
 ##########################
 # Add project modules
-add_subdirectory(src/library)
-add_subdirectory(src/simulator)
-add_subdirectory(src/lua)
+add_subdirectory(src/OMSimulatorLib)
+add_subdirectory(src/OMSimulator)
+add_subdirectory(src/OMSimulatorLua)
 
 ##########################
 # TODO Add tests

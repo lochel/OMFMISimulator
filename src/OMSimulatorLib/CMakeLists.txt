@@ -14,10 +14,9 @@ target_link_libraries(OMSimulator_shared fmilib ${Boost_LIBRARIES})
 install(TARGETS OMSimulator_shared DESTINATION lib)
 
 # Static library version
-add_library(libOMSimulator STATIC ${OMSIMULATORLIB_SOURCES})
-SET_TARGET_PROPERTIES(libOMSimulator PROPERTIES OUTPUT_NAME OMSimulator)
-target_link_libraries(libOMSimulator)
-# set_property(TARGET libOMSimulator PROPERTY CXX_STANDARD 11)
+add_library(OMSimulatorLib STATIC ${OMSIMULATORLIB_SOURCES})
+SET_TARGET_PROPERTIES(OMSimulatorLib PROPERTIES OUTPUT_NAME OMSimulator)
+# set_property(TARGET OMSimulatorLib PROPERTY CXX_STANDARD 11)
 
-install(TARGETS libOMSimulator DESTINATION lib)
+install(TARGETS OMSimulatorLib DESTINATION lib)
 install(FILES OMSimulator.h DESTINATION include)

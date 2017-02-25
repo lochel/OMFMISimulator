@@ -116,7 +116,7 @@ static int getVersion(lua_State *L)
   return 1;
 }
 
-int luaopen_libluaOMSimulator(lua_State *L)
+int luaopen_libOMSimulatorLua(lua_State *L)
 {
   lua_register(L, "loadModel", loadModel);
   lua_register(L, "simulate", simulate);
