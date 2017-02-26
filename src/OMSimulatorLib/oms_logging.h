@@ -35,7 +35,7 @@
 #include <string>
 #include <fstream>
 
-#define OMS_DEBUG_LOGGING
+//#define OMS_DEBUG_LOGGING
 
 #ifndef __FUNCTION_NAME__
   #ifdef WIN32   //WINDOWS
