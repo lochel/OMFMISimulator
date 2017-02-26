@@ -9,7 +9,7 @@ OMSimulator:
 	@echo
 	@$(MAKE) -C build-cmake install
 
-config: config-fmil config-OMSimulator
+config: config-OMSimulator
 
 config-OMSimulator:
 	@echo
