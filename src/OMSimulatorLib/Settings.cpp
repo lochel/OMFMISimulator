@@ -54,7 +54,7 @@ Settings::~Settings()
   ClearStopTime();
   ClearTolerance();
   ClearTempDirectory();
-  if(resultFile) delete[] resultFile;
+  ClearResultFile();
 }
 
 Settings& Settings::getInstance()
@@ -66,56 +66,65 @@ Settings& Settings::getInstance()
 
 void Settings::SetStartTime(double startTime)
 {
-  if(!this->startTime)
-    this->startTime = new double;
-  *(this->startTime) = startTime;
+  Settings& settings = getInstance();
+  if(!settings.startTime)
+    settings.startTime = new double;
+  *(settings.startTime) = startTime;
 }
 
 double* Settings::GetStartTime()
 {
-  return this->startTime;
+  Settings& settings = getInstance();
+  return settings.startTime;
 }
 
 void Settings::ClearStartTime()
 {
-  if(this->startTime)
-    delete this->startTime;
+  Settings& settings = getInstance();
+  if(settings.startTime)
+    delete settings.startTime;
 }
 
 void Settings::SetStopTime(double stopTime)
 {
-  if(!this->stopTime)
-    this->stopTime = new double;
-  *(this->stopTime) = stopTime;
+  Settings& settings = getInstance();
+  if(!settings.stopTime)
+    settings.stopTime = new double;
+  *(settings.stopTime) = stopTime;
 }
 
 double* Settings::GetStopTime()
 {
-  return this->stopTime;
+  Settings& settings = getInstance();
+  return settings.stopTime;
 }
 
 void Settings::ClearStopTime()
 {
-  if(this->stopTime)
-    delete this->stopTime;
+  Settings& settings = getInstance();
+  if(settings.stopTime)
+    delete settings.stopTime;
 }
 
 void Settings::SetTolerance(double tolerance)
 {
-  if(!this->tolerance)
-    this->tolerance = new double;
-  *(this->tolerance) = tolerance;
+  Settings& settings = getInstance();
+  if(!settings.tolerance)
+    settings.tolerance = new double;
+  *(settings.tolerance) = tolerance;
 }
 
 double* Settings::GetTolerance()
 {
-  return this->tolerance;
+  Settings& settings = getInstance();
+  return settings.tolerance;
 }
 
 void Settings::ClearTolerance()
 {
-  if(this->tolerance)
-    delete this->tolerance;
+  Settings& settings = getInstance();
+  if(settings.tolerance)
+    delete settings.tolerance;
 }
 
 void Settings::SetTempDirectory(const char* tempDir)
@@ -126,39 +135,45 @@ void Settings::SetTempDirectory(const char* tempDir)
     return;
   }
 
+  Settings& settings = getInstance();
   boost::filesystem::path path(tempDir);
   path = boost::filesystem::canonical(path);
 
   ClearTempDirectory();
-  this->tempDir = new char[path.string().length()+1];
-  strcpy(this->tempDir, path.string().c_str());
+  settings.tempDir = new char[path.string().length()+1];
+  strcpy(settings.tempDir, path.string().c_str());
 }
 
 const char* Settings::GetTempDirectory()
 {
-  return this->tempDir;
+  Settings& settings = getInstance();
+  return settings.tempDir;
 }
 
 void Settings::ClearTempDirectory()
 {
-  if(this->tempDir)
-    delete[] this->tempDir;
+  Settings& settings = getInstance();
+  if(settings.tempDir)
+    delete[] settings.tempDir;
 }
 
 void Settings::SetResultFile(const char* resultFile)
 {
+  Settings& settings = getInstance();
   ClearResultFile();
-  this->resultFile = new char[strlen(resultFile)+1];
-  strcpy(this->resultFile, resultFile);
+  settings.resultFile = new char[strlen(resultFile)+1];
+  strcpy(settings.resultFile, resultFile);
 }
 
 const char* Settings::GetResultFile()
 {
-  return resultFile;
+  Settings& settings = getInstance();
+  return settings.resultFile;
 }
 
 void Settings::ClearResultFile()
 {
-  if(resultFile)
-    delete[] resultFile;
+  Settings& settings = getInstance();
+  if(settings.resultFile)
+    delete[] settings.resultFile;
 }

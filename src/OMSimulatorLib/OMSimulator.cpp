@@ -91,31 +91,31 @@ void oms_unload(void* model)
 void oms_setWorkingDirectory(const char* filename)
 {
   logTrace();
-  Settings::getInstance().SetTempDirectory(filename);
+  Settings::SetTempDirectory(filename);
 }
 
 void oms_setResultFile(const char* filename)
 {
   logTrace();
-  Settings::getInstance().SetResultFile(filename);
+  Settings::SetResultFile(filename);
 }
 
 void oms_setStartTime(double startTime)
 {
   logTrace();
-  Settings::getInstance().SetStartTime(startTime);
+  Settings::SetStartTime(startTime);
 }
 
 void oms_setStopTime(double stopTime)
 {
   logTrace();
-  Settings::getInstance().SetStopTime(stopTime);
+  Settings::SetStopTime(stopTime);
 }
 
 void oms_setTolerance(double tolerance)
 {
   logTrace();
-  Settings::getInstance().SetTolerance(tolerance);
+  Settings::SetTolerance(tolerance);
 }
 
 const char* oms_getVersion()

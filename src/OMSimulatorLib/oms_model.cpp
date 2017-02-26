@@ -119,7 +119,7 @@ oms_model::oms_model(std::string fmuPath)
   callbacks.context = 0;
 
   //set working directory
-  tempDir = fmi_import_mk_temp_dir(&callbacks, Settings::getInstance().GetTempDirectory(), "temp_");
+  tempDir = fmi_import_mk_temp_dir(&callbacks, Settings::GetTempDirectory(), "temp_");
   logInfo("set working directory to \"" + tempDir + "\"");
 
   context = fmi_import_allocate_context(&callbacks);
@@ -264,7 +264,7 @@ void oms_model::simulate()
   callBackFunctions.freeMemory = free;
   callBackFunctions.componentEnvironment = fmu;
 
-  const char* resultFile = Settings::getInstance().GetResultFile();
+  const char* resultFile = Settings::GetResultFile();
   std::string finalResultFile;
   if(resultFile)
     finalResultFile = resultFile;
@@ -301,9 +301,9 @@ void oms_model::simulate_cs(std::string resultFileName)
   jmstatus = fmi2_import_instantiate(fmu, instanceName, fmi2_cosimulation, NULL, fmi2_false);
   if (jm_status_error == jmstatus) logFatal("fmi2_import_instantiate failed");
 
-  double* pStartTime = Settings::getInstance().GetStartTime();
-  double* pStopTime = Settings::getInstance().GetStopTime();
-  double* pTolerance = Settings::getInstance().GetTolerance();
+  double* pStartTime = Settings::GetStartTime();
+  double* pStopTime = Settings::GetStopTime();
+  double* pTolerance = Settings::GetTolerance();
   fmi2_real_t tstart = pStartTime ? *pStartTime : fmi2_import_get_default_experiment_start(fmu);
   fmi2_real_t tend = pStopTime ? *pStopTime : fmi2_import_get_default_experiment_stop(fmu);
   fmi2_real_t relativeTolerance = pTolerance ? *pTolerance : fmi2_import_get_default_experiment_tolerance(fmu);
@@ -359,9 +359,9 @@ void oms_model::simulate_me(std::string resultFileName)
   jmstatus = fmi2_import_instantiate(fmu, instanceName, fmi2_model_exchange, NULL, fmi2_false);
   if (jm_status_error == jmstatus) logFatal("fmi2_import_instantiate failed");
 
-  double* pStartTime = Settings::getInstance().GetStartTime();
-  double* pStopTime = Settings::getInstance().GetStopTime();
-  double* pTolerance = Settings::getInstance().GetTolerance();
+  double* pStartTime = Settings::GetStartTime();
+  double* pStopTime = Settings::GetStopTime();
+  double* pTolerance = Settings::GetTolerance();
   fmi2_real_t tstart = pStartTime ? *pStartTime : fmi2_import_get_default_experiment_start(fmu);
   fmi2_real_t tend = pStopTime ? *pStopTime : fmi2_import_get_default_experiment_stop(fmu);
   fmi2_real_t relativeTolerance = pTolerance ? *pTolerance : fmi2_import_get_default_experiment_tolerance(fmu);
