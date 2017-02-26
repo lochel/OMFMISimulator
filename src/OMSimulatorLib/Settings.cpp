@@ -39,7 +39,7 @@
 
 Settings::Settings()
 {
-  logInfo("Initializing settings");
+  logDebug("Initializing settings");
   startTime = NULL;
   stopTime = NULL;
   tolerance = NULL;
@@ -49,7 +49,7 @@ Settings::Settings()
 
 Settings::~Settings()
 {
-  logInfo("Free settings");
+  logDebug("Free settings");
   ClearStartTime();
   ClearStopTime();
   ClearTolerance();

@@ -52,7 +52,7 @@ oms_resultfile::oms_resultfile(std::string filename, fmi2_import_t* fmu)
 {
   this->fmu = fmu;
   resultFile.open(filename.c_str());
-  logInfo("Result file: " + filename);
+  logDebug("Result file: " + filename);
 
   resultFile << "time";
 
@@ -71,7 +71,7 @@ oms_resultfile::oms_resultfile(std::string filename, fmi2_import_t* fmu)
 oms_resultfile::~oms_resultfile()
 {
   resultFile.close();
-  logInfo("Result file closed");
+  logDebug("Result file closed");
 }
 
 void oms_resultfile::emit(double time)

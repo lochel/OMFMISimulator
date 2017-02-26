@@ -50,6 +50,7 @@ class Log
 public:
   static Log& getInstance();
   void Info(const std::string& msg);
+  void Debug(const std::string& msg);
   void Warning(const std::string& msg);
   void Error(const std::string& msg);
   void Fatal(const std::string& msg);
@@ -68,15 +69,16 @@ private:
   unsigned int numErrors;
 };
 
+#define logInfo(msg)    Log::getInstance().Info(msg)
 #define logWarning(msg) Log::getInstance().Warning(msg)
 #define logError(msg)   Log::getInstance().Error(msg)
 #define logFatal(msg)   Log::getInstance().Fatal(msg)
 
 #ifdef OMS_DEBUG_LOGGING
-  #define logInfo(msg)  Log::getInstance().Info(msg)
+  #define logDebug(msg) Log::getInstance().Debug(msg)
   #define logTrace()    Log::getInstance().Trace(__FUNCTION_NAME__, __FILE__, __LINE__)
 #else
-  #define logInfo(msg)  ((void)0)
+  #define logDebug(msg) ((void)0)
   #define logTrace()    ((void)0)
 #endif
 

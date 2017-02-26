@@ -83,6 +83,11 @@ void Log::Info(const std::string& msg)
   logFile << TimeStr() << " | info:    " << msg << endl;
 }
 
+void Log::Debug(const std::string& msg)
+{
+  logFile << TimeStr() << " | debug:   " << msg << endl;
+}
+
 void Log::Warning(const std::string& msg)
 {
   numWarnings++;

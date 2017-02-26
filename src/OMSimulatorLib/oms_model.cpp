@@ -57,7 +57,7 @@ void fmiLogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, 
   switch(log_level)
   {
     case jm_log_level_info:
-      logInfo("module " + std::string(module) + ": " + std::string(message));
+      logDebug("module " + std::string(module) + ": " + std::string(message));
       break;
     case jm_log_level_warning:
       logWarning("module " + std::string(module) + ": " + std::string(message));
@@ -85,7 +85,7 @@ void fmi2logger(fmi2_component_environment_t env, fmi2_string_t instanceName, fm
   {
     case fmi2_status_ok:
     case fmi2_status_pending:
-      logInfo(std::string(instanceName) + " (" + category + "): " + msg);
+      logDebug(std::string(instanceName) + " (" + category + "): " + msg);
       break;
     case fmi2_status_warning:
       logWarning(std::string(instanceName) + " (" + category + "): " + msg);
@@ -120,7 +120,7 @@ oms_model::oms_model(std::string fmuPath)
 
   //set working directory
   tempDir = fmi_import_mk_temp_dir(&callbacks, Settings::GetTempDirectory(), "temp_");
-  logInfo("set working directory to \"" + tempDir + "\"");
+  logDebug("set working directory to \"" + tempDir + "\"");
 
   context = fmi_import_allocate_context(&callbacks);
   fmu = NULL;
@@ -133,7 +133,7 @@ oms_model::~oms_model()
   if (boost::filesystem::is_directory(tempDir))
   {
     fmi_import_rmdir(&callbacks, tempDir.c_str());
-    logInfo("removed working directory: \"" + tempDir + "\"");
+    logDebug("removed working directory: \"" + tempDir + "\"");
   }
 }
 
@@ -210,15 +210,15 @@ void oms_model::simulate()
   // check FMU kind (CS or ME)
   fmi2_fmu_kind_enu_t fmuKind = fmi2_import_get_fmu_kind(fmu);
   if(fmi2_fmu_kind_me == fmuKind)
-    logInfo("FMU ME");
+    logDebug("FMU ME");
   else if(fmi2_fmu_kind_cs == fmuKind)
-    logInfo("FMU CS");
+    logDebug("FMU CS");
   else
     logError("Unsupported FMU kind: " + std::string(fmi2_fmu_kind_to_string(fmuKind)));
 
   fmi2_import_variable_list_t *list = fmi2_import_get_variable_list(fmu, 0);
   size_t nVar = fmi2_import_get_variable_list_size(list);
-  logInfo(toString(nVar) + " variables");
+  logDebug(toString(nVar) + " variables");
   for(size_t i=0; i<nVar; ++i)
   {
     fmi2_import_variable_t* var = fmi2_import_get_variable(list, i);
@@ -255,7 +255,7 @@ void oms_model::simulate()
         value = fmi2_import_get_string_variable_start(var_str);
       }
 
-      logInfo(causality + " " + name + " = " + value);
+      logDebug(causality + " " + name + " = " + value);
     }
   }
 
@@ -270,7 +270,7 @@ void oms_model::simulate()
     finalResultFile = resultFile;
   else
     finalResultFile = std::string(fmi2_import_get_model_name(fmu)) + "_res.csv";
-  logInfo("result file: " + finalResultFile);
+  logDebug("result file: " + finalResultFile);
 
   if(fmi2_fmu_kind_me == fmuKind)
     simulate_me(finalResultFile);
@@ -293,9 +293,9 @@ void oms_model::simulate_cs(std::string resultFileName)
   jmstatus = fmi2_import_create_dllfmu(fmu, fmi2_fmu_kind_cs, &callBackFunctions);
   if (jm_status_error == jmstatus) logFatal("Could not create the DLL loading mechanism (C-API). Error: " + std::string(fmi2_import_get_last_error(fmu)));
 
-  logInfo("Version returned from FMU: " + std::string(fmi2_import_get_version(fmu)));
-  logInfo("Platform type returned: " + std::string(fmi2_import_get_types_platform(fmu)));
-  logInfo("GUID: " + std::string(fmi2_import_get_GUID(fmu)));
+  logDebug("Version returned from FMU: " + std::string(fmi2_import_get_version(fmu)));
+  logDebug("Platform type returned: " + std::string(fmi2_import_get_types_platform(fmu)));
+  logDebug("GUID: " + std::string(fmi2_import_get_GUID(fmu)));
 
   fmi2_string_t instanceName = "CS-FMU instance";
   jmstatus = fmi2_import_instantiate(fmu, instanceName, fmi2_cosimulation, NULL, fmi2_false);
@@ -312,9 +312,9 @@ void oms_model::simulate_cs(std::string resultFileName)
   fmi2_boolean_t StopTimeDefined = fmi2_true;
   fmi2_real_t hdef = 1e-2;
 
-  logInfo("start time: " + toString(tstart));
-  logInfo("stop time: " + toString(tend));
-  logInfo("relative tolerance: " + toString(relativeTolerance));
+  logDebug("start time: " + toString(tstart));
+  logDebug("stop time: " + toString(tend));
+  logDebug("relative tolerance: " + toString(relativeTolerance));
 
   fmistatus = fmi2_import_setup_experiment(fmu, toleranceControlled, relativeTolerance, tstart, StopTimeDefined, tend);
   if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_setup_experiment failed");
@@ -345,15 +345,15 @@ void oms_model::simulate_me(std::string resultFileName)
   jmstatus = fmi2_import_create_dllfmu(fmu, fmi2_fmu_kind_me, &callBackFunctions);
   if (jm_status_error == jmstatus) logFatal("Could not create the DLL loading mechanism (C-API). Error: " + std::string(fmi2_import_get_last_error(fmu)));
 
-  logInfo("Version returned from FMU: " + std::string(fmi2_import_get_version(fmu)));
-  logInfo("Platform type returned: " + std::string(fmi2_import_get_types_platform(fmu)));
-  logInfo("GUID: " + std::string(fmi2_import_get_GUID(fmu)));
+  logDebug("Version returned from FMU: " + std::string(fmi2_import_get_version(fmu)));
+  logDebug("Platform type returned: " + std::string(fmi2_import_get_types_platform(fmu)));
+  logDebug("GUID: " + std::string(fmi2_import_get_GUID(fmu)));
 
   size_t n_states = fmi2_import_get_number_of_continuous_states(fmu);
   size_t n_event_indicators = fmi2_import_get_number_of_event_indicators(fmu);
 
-  logInfo(toString(n_states) + " states");
-  logInfo(toString(n_event_indicators) + " event indicators");
+  logDebug(toString(n_states) + " states");
+  logDebug(toString(n_event_indicators) + " event indicators");
 
   fmi2_string_t instanceName = "ME-FMU instance";
   jmstatus = fmi2_import_instantiate(fmu, instanceName, fmi2_model_exchange, NULL, fmi2_false);
@@ -369,9 +369,9 @@ void oms_model::simulate_me(std::string resultFileName)
   fmi2_boolean_t toleranceControlled = fmi2_true;
   fmi2_boolean_t StopTimeDefined = fmi2_true;
 
-  logInfo("start time: " + toString(tstart));
-  logInfo("stop time: " + toString(tend));
-  logInfo("relative tolerance: " + toString(relativeTolerance));
+  logDebug("start time: " + toString(tstart));
+  logDebug("stop time: " + toString(tend));
+  logDebug("relative tolerance: " + toString(relativeTolerance));
 
   fmistatus = fmi2_import_setup_experiment(fmu, toleranceControlled, relativeTolerance, tstart, StopTimeDefined, tend);
   if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_setup_experiment failed");
