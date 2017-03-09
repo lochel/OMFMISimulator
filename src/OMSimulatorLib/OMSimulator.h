@@ -37,16 +37,81 @@ extern "C"
 {
 #endif
 
+/**
+ * \brief Creates an empty composite model.
+ *
+ * @return model instance as opaque pointer.
+ */
+void* oms_newModel();
+
+/**
+ * \brief Loads a composite model from xml representation.
+ *
+ * @param filename Full path to the composite model xml representation.
+ * @return model instance as opaque pointer.
+ */
 void* oms_loadModel(const char* filename);
-void* oms_loadComposite(const char* filename);
+
+// TODO saveModel
+
+/**
+ * \brief Unloads a composite model.
+ *
+ * @param model Model as opaque pointer.
+ */
+void oms_unload(void* model);
+
+/**
+ * \brief Instantiates a FMU.
+ *
+ * @param model Model as opaque pointer.
+ * @param filename Full path to the FMU.
+ * @param instanceName Instance name for further access.
+ */
+void oms_instantiateFMU(void* model, const char* filename, const char* instanceName);
+
+/**
+ * \brief Set real value.
+ *
+ * @param model Model as opaque pointer.
+ * @param var
+ * @param value
+ */
+void oms_setReal(void *model, const char *var, double value);
+// TODO: setInteger
+// TODO: setBoolean
+// TODO: setString
+
+// TODO: getReal
+// TODO: getInteger
+// TODO: getBoolean
+// TODO: getString
+
+/**
+ * \brief Add a connection from a FMU output to a FMU input.
+ *
+ * @param model Model as opaque pointer.
+ * @param from Name of an FMU output.
+ * @param to Name of an FMU input.
+ */
+void oms_addConnection(void* model, const char* from, const char* to);
+
+
 void oms_simulate(void* model);
 void oms_describe(void* model);
-void oms_unload(void* model);
-void oms_setWorkingDirectory(const char* filename);
-void oms_setResultFile(const char* filename);
+void oms_exportDependencyGraph(void* model, const char* filename);
+
 void oms_setStartTime(double startTime);
 void oms_setStopTime(double stopTime);
 void oms_setTolerance(double tolerance);
+void oms_setWorkingDirectory(const char* filename);
+void oms_setResultFile(const char* filename);
+
+/**
+ * \brief Returns the library's version string.
+ *
+ * @return version string
+ */
 const char* oms_getVersion();
 
 #ifdef __cplusplus

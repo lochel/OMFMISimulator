@@ -108,20 +108,21 @@ int main(int argc, char *argv[])
     return 0;
   }
 
+  void* pModel = oms_newModel();
+  oms_instantiateFMU(pModel, filename.c_str(), "fmu");
+
   if(describe)
   {
     // OMSimulator --describe example.fmu
-    void* pModel = oms_loadModel(filename.c_str());
     oms_describe(pModel);
-    oms_unload(pModel);
   }
   else
   {
     // OMSimulator example.fmu
-    void* pModel = oms_loadModel(filename.c_str());
     oms_simulate(pModel);
-    oms_unload(pModel);
   }
+
+  oms_unload(pModel);
 
   return 0;
 }

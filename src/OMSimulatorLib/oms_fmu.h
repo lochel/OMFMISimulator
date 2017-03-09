@@ -29,33 +29,51 @@
  *
  */
 
-#ifndef _OMS_MODEL_H_
-#define _OMS_MODEL_H_
+#ifndef _OMS_FMU_H_
+#define _OMS_FMU_H_
+
+#include "Variable.h"
+#include "DirectedGraph.h"
 
 #include <fmilib.h>
 #include <string>
+#include <vector>
 #include <map>
 
-#include "oms_fmu.h"
-#include "DirectedGraph.h"
-
-class oms_model
+class oms_fmu
 {
 public:
-  oms_model();
-  oms_model(const std::string& descriptionPath);
-  ~oms_model();
+  oms_fmu(std::string fmuPath, std::string instanceName);
+  ~oms_fmu();
 
-  void instantiateFMU(const std::string& filename, const std::string& instanceName);
   void setReal(const std::string& var, double value);
-  void addConnection(const std::string& from, const std::string& to);
-  void exportDependencyGraph(const std::string& prefix);
-
   void describe();
   void simulate();
 
+  const DirectedGraph& getOutputsGraph() {return outputsGraph;}
+  Variable* getVariable(const std::string& varName);
+
 private:
-  std::map<std::string, oms_fmu*> fmuInstances;
+  void do_event_iteration();
+  void simulate_cs(const std::string& resultFileName);
+  void simulate_me(const std::string& resultFileName);
+  void getDependencyGraph();
+
+private:
+  std::string fmuPath;
+  std::string tempDir;
+  std::string instanceName;
+  jm_callbacks callbacks;
+  fmi2_fmu_kind_enu_t fmuKind;
+  fmi2_callback_functions_t callBackFunctions;
+  fmi_import_context_t* context;
+  fmi2_import_t* fmu;
+  fmi2_event_info_t eventInfo;
+
+  std::map<std::string, fmi2_value_reference_t> parameterLookUp;
+  std::vector<Variable> allOutputs;
+  std::vector<Variable> allVariables;
+
   DirectedGraph outputsGraph;
 };
 

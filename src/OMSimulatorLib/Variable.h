@@ -29,34 +29,27 @@
  *
  */
 
-#ifndef _OMS_MODEL_H_
-#define _OMS_MODEL_H_
+#ifndef _OMS_VARIABLE_H_
+#define _OMS_VARIABLE_H_
 
 #include <fmilib.h>
 #include <string>
-#include <map>
+#include <vector>
 
-#include "oms_fmu.h"
-#include "DirectedGraph.h"
-
-class oms_model
+class Variable
 {
 public:
-  oms_model();
-  oms_model(const std::string& descriptionPath);
-  ~oms_model();
+  Variable(std::string name, std::string fmuInstance, fmi2_value_reference_t vr, size_t index);
+  ~Variable();
 
-  void instantiateFMU(const std::string& filename, const std::string& instanceName);
-  void setReal(const std::string& var, double value);
-  void addConnection(const std::string& from, const std::string& to);
-  void exportDependencyGraph(const std::string& prefix);
-
-  void describe();
-  void simulate();
-
-private:
-  std::map<std::string, oms_fmu*> fmuInstances;
-  DirectedGraph outputsGraph;
+  std::string name;
+  std::string fmuInstance;
+  fmi2_value_reference_t vr;
+  size_t index; // 1-based
+  fmi2_causality_enu_t causality;
 };
+
+bool operator==(const Variable& v1, const Variable& v2);
+bool operator!=(const Variable& v1, const Variable& v2);
 
 #endif

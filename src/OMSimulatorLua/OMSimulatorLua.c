@@ -4,16 +4,29 @@
 
 #include <OMSimulator.h>
 
+#define REGISTER_LUA_CALL(name) lua_register(L, #name, name)
+
 void push_pointer(lua_State *L, void *p)
 {
   void **bp = lua_newuserdata(L, sizeof(p));
   *bp = p;
 }
 
-void* pop_pointer(lua_State *L)
+void* topointer(lua_State *L, int index)
 {
-  void **bp = lua_touserdata(L, -1);
+  void **bp = lua_touserdata(L, index);
   return *bp;
+}
+
+//void* oms_newModel();
+static int newModel(lua_State *L)
+{
+  if (lua_gettop(L) != 0)
+    return luaL_error(L, "expecting no arguments");
+
+  void *pModel = oms_newModel();
+  push_pointer(L, pModel);
+  return 1;
 }
 
 //void* oms_loadModel(const char* filename);
@@ -29,7 +42,74 @@ static int loadModel(lua_State *L)
   return 1;
 }
 
-//void* oms_loadComposite(const char* filename);
+//void oms_unload(void* model);
+static int unload(lua_State *L)
+{
+  if (lua_gettop(L) != 1)
+    return luaL_error(L, "expecting exactly 1 argument");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+
+  void *model = topointer(L, 1);
+  oms_unload(model);
+  return 0;
+}
+
+//void oms_instantiateFMU(void* model, const char* filename, const char* instanceName);
+static int instantiateFMU(lua_State *L)
+{
+  if (lua_gettop(L) != 3)
+    return luaL_error(L, "expecting exactly 3 arguments");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TSTRING);
+  luaL_checktype(L, 3, LUA_TSTRING);
+
+  void *model = topointer(L, 1);
+  const char* filename = lua_tostring(L, 2);
+  const char* instanceName = lua_tostring(L, 3);
+  oms_instantiateFMU(model, filename, instanceName);
+  return 0;
+}
+
+//void oms_setReal(void* model, const char* var, double value);
+static int setReal(lua_State *L)
+{
+  if (lua_gettop(L) != 3)
+    return luaL_error(L, "expecting exactly 3 arguments");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TSTRING);
+  luaL_checktype(L, 3, LUA_TNUMBER);
+
+  void *model = topointer(L, 1);
+  const char *var = lua_tostring(L, 2);
+  double value = lua_tonumber(L, 3);
+  oms_setReal(model, var, value);
+  return 0;
+}
+
+// TODO: setInteger
+// TODO: setBoolean
+// TODO: setString
+
+// TODO: getReal
+// TODO: getInteger
+// TODO: getBoolean
+// TODO: getString
+
+//void oms_addConnection(void* model, const char* from, const char* to);
+static int addConnection(lua_State *L)
+{
+  if (lua_gettop(L) != 3)
+    return luaL_error(L, "expecting exactly 3 arguments");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TSTRING);
+  luaL_checktype(L, 3, LUA_TSTRING);
+
+  void *model = topointer(L, 1);
+  const char *from = lua_tostring(L, 2);
+  const char *to = lua_tostring(L, 3);
+  oms_addConnection(model, from, to);
+  return 0;
+}
 
 //void oms_simulate(void* model);
 static int simulate(lua_State *L)
@@ -38,8 +118,8 @@ static int simulate(lua_State *L)
     return luaL_error(L, "expecting exactly 1 argument");
   luaL_checktype(L, 1, LUA_TUSERDATA);
 
-  void *pModel = pop_pointer(L);
-  oms_simulate(pModel);
+  void *model = topointer(L, 1);
+  oms_simulate(model);
   return 0;
 }
 
@@ -50,38 +130,38 @@ static int describe(lua_State *L)
     return luaL_error(L, "expecting exactly 1 argument");
   luaL_checktype(L, 1, LUA_TUSERDATA);
 
-  void *pModel = pop_pointer(L);
-  oms_describe(pModel);
+  void *model = topointer(L, 1);
+  oms_describe(model);
   return 0;
 }
 
-//void oms_unload(void* model);
-static int unload(lua_State *L)
+//void oms_exportDependencyGraph(void* model, const char* prefix);
+static int exportDependencyGraph(lua_State *L)
 {
-  if (lua_gettop(L) != 1)
-    return luaL_error(L, "expecting exactly 1 argument");
+  if (lua_gettop(L) != 2)
+    return luaL_error(L, "expecting exactly 2 argument");
   luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TSTRING);
 
-  void *pModel = pop_pointer(L);
-  oms_unload(pModel);
+  void *model = topointer(L, 1);
+  const char* prefix = lua_tostring(L, 2);
+  oms_exportDependencyGraph(model, prefix);
   return 0;
 }
-    
-//void oms_setWorkingDirectory(const char* filename);
-static int setWorkingDirectory(lua_State *L)
+
+//void oms_setStartTime(double startTime);
+static int setStartTime(lua_State *L)
 {
   if (lua_gettop(L) != 1)
     return luaL_error(L, "expecting exactly 1 argument");
-  luaL_checktype(L, 1, LUA_TSTRING);
+  luaL_checktype(L, 1, LUA_TNUMBER);
 
-  const char* tempDir = lua_tostring(L, -1);
-  oms_setWorkingDirectory(tempDir);
+  double startTime = lua_tonumber(L, -1);
+  oms_setStartTime(startTime);
   return 0;
 }
-  
-//void oms_setResultFile(const char* filename);
-//void oms_setStartTime(double startTime);
-//void oms_setStopTime(double stopTime)
+
+//void oms_setStopTime(double stopTime);
 static int setStopTime(lua_State *L)
 {
   if (lua_gettop(L) != 1)
@@ -105,6 +185,30 @@ static int setTolerance(lua_State *L)
   return 0;
 }
 
+//void oms_setWorkingDirectory(const char* filename);
+static int setWorkingDirectory(lua_State *L)
+{
+  if (lua_gettop(L) != 1)
+    return luaL_error(L, "expecting exactly 1 argument");
+  luaL_checktype(L, 1, LUA_TSTRING);
+
+  const char* filename = lua_tostring(L, -1);
+  oms_setWorkingDirectory(filename);
+  return 0;
+}
+
+//void oms_setResultFile(const char* filename);
+static int setResultFile(lua_State *L)
+{
+  if (lua_gettop(L) != 1)
+    return luaL_error(L, "expecting exactly 1 argument");
+  luaL_checktype(L, 1, LUA_TSTRING);
+
+  const char* filename = lua_tostring(L, -1);
+  oms_setResultFile(filename);
+  return 0;
+}
+
 //const char* oms_getVersion();
 static int getVersion(lua_State *L)
 {
@@ -118,13 +222,20 @@ static int getVersion(lua_State *L)
 
 int luaopen_libOMSimulatorLua(lua_State *L)
 {
-  lua_register(L, "loadModel", loadModel);
-  lua_register(L, "simulate", simulate);
-  lua_register(L, "describe", describe);
-  lua_register(L, "unload", unload);
-  lua_register(L, "setWorkingDirectory", setWorkingDirectory);
-  lua_register(L, "setStopTime", setStopTime);
-  lua_register(L, "setTolerance", setTolerance);
-  lua_register(L, "getVersion", getVersion);
+  REGISTER_LUA_CALL(newModel);
+  REGISTER_LUA_CALL(loadModel);
+  REGISTER_LUA_CALL(unload);
+  REGISTER_LUA_CALL(instantiateFMU);
+  REGISTER_LUA_CALL(setReal);
+  REGISTER_LUA_CALL(addConnection);
+  REGISTER_LUA_CALL(simulate);
+  REGISTER_LUA_CALL(describe);
+  REGISTER_LUA_CALL(exportDependencyGraph);
+  REGISTER_LUA_CALL(setStartTime);
+  REGISTER_LUA_CALL(setStopTime);
+  REGISTER_LUA_CALL(setTolerance);
+  REGISTER_LUA_CALL(setWorkingDirectory);
+  REGISTER_LUA_CALL(setResultFile);
+  REGISTER_LUA_CALL(getVersion);
   return 0;
 }

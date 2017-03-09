@@ -35,6 +35,13 @@
 #include "Settings.h"
 #include "oms_version.h"
 
+void* oms_newModel()
+{
+  logTrace();
+  oms_model* pModel = new oms_model();
+  return (void*) pModel;
+}
+
 void* oms_loadModel(const char* filename)
 {
   logTrace();
@@ -42,11 +49,56 @@ void* oms_loadModel(const char* filename)
   return (void*) pModel;
 }
 
-void* oms_loadComposite(const char* filename)
+void oms_unload(void* model)
 {
   logTrace();
-  logWarning("Function not implemented yet: loadComposite");
-  return NULL;
+  if(!model)
+  {
+    logError("oms_unload: invalid pointer");
+    return;
+  }
+
+  oms_model* pModel = (oms_model*) model;
+  delete pModel;
+}
+
+void oms_instantiateFMU(void* model, const char* filename, const char* instanceName)
+{
+  logTrace();
+  if(!model)
+  {
+    logError("oms_simulate: invalid pointer");
+    return;
+  }
+
+  oms_model* pModel = (oms_model*) model;
+  pModel->instantiateFMU(filename, instanceName);
+}
+
+void oms_setReal(void *model, const char *var, double value)
+{
+  logTrace();
+  if (!model)
+  {
+    logError("oms_simulate: invalid pointer");
+    return;
+  }
+
+  oms_model *pModel = (oms_model *)model;
+  pModel->setReal(var, value);
+}
+
+void oms_addConnection(void* model, const char* from, const char* to)
+{
+  logTrace();
+  if(!model)
+  {
+    logError("oms_addConnection: invalid pointer");
+    return;
+  }
+
+  oms_model* pModel = (oms_model*) model;
+  pModel->addConnection(from, to);
 }
 
 void oms_simulate(void* model)
@@ -75,29 +127,17 @@ void oms_describe(void* model)
   pModel->describe();
 }
 
-void oms_unload(void* model)
+void oms_exportDependencyGraph(void* model, const char* filename)
 {
   logTrace();
   if(!model)
   {
-    logError("oms_unload: invalid pointer");
+    logError("oms_describe: invalid pointer");
     return;
   }
 
   oms_model* pModel = (oms_model*) model;
-  delete pModel;
-}
-
-void oms_setWorkingDirectory(const char* filename)
-{
-  logTrace();
-  Settings::SetTempDirectory(filename);
-}
-
-void oms_setResultFile(const char* filename)
-{
-  logTrace();
-  Settings::SetResultFile(filename);
+  pModel->exportDependencyGraph(filename);
 }
 
 void oms_setStartTime(double startTime)
@@ -116,6 +156,18 @@ void oms_setTolerance(double tolerance)
 {
   logTrace();
   Settings::SetTolerance(tolerance);
+}
+
+void oms_setWorkingDirectory(const char* filename)
+{
+  logTrace();
+  Settings::SetTempDirectory(filename);
+}
+
+void oms_setResultFile(const char* filename)
+{
+  logTrace();
+  Settings::SetResultFile(filename);
 }
 
 const char* oms_getVersion()

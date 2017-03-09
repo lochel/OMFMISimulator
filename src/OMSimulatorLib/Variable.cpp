@@ -29,34 +29,34 @@
  *
  */
 
-#ifndef _OMS_MODEL_H_
-#define _OMS_MODEL_H_
+#include "Variable.h"
+#include "oms_logging.h"
+#include "oms_resultfile.h"
+#include "Settings.h"
 
 #include <fmilib.h>
+#include <JM/jm_portability.h>
+
+#include <iostream>
 #include <string>
-#include <map>
 
-#include "oms_fmu.h"
-#include "DirectedGraph.h"
-
-class oms_model
+Variable::Variable(std::string name, std::string fmuInstance, fmi2_value_reference_t vr, size_t index)
+  : name(name), fmuInstance(fmuInstance), vr(vr), index(index)
 {
-public:
-  oms_model();
-  oms_model(const std::string& descriptionPath);
-  ~oms_model();
+}
 
-  void instantiateFMU(const std::string& filename, const std::string& instanceName);
-  void setReal(const std::string& var, double value);
-  void addConnection(const std::string& from, const std::string& to);
-  void exportDependencyGraph(const std::string& prefix);
+Variable::~Variable()
+{
+}
 
-  void describe();
-  void simulate();
-
-private:
-  std::map<std::string, oms_fmu*> fmuInstances;
-  DirectedGraph outputsGraph;
-};
-
-#endif
+bool operator==(const Variable& v1, const Variable& v2)
+{
+  return v1.name == v2.name &&
+         v1.fmuInstance == v2.fmuInstance &&
+         v1.vr == v2.vr &&
+         v1.index == v2.index;
+}
+bool operator!=(const Variable& v1, const Variable& v2)
+{
+  return !(v1 == v2);
+}

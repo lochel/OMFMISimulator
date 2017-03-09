@@ -29,34 +29,32 @@
  *
  */
 
-#ifndef _OMS_MODEL_H_
-#define _OMS_MODEL_H_
+#ifndef _OMS_DIRECTEDGRAPH_H_
+#define _OMS_DIRECTEDGRAPH_H_
+
+#include "Variable.h"
 
 #include <fmilib.h>
 #include <string>
+#include <vector>
 #include <map>
 
-#include "oms_fmu.h"
-#include "DirectedGraph.h"
-
-class oms_model
+class DirectedGraph
 {
 public:
-  oms_model();
-  oms_model(const std::string& descriptionPath);
-  ~oms_model();
+  DirectedGraph();
+  ~DirectedGraph();
 
-  void instantiateFMU(const std::string& filename, const std::string& instanceName);
-  void setReal(const std::string& var, double value);
-  void addConnection(const std::string& from, const std::string& to);
-  void exportDependencyGraph(const std::string& prefix);
+  int addVariable(const Variable& var);
+  void addEdge(const Variable& var1, const Variable& var2);
 
-  void describe();
-  void simulate();
+  void dotExport(const std::string& filename);
+
+  void includeGraph(const DirectedGraph& graph);
 
 private:
-  std::map<std::string, oms_fmu*> fmuInstances;
-  DirectedGraph outputsGraph;
+  std::vector<Variable> nodes;
+  std::vector< std::pair<int, int> > edges;
 };
 
 #endif

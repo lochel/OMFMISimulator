@@ -1,6 +1,6 @@
 project(OMSimulatorLib)
 
-set(OMSIMULATORLIB_SOURCES oms_logging.cpp oms_model.cpp oms_resultfile.cpp OMSimulator.cpp Settings.cpp)
+set(OMSIMULATORLIB_SOURCES oms_logging.cpp oms_fmu.cpp oms_model.cpp oms_resultfile.cpp DirectedGraph.cpp OMSimulator.cpp Settings.cpp Variable.cpp)
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/oms_version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/oms_version.cpp" @ONLY)
 list(APPEND OMSIMULATORLIB_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/oms_version.cpp")
