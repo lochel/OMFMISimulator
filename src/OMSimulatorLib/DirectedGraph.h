@@ -52,7 +52,6 @@ public:
 
   void includeGraph(const DirectedGraph& graph);
 
-private:
   std::vector<Variable> nodes;
   std::vector< std::pair<int, int> > edges;
 };

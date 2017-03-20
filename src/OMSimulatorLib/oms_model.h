@@ -57,6 +57,7 @@ public:
 private:
   std::map<std::string, oms_fmu*> fmuInstances;
   DirectedGraph outputsGraph;
+  DirectedGraph connections;
 };
 
 #endif

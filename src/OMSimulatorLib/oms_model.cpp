@@ -89,7 +89,7 @@ void oms_model::setReal(const std::string& var, double value)
     return;
   }
 
-  fmuInstances[fmuInstance]->setReal(fmuVar, value);
+  fmuInstances[fmuInstance]->setRealParameter(fmuVar, value);
 }
 
 void oms_model::addConnection(const std::string& from, const std::string& to)
@@ -124,6 +124,7 @@ void oms_model::addConnection(const std::string& from, const std::string& to)
   Variable *var2 = fmuInstances[fmuInstance2]->getVariable(fmuVar2);
 
   outputsGraph.addEdge(*var1, *var2);
+  connections.addEdge(*var1, *var2);
 }
 
 void oms_model::exportDependencyGraph(const std::string& prefix)
@@ -148,8 +149,38 @@ void oms_model::simulate()
 {
   logTrace();
 
+  double* pStartTime = Settings::GetStartTime();
+  double* pStopTime = Settings::GetStopTime();
+  fmi2_real_t tstart = pStartTime ? *pStartTime : 0.0;
+  fmi2_real_t tend = pStopTime ? *pStopTime : 1.0;
+
+  double tcur = tstart;
+  double hdef = 1e-1;
+
   std::map<std::string, oms_fmu*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
-    it->second->simulate();
+    it->second->preSim(tcur);
+
+  while(tcur < tend)
+  {
+    // input = output
+    for(int i=0; i<connections.edges.size(); i++)
+    {
+      std::string outputFMU = connections.nodes[connections.edges[i].first].fmuInstance;
+      std::string outputVar = connections.nodes[connections.edges[i].first].name;
+      std::string inputFMU = connections.nodes[connections.edges[i].second].fmuInstance;
+      std::string inputVar = connections.nodes[connections.edges[i].second].name;
+      double value = fmuInstances[outputFMU]->getReal(outputVar);
+      fmuInstances[inputFMU]->setReal(inputVar, value);
+    }
+
+    // do_step
+    for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
+      it->second->doStep(tcur);
+    tcur += hdef;
+  }
+
+  for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
+    it->second->postSim();
 }
 

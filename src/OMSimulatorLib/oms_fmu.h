@@ -34,6 +34,7 @@
 
 #include "Variable.h"
 #include "DirectedGraph.h"
+#include "oms_resultfile.h"
 
 #include <fmilib.h>
 #include <string>
@@ -46,9 +47,15 @@ public:
   oms_fmu(std::string fmuPath, std::string instanceName);
   ~oms_fmu();
 
+  double getReal(const std::string& var);
   void setReal(const std::string& var, double value);
+  void setRealParameter(const std::string& var, double value);
   void describe();
   void simulate();
+
+  void preSim(double startTime);
+  void postSim();
+  void doStep(double stopTime);
 
   const DirectedGraph& getOutputsGraph() {return outputsGraph;}
   Variable* getVariable(const std::string& varName);
@@ -75,6 +82,21 @@ private:
   std::vector<Variable> allVariables;
 
   DirectedGraph outputsGraph;
+
+  // ME & CS
+  fmi2_real_t tcur;
+  fmi2_real_t relativeTolerance;
+  oms_resultfile *omsResultFile;
+
+  // ME
+  fmi2_boolean_t callEventUpdate;
+  fmi2_boolean_t terminateSimulation;
+  size_t n_states;
+  size_t n_event_indicators;
+  double* states;
+  double* states_der;
+  double* event_indicators;
+  double* event_indicators_prev;
 };
 
 #endif

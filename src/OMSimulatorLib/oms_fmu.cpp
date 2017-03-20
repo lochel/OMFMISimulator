@@ -229,15 +229,45 @@ oms_fmu::~oms_fmu()
   }
 }
 
+double oms_fmu::getReal(const std::string& var)
+{
+  logTrace();
+  if(!fmu)
+    logFatal("oms_fmu::getReal failed");
+
+  Variable* v = getVariable(var);
+
+  if(!v)
+    logFatal("oms_fmu::getReal failed");
+
+  double value;
+  fmi2_import_get_real(fmu, &v->vr, 1, &value);
+
+  return value;
+}
+
 void oms_fmu::setReal(const std::string& var, double value)
 {
   logTrace();
   if(!fmu)
     logFatal("oms_fmu::setReal failed");
 
+  Variable* v = getVariable(var);
+
+  if(!v)
+    logFatal("oms_fmu::setReal failed");
+  fmi2_import_set_real(fmu, &v->vr, 1, &value);
+}
+
+void oms_fmu::setRealParameter(const std::string& var, double value)
+{
+  logTrace();
+  if(!fmu)
+    logFatal("oms_fmu::setRealParameter failed");
+
   if (parameterLookUp.find(var) == parameterLookUp.end())
   {
-    logError("oms_fmu::setReal: FMU doesn't contain parameter " + var);
+    logError("oms_fmu::setRealParameter: FMU doesn't contain parameter " + var);
     return;
   }
 
@@ -328,6 +358,203 @@ void oms_fmu::do_event_iteration()
     fmi2_import_new_discrete_states(fmu, &eventInfo);
 }
 
+void oms_fmu::preSim(double startTime)
+{
+  fmi2_status_t fmistatus;
+
+  const char* resultFile = Settings::GetResultFile();
+  std::string finalResultFile;
+  if(resultFile)
+    finalResultFile = std::string(resultFile) + "_" + instanceName + "_res.csv";
+  else
+    finalResultFile = instanceName + "_res.csv";
+  logDebug("result file: " + finalResultFile);
+
+  double* pTolerance = Settings::GetTolerance();
+  relativeTolerance = pTolerance ? *pTolerance : fmi2_import_get_default_experiment_tolerance(fmu);
+  tcur = startTime;
+  fmi2_boolean_t toleranceControlled = fmi2_true;
+  fmi2_boolean_t StopTimeDefined = fmi2_true;
+
+  double* pStopTime = Settings::GetStopTime();
+  fmi2_real_t tend = pStopTime ? *pStopTime : fmi2_import_get_default_experiment_stop(fmu);
+
+  logDebug("start time: " + toString(tcur));
+  logDebug("relative tolerance: " + toString(relativeTolerance));
+
+  if(fmi2_fmu_kind_me == fmuKind)
+  {
+    fmistatus = fmi2_import_setup_experiment(fmu, toleranceControlled, relativeTolerance, tcur, StopTimeDefined, tend);
+    if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_setup_experiment failed");
+
+    fmistatus = fmi2_import_enter_initialization_mode(fmu);
+    if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_enter_initialization_mode failed");
+
+    fmistatus = fmi2_import_exit_initialization_mode(fmu);
+    if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_exit_initialization_mode failed");
+
+    terminateSimulation = fmi2_false;
+    omsResultFile = new oms_resultfile(finalResultFile, fmu);
+
+    eventInfo.newDiscreteStatesNeeded           = fmi2_false;
+    eventInfo.terminateSimulation               = fmi2_false;
+    eventInfo.nominalsOfContinuousStatesChanged = fmi2_false;
+    eventInfo.valuesOfContinuousStatesChanged   = fmi2_true;
+    eventInfo.nextEventTimeDefined              = fmi2_false;
+    eventInfo.nextEventTime                     = -0.0;
+
+    // fmi2_import_exit_initialization_mode leaves FMU in event mode
+    do_event_iteration();
+    fmi2_import_enter_continuous_time_mode(fmu);
+    omsResultFile->emit(tcur);
+
+    callEventUpdate = fmi2_false;
+
+    n_states = fmi2_import_get_number_of_continuous_states(fmu);
+    n_event_indicators = fmi2_import_get_number_of_event_indicators(fmu);
+
+    logDebug(toString(n_states) + " states");
+    logDebug(toString(n_event_indicators) + " event indicators");
+
+    states = (double*)calloc(n_states, sizeof(double));
+    states_der = (double*)calloc(n_states, sizeof(double));
+    event_indicators = (double*)calloc(n_event_indicators, sizeof(double));
+    event_indicators_prev = (double*)calloc(n_event_indicators, sizeof(double));
+
+    // get states and state derivatives
+    fmistatus = fmi2_import_get_continuous_states(fmu, states, n_states);
+    if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_continuous_states failed");
+    fmistatus = fmi2_import_get_derivatives(fmu, states_der, n_states);
+    if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_derivatives failed");
+    fmistatus = fmi2_import_get_event_indicators(fmu, event_indicators, n_event_indicators);
+    if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_event_indicators failed");
+  }
+  else if(fmi2_fmu_kind_cs == fmuKind)
+  {
+    fmistatus = fmi2_import_setup_experiment(fmu, toleranceControlled, relativeTolerance, tcur, StopTimeDefined, tend);
+    if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_setup_experiment failed");
+
+    fmistatus = fmi2_import_enter_initialization_mode(fmu);
+    if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_enter_initialization_mode failed");
+
+    fmistatus = fmi2_import_exit_initialization_mode(fmu);
+    if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_exit_initialization_mode failed");
+
+    omsResultFile = new oms_resultfile(finalResultFile, fmu);
+    omsResultFile->emit(tcur);
+  }
+}
+
+void oms_fmu::postSim()
+{
+  if(fmi2_fmu_kind_me == fmuKind)
+  {
+    free(states);
+    free(states_der);
+  }
+
+  fmi2_status_t fmistatus = fmi2_import_terminate(fmu);
+  if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_terminate failed");
+}
+
+void oms_fmu::doStep(double stopTime)
+{
+  fmi2_status_t fmistatus;
+  fmi2_real_t hdef = 1e-2;
+
+  if(fmi2_fmu_kind_me == fmuKind)
+  {
+    // main simulation loop
+    fmi2_real_t hcur = hdef;
+    fmi2_real_t tlast = tcur;
+    while ((tcur < stopTime) && (!(eventInfo.terminateSimulation || terminateSimulation)))
+    {
+      fmistatus = fmi2_import_set_time(fmu, tcur);
+      if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_set_time failed");
+
+      // swap event_indicators and event_indicators_prev
+      {
+        fmi2_real_t *temp = event_indicators;
+        event_indicators = event_indicators_prev;
+        event_indicators_prev = temp;
+
+        fmistatus = fmi2_import_get_event_indicators(fmu, event_indicators, n_event_indicators);
+        if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_event_indicators failed");
+      }
+
+      // check if an event indicator has triggered
+      int zero_crossing_event = 0;
+      for (int k=0; k<n_event_indicators; k++)
+      {
+        if ((event_indicators[k] > 0) != (event_indicators_prev[k] > 0))
+        {
+          zero_crossing_event = 1;
+          break;
+        }
+      }
+
+      // handle events
+      if (callEventUpdate || zero_crossing_event || (eventInfo.nextEventTimeDefined && tcur == eventInfo.nextEventTime))
+      {
+        fmistatus = fmi2_import_enter_event_mode(fmu);
+        if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_enter_event_mode failed");
+
+        do_event_iteration();
+
+        fmistatus = fmi2_import_enter_continuous_time_mode(fmu);
+        if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_enter_continuous_time_mode failed");
+        fmistatus = fmi2_import_get_continuous_states(fmu, states, n_states);
+        if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_continuous_states failed");
+        fmistatus = fmi2_import_get_derivatives(fmu, states_der, n_states);
+        if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_derivatives failed");
+        fmistatus = fmi2_import_get_event_indicators(fmu, event_indicators, n_event_indicators);
+        if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_event_indicators failed");
+        omsResultFile->emit(tcur);
+      }
+
+      // calculate next time step
+      tlast = tcur;
+      tcur += hdef;
+      if (eventInfo.nextEventTimeDefined && (tcur >= eventInfo.nextEventTime))
+        tcur = eventInfo.nextEventTime;
+
+      hcur = tcur - tlast;
+
+      if(tcur > stopTime - hcur/1e16)
+      {
+        // adjust final step size
+        tcur = stopTime;
+        hcur = tcur - tlast;
+      }
+
+      for(int k=0; k<n_states; k++)
+        states[k] = states[k] + hcur*states_der[k];
+
+      // set states
+      fmistatus = fmi2_import_set_continuous_states(fmu, states, n_states);
+      if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_set_continuous_states failed");
+      // get state derivatives
+      fmistatus = fmi2_import_get_derivatives(fmu, states_der, n_states);
+      if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_derivatives failed");
+
+      // step is complete
+      fmistatus = fmi2_import_completed_integrator_step(fmu, fmi2_true, &callEventUpdate, &terminateSimulation);
+      if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_completed_integrator_step failed");
+
+      omsResultFile->emit(tcur);
+    }
+  }
+  else if(fmi2_fmu_kind_cs == fmuKind)
+  {
+    while (tcur < stopTime)
+    {
+      fmistatus = fmi2_import_do_step(fmu, tcur, hdef, fmi2_true);
+      tcur += hdef;
+      omsResultFile->emit(tcur);
+    }
+  }
+}
+
 void oms_fmu::simulate()
 {
   fmi2_status_t fmistatus;
@@ -356,13 +583,13 @@ void oms_fmu::simulate_cs(const std::string& resultFileName)
   double* pStartTime = Settings::GetStartTime();
   double* pStopTime = Settings::GetStopTime();
   double* pTolerance = Settings::GetTolerance();
+  fmi2_real_t relativeTolerance = pTolerance ? *pTolerance : fmi2_import_get_default_experiment_tolerance(fmu);
   fmi2_real_t tstart = pStartTime ? *pStartTime : fmi2_import_get_default_experiment_start(fmu);
   fmi2_real_t tend = pStopTime ? *pStopTime : fmi2_import_get_default_experiment_stop(fmu);
-  fmi2_real_t relativeTolerance = pTolerance ? *pTolerance : fmi2_import_get_default_experiment_tolerance(fmu);
   fmi2_real_t tcur = tstart;
+  fmi2_real_t hdef = 1e-2;
   fmi2_boolean_t toleranceControlled = fmi2_true;
   fmi2_boolean_t StopTimeDefined = fmi2_true;
-  fmi2_real_t hdef = 1e-2;
 
   logDebug("start time: " + toString(tstart));
   logDebug("stop time: " + toString(tend));
