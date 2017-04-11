@@ -35,6 +35,7 @@
 #include "oms_logging.h"
 #include "oms_resultfile.h"
 #include "Settings.h"
+#include "oms_model.h"
 
 #include <fmilib.h>
 #include <JM/jm_portability.h>
@@ -105,8 +106,8 @@ void fmi2logger(fmi2_component_environment_t env, fmi2_string_t instanceName, fm
   }
 }
 
-oms_fmu::oms_fmu(std::string fmuPath, std::string instanceName)
-  : fmuPath(fmuPath), parameterLookUp(), instanceName(instanceName)
+oms_fmu::oms_fmu(oms_model& model, std::string fmuPath, std::string instanceName)
+  : model(model), fmuPath(fmuPath), parameterLookUp(), instanceName(instanceName)
 {
   logTrace();
 
@@ -122,7 +123,7 @@ oms_fmu::oms_fmu(std::string fmuPath, std::string instanceName)
   callbacks.context = 0;
 
   //set working directory
-  tempDir = fmi_import_mk_temp_dir(&callbacks, Settings::GetTempDirectory(), "temp_");
+  tempDir = fmi_import_mk_temp_dir(&callbacks, model.getSettings().GetTempDirectory(), "temp_");
   logDebug("set working directory to \"" + tempDir + "\"");
 
   context = fmi_import_allocate_context(&callbacks);
@@ -362,7 +363,7 @@ void oms_fmu::preSim(double startTime)
 {
   fmi2_status_t fmistatus;
 
-  const char* resultFile = Settings::GetResultFile();
+  const char* resultFile = model.getSettings().GetResultFile();
   std::string finalResultFile;
   if(resultFile)
     finalResultFile = std::string(resultFile) + "_" + instanceName + "_res.csv";
@@ -370,13 +371,13 @@ void oms_fmu::preSim(double startTime)
     finalResultFile = instanceName + "_res.csv";
   logDebug("result file: " + finalResultFile);
 
-  double* pTolerance = Settings::GetTolerance();
+  double* pTolerance = model.getSettings().GetTolerance();
   relativeTolerance = pTolerance ? *pTolerance : fmi2_import_get_default_experiment_tolerance(fmu);
   tcur = startTime;
   fmi2_boolean_t toleranceControlled = fmi2_true;
   fmi2_boolean_t StopTimeDefined = fmi2_true;
 
-  double* pStopTime = Settings::GetStopTime();
+  double* pStopTime = model.getSettings().GetStopTime();
   fmi2_real_t tend = pStopTime ? *pStopTime : fmi2_import_get_default_experiment_stop(fmu);
 
   logDebug("start time: " + toString(tcur));
@@ -559,7 +560,7 @@ void oms_fmu::simulate()
 {
   fmi2_status_t fmistatus;
 
-  const char* resultFile = Settings::GetResultFile();
+  const char* resultFile = model.getSettings().GetResultFile();
   std::string finalResultFile;
   if(resultFile)
     finalResultFile = resultFile;
@@ -580,9 +581,9 @@ void oms_fmu::simulate_cs(const std::string& resultFileName)
 {
   fmi2_status_t fmistatus;
 
-  double* pStartTime = Settings::GetStartTime();
-  double* pStopTime = Settings::GetStopTime();
-  double* pTolerance = Settings::GetTolerance();
+  double* pStartTime = model.getSettings().GetStartTime();
+  double* pStopTime = model.getSettings().GetStopTime();
+  double* pTolerance = model.getSettings().GetTolerance();
   fmi2_real_t relativeTolerance = pTolerance ? *pTolerance : fmi2_import_get_default_experiment_tolerance(fmu);
   fmi2_real_t tstart = pStartTime ? *pStartTime : fmi2_import_get_default_experiment_start(fmu);
   fmi2_real_t tend = pStopTime ? *pStopTime : fmi2_import_get_default_experiment_stop(fmu);
@@ -619,9 +620,9 @@ void oms_fmu::simulate_me(const std::string& resultFileName)
 {
   fmi2_status_t fmistatus;
 
-  double* pStartTime = Settings::GetStartTime();
-  double* pStopTime = Settings::GetStopTime();
-  double* pTolerance = Settings::GetTolerance();
+  double* pStartTime = model.getSettings().GetStartTime();
+  double* pStopTime = model.getSettings().GetStopTime();
+  double* pTolerance = model.getSettings().GetTolerance();
   fmi2_real_t tstart = pStartTime ? *pStartTime : fmi2_import_get_default_experiment_start(fmu);
   fmi2_real_t tend = pStopTime ? *pStopTime : fmi2_import_get_default_experiment_stop(fmu);
   fmi2_real_t relativeTolerance = pTolerance ? *pTolerance : fmi2_import_get_default_experiment_tolerance(fmu);

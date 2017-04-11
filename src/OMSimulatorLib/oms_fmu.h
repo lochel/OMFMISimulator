@@ -41,10 +41,12 @@
 #include <vector>
 #include <map>
 
+class oms_model;
+
 class oms_fmu
 {
 public:
-  oms_fmu(std::string fmuPath, std::string instanceName);
+  oms_fmu(oms_model& model, std::string fmuPath, std::string instanceName);
   ~oms_fmu();
 
   double getReal(const std::string& var);
@@ -67,6 +69,8 @@ private:
   void getDependencyGraph();
 
 private:
+  oms_model& model;
+
   std::string fmuPath;
   std::string tempDir;
   std::string instanceName;

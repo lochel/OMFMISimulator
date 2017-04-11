@@ -51,6 +51,7 @@ void printUsage()
 
 int main(int argc, char *argv[])
 {
+  void* pModel = oms_newModel();
   bool describe = false;
   string filename("");
 
@@ -62,34 +63,36 @@ int main(int argc, char *argv[])
     else if(0 == arg.compare("--help"))
     {
       printUsage();
+      oms_unload(pModel);
       return 0;
     }
     else if(0 == arg.compare(0, 13, "--resultFile="))
     {
-      oms_setResultFile(arg.substr(13).c_str());
+      oms_setResultFile(pModel, arg.substr(13).c_str());
     }
     else if(0 == arg.compare(0, 12, "--startTime="))
     {
       double startTime = atof(arg.substr(12).c_str());
-      oms_setStartTime(startTime);
+      oms_setStartTime(pModel, startTime);
     }
     else if(0 == arg.compare(0, 11, "--stopTime="))
     {
       double stopTime = atof(arg.substr(11).c_str());
-      oms_setStopTime(stopTime);
+      oms_setStopTime(pModel, stopTime);
     }
     else if(0 == arg.compare(0, 10, "--tempDir="))
     {
-      oms_setWorkingDirectory(arg.substr(10).c_str());
+      oms_setWorkingDirectory(pModel, arg.substr(10).c_str());
     }
     else if(0 == arg.compare(0, 12, "--tolerance="))
     {
       double tolerance = atof(arg.substr(12).c_str());
-      oms_setTolerance(tolerance);
+      oms_setTolerance(pModel, tolerance);
     }
     else if(0 == arg.compare("--version"))
     {
       cout << oms_getVersion() << endl;
+      oms_unload(pModel);
       return 0;
     }
     else if(filename.empty())
@@ -98,6 +101,7 @@ int main(int argc, char *argv[])
     {
       cout << "Not able to process argument: " << arg.c_str() << endl;
       cout << "Use OMSimulator --help for more information." << endl;
+      oms_unload(pModel);
       return 0;
     }
   }
@@ -105,10 +109,10 @@ int main(int argc, char *argv[])
   if(filename.empty())
   {
     cout << "Use OMSimulator --help for more information." << endl;
+    oms_unload(pModel);
     return 0;
   }
 
-  void* pModel = oms_newModel();
   oms_instantiateFMU(pModel, filename.c_str(), "fmu");
 
   if(describe)
@@ -123,6 +127,5 @@ int main(int argc, char *argv[])
   }
 
   oms_unload(pModel);
-
   return 0;
 }

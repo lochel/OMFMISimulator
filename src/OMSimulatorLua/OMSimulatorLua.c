@@ -149,63 +149,73 @@ static int exportDependencyGraph(lua_State *L)
   return 0;
 }
 
-//void oms_setStartTime(double startTime);
+//void oms_setStartTime(void* model, double startTime);
 static int setStartTime(lua_State *L)
 {
-  if (lua_gettop(L) != 1)
-    return luaL_error(L, "expecting exactly 1 argument");
-  luaL_checktype(L, 1, LUA_TNUMBER);
+  if (lua_gettop(L) != 2)
+    return luaL_error(L, "expecting exactly 2 argument");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TNUMBER);
 
-  double startTime = lua_tonumber(L, -1);
-  oms_setStartTime(startTime);
+  void *model = topointer(L, 1);
+  double startTime = lua_tonumber(L, 2);
+  oms_setStartTime(model, startTime);
   return 0;
 }
 
-//void oms_setStopTime(double stopTime);
+//void oms_setStopTime(void* model, double stopTime);
 static int setStopTime(lua_State *L)
 {
-  if (lua_gettop(L) != 1)
-    return luaL_error(L, "expecting exactly 1 argument");
-  luaL_checktype(L, 1, LUA_TNUMBER);
+  if (lua_gettop(L) != 2)
+    return luaL_error(L, "expecting exactly 2 argument");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TNUMBER);
 
-  double stopTime = lua_tonumber(L, -1);
-  oms_setStopTime(stopTime);
+  void *model = topointer(L, 1);
+  double stopTime = lua_tonumber(L, 2);
+  oms_setStopTime(model, stopTime);
   return 0;
 }
 
-//void oms_setTolerance(double tolerance);
+//void oms_setTolerance(void* model, double tolerance);
 static int setTolerance(lua_State *L)
 {
-  if (lua_gettop(L) != 1)
-    return luaL_error(L, "expecting exactly 1 argument");
-  luaL_checktype(L, 1, LUA_TNUMBER);
+  if (lua_gettop(L) != 2)
+    return luaL_error(L, "expecting exactly 2 argument");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TNUMBER);
 
-  double tolerance = lua_tonumber(L, -1);
-  oms_setTolerance(tolerance);
+  void *model = topointer(L, 1);
+  double tolerance = lua_tonumber(L, 2);
+  oms_setTolerance(model, tolerance);
   return 0;
 }
 
 //void oms_setWorkingDirectory(const char* filename);
 static int setWorkingDirectory(lua_State *L)
 {
-  if (lua_gettop(L) != 1)
-    return luaL_error(L, "expecting exactly 1 argument");
-  luaL_checktype(L, 1, LUA_TSTRING);
+  if (lua_gettop(L) != 2)
+    return luaL_error(L, "expecting exactly 2 argument");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TSTRING);
 
-  const char* filename = lua_tostring(L, -1);
-  oms_setWorkingDirectory(filename);
+  void *model = topointer(L, 1);
+  const char* filename = lua_tostring(L, 2);
+  oms_setWorkingDirectory(model, filename);
   return 0;
 }
 
-//void oms_setResultFile(const char* filename);
+//void oms_setResultFile(void* model, const char* filename);
 static int setResultFile(lua_State *L)
 {
-  if (lua_gettop(L) != 1)
-    return luaL_error(L, "expecting exactly 1 argument");
-  luaL_checktype(L, 1, LUA_TSTRING);
+  if (lua_gettop(L) != 2)
+    return luaL_error(L, "expecting exactly 2 argument");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TSTRING);
 
-  const char* filename = lua_tostring(L, -1);
-  oms_setResultFile(filename);
+  void *model = topointer(L, 1);
+  const char* filename = lua_tostring(L, 2);
+  oms_setResultFile(model, filename);
   return 0;
 }
 

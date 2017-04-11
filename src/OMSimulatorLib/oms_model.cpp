@@ -69,7 +69,7 @@ oms_model::~oms_model()
 
 void oms_model::instantiateFMU(const std::string& filename, const std::string& instanceName)
 {
-  fmuInstances[instanceName] = new oms_fmu(filename, instanceName);
+  fmuInstances[instanceName] = new oms_fmu(*this, filename, instanceName);
   outputsGraph.includeGraph(fmuInstances[instanceName]->getOutputsGraph());
 }
 
@@ -149,8 +149,8 @@ void oms_model::simulate()
 {
   logTrace();
 
-  double* pStartTime = Settings::GetStartTime();
-  double* pStopTime = Settings::GetStopTime();
+  double* pStartTime = settings.GetStartTime();
+  double* pStopTime = settings.GetStopTime();
   fmi2_real_t tstart = pStartTime ? *pStartTime : 0.0;
   fmi2_real_t tend = pStopTime ? *pStopTime : 1.0;
 

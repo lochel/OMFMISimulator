@@ -140,34 +140,39 @@ void oms_exportDependencyGraph(void* model, const char* filename)
   pModel->exportDependencyGraph(filename);
 }
 
-void oms_setStartTime(double startTime)
+void oms_setStartTime(void* model, double startTime)
 {
   logTrace();
-  Settings::SetStartTime(startTime);
+  oms_model* pModel = (oms_model*) model;
+  pModel->getSettings().SetStartTime(startTime);
 }
 
-void oms_setStopTime(double stopTime)
+void oms_setStopTime(void* model, double stopTime)
 {
   logTrace();
-  Settings::SetStopTime(stopTime);
+  oms_model* pModel = (oms_model*) model;
+  pModel->getSettings().SetStopTime(stopTime);
 }
 
-void oms_setTolerance(double tolerance)
+void oms_setTolerance(void* model, double tolerance)
 {
   logTrace();
-  Settings::SetTolerance(tolerance);
+  oms_model* pModel = (oms_model*) model;
+  pModel->getSettings().SetTolerance(tolerance);
 }
 
-void oms_setWorkingDirectory(const char* filename)
+void oms_setWorkingDirectory(void* model, const char* filename)
 {
   logTrace();
-  Settings::SetTempDirectory(filename);
+  oms_model* pModel = (oms_model*) model;
+  pModel->getSettings().SetTempDirectory(filename);
 }
 
-void oms_setResultFile(const char* filename)
+void oms_setResultFile(void* model, const char* filename)
 {
   logTrace();
-  Settings::SetResultFile(filename);
+  oms_model* pModel = (oms_model*) model;
+  pModel->getSettings().SetResultFile(filename);
 }
 
 const char* oms_getVersion()

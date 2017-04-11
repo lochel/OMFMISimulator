@@ -38,6 +38,7 @@
 
 #include "oms_fmu.h"
 #include "DirectedGraph.h"
+#include "Settings.h"
 
 class oms_model
 {
@@ -54,7 +55,10 @@ public:
   void describe();
   void simulate();
 
+  Settings& getSettings() {return settings;}
+
 private:
+  Settings settings;
   std::map<std::string, oms_fmu*> fmuInstances;
   DirectedGraph outputsGraph;
   DirectedGraph connections;

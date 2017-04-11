@@ -101,11 +101,11 @@ void oms_simulate(void* model);
 void oms_describe(void* model);
 void oms_exportDependencyGraph(void* model, const char* filename);
 
-void oms_setStartTime(double startTime);
-void oms_setStopTime(double stopTime);
-void oms_setTolerance(double tolerance);
-void oms_setWorkingDirectory(const char* filename);
-void oms_setResultFile(const char* filename);
+void oms_setStartTime(void* model, double startTime);
+void oms_setStopTime(void* model, double stopTime);
+void oms_setTolerance(void* model, double tolerance);
+void oms_setWorkingDirectory(void* model, const char* filename);
+void oms_setResultFile(void* model, const char* filename);
 
 /**
  * \brief Returns the library's version string.

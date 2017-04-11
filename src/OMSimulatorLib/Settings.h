@@ -35,32 +35,30 @@
 class Settings
 {
 public:
-  static void SetStartTime(double startTime);
-  static double* GetStartTime();
-  static void ClearStartTime();
-
-  static void SetStopTime(double stopTime);
-  static double* GetStopTime();
-  static void ClearStopTime();
-
-  static void SetTolerance(double tolerance);
-  static double* GetTolerance();
-  static void ClearTolerance();
-
-  static void SetTempDirectory(const char* tempDir);
-  static const char* GetTempDirectory();
-  static void ClearTempDirectory();
-
-  static void SetResultFile(const char* resultFile);
-  static const char* GetResultFile();
-  static void ClearResultFile();
-
-private:
   Settings();
   ~Settings();
 
-  static Settings& getInstance();
+  void SetStartTime(double startTime);
+  double* GetStartTime();
+  void ClearStartTime();
 
+  void SetStopTime(double stopTime);
+  double* GetStopTime();
+  void ClearStopTime();
+
+  void SetTolerance(double tolerance);
+  double* GetTolerance();
+  void ClearTolerance();
+
+  void SetTempDirectory(const char* tempDir);
+  const char* GetTempDirectory();
+  void ClearTempDirectory();
+
+  void SetResultFile(const char* resultFile);
+  const char* GetResultFile();
+  void ClearResultFile();
+
+private:
   // stop the compiler generating methods of copy the object
   Settings(Settings const& copy);            // not implemented
   Settings& operator=(Settings const& copy); // not implemented
