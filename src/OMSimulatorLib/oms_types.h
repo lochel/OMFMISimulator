@@ -29,45 +29,26 @@
  *
  */
 
-#ifndef _OMS_MODEL_H_
-#define _OMS_MODEL_H_
+#ifndef _OMSIMULATOR_TYPES_H_
+#define _OMSIMULATOR_TYPES_H_
 
-#include "oms_fmu.h"
-#include "DirectedGraph.h"
-#include "Settings.h"
-#include "oms_types.h"
-
-#include <fmilib.h>
-#include <string>
-#include <map>
-
-class oms_model
+#ifdef __cplusplus
+extern "C"
 {
-public:
-  oms_model();
-  oms_model(const std::string& descriptionPath);
-  ~oms_model();
+#endif
 
-  void instantiateFMU(const std::string& filename, const std::string& instanceName);
-  void setReal(const std::string& var, double value);
-  double getReal(const std::string& var);
-  void addConnection(const std::string& from, const std::string& to);
-  void exportDependencyGraph(const std::string& prefix);
+/** API status codes */
+typedef enum {
+  oms_status_ok,
+  oms_status_warning,
+  oms_status_discard,
+  oms_status_error,
+  oms_status_fatal,
+  oms_status_pending
+} oms_status_t;
 
-  void describe();
-  void simulate();
-
-  oms_status_t getCurrentTime(double *time);
-
-  Settings& getSettings() {return settings;}
-
-private:
-  Settings settings;
-  std::map<std::string, oms_fmu*> fmuInstances;
-  DirectedGraph outputsGraph;
-  DirectedGraph connections;
-  double tcur;
-  bool simulation_mode;
-};
+#ifdef __cplusplus
+}
+#endif
 
 #endif

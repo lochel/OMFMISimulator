@@ -32,6 +32,8 @@
 #ifndef _OMSIMULATOR_H_
 #define _OMSIMULATOR_H_
 
+#include "oms_types.h"
+
 #ifdef __cplusplus
 extern "C"
 {
@@ -107,6 +109,15 @@ void oms_addConnection(void* model, const char* from, const char* to);
 void oms_simulate(void* model);
 void oms_describe(void* model);
 void oms_exportDependencyGraph(void* model, const char* filename);
+
+/**
+ * \brief Get current simulation time.
+ *
+ * @param model [in]  Model as opaque pointer.
+ * @param time  [out] Minimal time value that is reached by all instances.
+ * @return Error status.
+ */
+oms_status_t oms_getCurrentTime(const void* model, double* time);
 
 void oms_setStartTime(void* model, double startTime);
 void oms_setStopTime(void* model, double stopTime);

@@ -34,6 +34,7 @@
 #include "Logging.h"
 #include "Settings.h"
 #include "oms_version.h"
+#include "oms_types.h"
 
 void* oms_newModel()
 {
@@ -151,6 +152,19 @@ void oms_exportDependencyGraph(void* model, const char* filename)
 
   oms_model* pModel = (oms_model*) model;
   pModel->exportDependencyGraph(filename);
+}
+
+oms_status_t oms_getCurrentTime(const void* model, double* time)
+{
+  logTrace();
+  if(!model)
+  {
+    logError("oms_getCurrentTime: invalid pointer");
+    return oms_status_error;
+  }
+
+  oms_model* pModel = (oms_model*) model;
+  return pModel->getCurrentTime(time);
 }
 
 void oms_setStartTime(void* model, double startTime)

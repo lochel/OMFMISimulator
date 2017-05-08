@@ -34,6 +34,7 @@
 #include "oms_resultfile.h"
 #include "DirectedGraph.h"
 #include "Settings.h"
+#include "oms_types.h"
 
 #include <fmilib.h>
 #include <JM/jm_portability.h>
@@ -50,12 +51,14 @@ oms_model::oms_model()
   : fmuInstances()
 {
   logTrace();
+  simulation_mode = false;
 }
 
 oms_model::oms_model(const std::string& descriptionPath)
 {
   logTrace();
   logError("Function not implemented yet: oms_model::oms_model");
+  simulation_mode = false;
 }
 
 oms_model::~oms_model()
@@ -173,12 +176,13 @@ void oms_model::simulate()
   fmi2_real_t tstart = pStartTime ? *pStartTime : 0.0;
   fmi2_real_t tend = pStopTime ? *pStopTime : 1.0;
 
-  double tcur = tstart;
+  tcur = tstart;
   double hdef = 1e-1;
 
   std::map<std::string, oms_fmu*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
     it->second->preSim(tcur);
+  simulation_mode = true;
 
   while(tcur < tend)
   {
@@ -199,7 +203,20 @@ void oms_model::simulate()
     tcur += hdef;
   }
 
+  simulation_mode = false;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
     it->second->postSim();
+}
+
+oms_status_t oms_model::getCurrentTime(double *time)
+{
+  if(!simulation_mode)
+  {
+    logError("It is only allowed to call 'getCurrentTime' while running a simulation.");
+    return oms_status_error;
+  }
+
+  *time = tcur;
+  return oms_status_ok;
 }
 
