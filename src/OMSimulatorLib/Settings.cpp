@@ -30,7 +30,7 @@
  */
 
 #include "Settings.h"
-#include "oms_logging.h"
+#include "Logging.h"
 
 #include <stdio.h>
 #include <string>

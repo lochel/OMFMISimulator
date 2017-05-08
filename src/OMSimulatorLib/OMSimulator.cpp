@@ -31,7 +31,7 @@
 
 #include "OMSimulator.h"
 #include "oms_model.h"
-#include "oms_logging.h"
+#include "Logging.h"
 #include "Settings.h"
 #include "oms_version.h"
 

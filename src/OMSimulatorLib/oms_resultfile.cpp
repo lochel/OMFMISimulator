@@ -30,7 +30,7 @@
  */
 
 #include "oms_resultfile.h"
-#include "oms_logging.h"
+#include "Logging.h"
 
 #include <fmilib.h>
 

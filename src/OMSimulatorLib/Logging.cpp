@@ -29,7 +29,7 @@
  *
  */
 
-#include "oms_logging.h"
+#include "Logging.h"
 #include "oms_version.h"
 
 #include <iostream>
