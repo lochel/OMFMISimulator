@@ -154,6 +154,34 @@ void oms_exportDependencyGraph(void* model, const char* filename)
   pModel->exportDependencyGraph(filename);
 }
 
+oms_status_t oms_initialize(void* model)
+{
+  logTrace();
+  if(!model)
+  {
+    logError("oms_initialize: invalid pointer");
+    return oms_status_error;
+  }
+
+  oms_model* pModel = (oms_model*) model;
+  pModel->initialize();
+  return oms_status_ok;
+}
+
+oms_status_t oms_terminate(void* model)
+{
+  logTrace();
+  if(!model)
+  {
+    logError("oms_terminate: invalid pointer");
+    return oms_status_error;
+  }
+
+  oms_model* pModel = (oms_model*) model;
+  pModel->terminate();
+  return oms_status_ok;
+}
+
 oms_status_t oms_getCurrentTime(const void* model, double* time)
 {
   logTrace();

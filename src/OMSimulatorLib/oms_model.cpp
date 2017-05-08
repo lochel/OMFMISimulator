@@ -171,19 +171,11 @@ void oms_model::simulate()
 {
   logTrace();
 
-  double* pStartTime = settings.GetStartTime();
-  double* pStopTime = settings.GetStopTime();
-  fmi2_real_t tstart = pStartTime ? *pStartTime : 0.0;
-  fmi2_real_t tend = pStopTime ? *pStopTime : 1.0;
+  initialize();
 
-  tcur = tstart;
   double hdef = 1e-1;
-
-  std::map<std::string, oms_fmu*>::iterator it;
-  for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
-    it->second->preSim(tcur);
-  simulation_mode = true;
-
+  double* pStopTime = settings.GetStopTime();
+  fmi2_real_t tend = pStopTime ? *pStopTime : 1.0;
   while(tcur < tend)
   {
     // input = output
@@ -198,18 +190,52 @@ void oms_model::simulate()
     }
 
     // do_step
+    std::map<std::string, oms_fmu*>::iterator it;
     for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
       it->second->doStep(tcur);
     tcur += hdef;
   }
 
+  terminate();
+}
+
+void oms_model::initialize()
+{
+  logTrace();
+
+  if(simulation_mode)
+  {
+    logFatal("oms_model::initialize: Model is already in simulation mode.");
+  }
+
+  double* pStartTime = settings.GetStartTime();
+  tcur = pStartTime ? *pStartTime : 0.0;
+  std::map<std::string, oms_fmu*>::iterator it;
+  for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
+    it->second->preSim(tcur);
+  simulation_mode = true;
+}
+
+void oms_model::terminate()
+{
+  logTrace();
+
+  if(!simulation_mode)
+  {
+    logInfo("oms_model::terminate: No simulation to terminate.");
+    return;
+  }
+
   simulation_mode = false;
+  std::map<std::string, oms_fmu*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
     it->second->postSim();
 }
 
 oms_status_t oms_model::getCurrentTime(double *time)
 {
+  logTrace();
+
   if(!simulation_mode)
   {
     logError("It is only allowed to call 'getCurrentTime' while running a simulation.");

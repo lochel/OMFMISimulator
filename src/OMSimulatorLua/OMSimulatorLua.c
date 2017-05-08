@@ -163,6 +163,30 @@ static int exportDependencyGraph(lua_State *L)
   return 0;
 }
 
+//oms_status_t oms_initialize(void* model);
+static int initialize(lua_State *L)
+{
+  if (lua_gettop(L) != 1)
+    return luaL_error(L, "expecting exactly 1 argument");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+
+  void *model = topointer(L, 1);
+  oms_initialize(model);
+  return 0;
+}
+
+//oms_status_t oms_terminate(void* model);
+static int terminate(lua_State *L)
+{
+  if (lua_gettop(L) != 1)
+    return luaL_error(L, "expecting exactly 1 argument");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+
+  void *model = topointer(L, 1);
+  oms_terminate(model);
+  return 0;
+}
+
 //oms_status_t oms_getCurrentTime(const void* model, double* time);
 static int getCurrentTime(lua_State *L)
 {
@@ -271,6 +295,8 @@ int luaopen_libOMSimulatorLua(lua_State *L)
   REGISTER_LUA_CALL(simulate);
   REGISTER_LUA_CALL(describe);
   REGISTER_LUA_CALL(exportDependencyGraph);
+  REGISTER_LUA_CALL(initialize);
+  REGISTER_LUA_CALL(terminate);
   REGISTER_LUA_CALL(getCurrentTime);
   REGISTER_LUA_CALL(setStartTime);
   REGISTER_LUA_CALL(setStopTime);

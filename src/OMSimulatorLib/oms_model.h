@@ -57,6 +57,9 @@ public:
   void describe();
   void simulate();
 
+  void initialize();
+  void terminate();
+
   oms_status_t getCurrentTime(double *time);
 
   Settings& getSettings() {return settings;}

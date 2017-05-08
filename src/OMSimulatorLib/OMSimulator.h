@@ -111,6 +111,22 @@ void oms_describe(void* model);
 void oms_exportDependencyGraph(void* model, const char* filename);
 
 /**
+ * \brief Initialize the simulation of a given model.
+ *
+ * @param model Model as opaque pointer.
+ * @return Error status.
+ */
+oms_status_t oms_initialize(void* model);
+
+/**
+ * \brief Terminate the simulation of a given model.
+ *
+ * @param model Model as opaque pointer.
+ * @return Error status.
+ */
+oms_status_t oms_terminate(void* model);
+
+/**
  * \brief Get current simulation time.
  *
  * @param model [in]  Model as opaque pointer.
