@@ -191,7 +191,7 @@ oms_fmu::oms_fmu(oms_model& model, std::string fmuPath, std::string instanceName
   // create variable look-up
   fmi2_import_variable_list_t *varList = fmi2_import_get_variable_list(fmu, 0);
   size_t varListSize = fmi2_import_get_variable_list_size(varList);
-  logDebug(toString(nVar) + " variables");
+  logDebug(toString(varListSize) + " variables");
   for(size_t i=0; i<varListSize; ++i)
   {
     fmi2_import_variable_t* var = fmi2_import_get_variable(varList, i);
