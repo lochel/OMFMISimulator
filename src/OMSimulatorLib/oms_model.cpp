@@ -92,6 +92,25 @@ void oms_model::setReal(const std::string& var, double value)
   fmuInstances[fmuInstance]->setRealParameter(fmuVar, value);
 }
 
+double oms_model::getReal(const std::string& var)
+{
+  std::stringstream var_(var);
+  std::string fmuInstance;
+  std::string fmuVar;
+
+  // TODO: Improve this
+  std::getline(var_, fmuInstance, '.');
+  std::getline(var_, fmuVar, '.');
+
+  if (fmuInstances.find(fmuInstance) == fmuInstances.end())
+  {
+    // TODO: Provide suitable return value to handle unsuccessful calls.
+    logFatal("oms_model::getReal: FMU instance \"" + fmuInstance + "\" doesn't exist in model");
+  }
+
+  return fmuInstances[fmuInstance]->getReal(fmuVar);
+}
+
 void oms_model::addConnection(const std::string& from, const std::string& to)
 {
   //logError("Function not implemented yet: oms_model::addConnection");

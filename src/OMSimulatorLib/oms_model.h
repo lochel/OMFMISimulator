@@ -49,6 +49,7 @@ public:
 
   void instantiateFMU(const std::string& filename, const std::string& instanceName);
   void setReal(const std::string& var, double value);
+  double getReal(const std::string& var);
   void addConnection(const std::string& from, const std::string& to);
   void exportDependencyGraph(const std::string& prefix);
 

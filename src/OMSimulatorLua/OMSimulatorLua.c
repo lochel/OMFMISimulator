@@ -90,7 +90,21 @@ static int setReal(lua_State *L)
 // TODO: setBoolean
 // TODO: setString
 
-// TODO: getReal
+//double oms_getReal(void* model, const char* var);
+static int getReal(lua_State *L)
+{
+  if (lua_gettop(L) != 2)
+    return luaL_error(L, "expecting exactly 2 arguments");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TSTRING);
+
+  void *model = topointer(L, 1);
+  const char *var = lua_tostring(L, 2);
+
+  double value = oms_getReal(model, var);
+  lua_pushnumber(L, value);
+  return 1;
+}
 // TODO: getInteger
 // TODO: getBoolean
 // TODO: getString
@@ -237,6 +251,7 @@ int luaopen_libOMSimulatorLua(lua_State *L)
   REGISTER_LUA_CALL(unload);
   REGISTER_LUA_CALL(instantiateFMU);
   REGISTER_LUA_CALL(setReal);
+  REGISTER_LUA_CALL(getReal);
   REGISTER_LUA_CALL(addConnection);
   REGISTER_LUA_CALL(simulate);
   REGISTER_LUA_CALL(describe);

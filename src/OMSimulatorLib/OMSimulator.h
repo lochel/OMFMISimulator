@@ -82,7 +82,14 @@ void oms_setReal(void *model, const char *var, double value);
 // TODO: setBoolean
 // TODO: setString
 
-// TODO: getReal
+/**
+ * \brief Get real value.
+ *
+ * @param model Model as opaque pointer.
+ * @param var
+ * @return value
+ */
+double oms_getReal(void *model, const char *var);
 // TODO: getInteger
 // TODO: getBoolean
 // TODO: getString

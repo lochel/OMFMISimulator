@@ -67,7 +67,7 @@ void oms_instantiateFMU(void* model, const char* filename, const char* instanceN
   logTrace();
   if(!model)
   {
-    logError("oms_simulate: invalid pointer");
+    logError("oms_instantiateFMU: invalid pointer");
     return;
   }
 
@@ -80,12 +80,25 @@ void oms_setReal(void *model, const char *var, double value)
   logTrace();
   if (!model)
   {
-    logError("oms_simulate: invalid pointer");
+    logError("oms_setReal: invalid pointer");
     return;
   }
 
   oms_model *pModel = (oms_model *)model;
   pModel->setReal(var, value);
+}
+
+double oms_getReal(void *model, const char *var)
+{
+  logTrace();
+  if (!model)
+  {
+    // TODO: Provide suitable return value to handle unsuccessful calls.
+    logFatal("oms_getReal: invalid pointer");
+  }
+
+  oms_model *pModel = (oms_model *)model;
+  return pModel->getReal(var);
 }
 
 void oms_addConnection(void* model, const char* from, const char* to)
@@ -132,7 +145,7 @@ void oms_exportDependencyGraph(void* model, const char* filename)
   logTrace();
   if(!model)
   {
-    logError("oms_describe: invalid pointer");
+    logError("oms_exportDependencyGraph: invalid pointer");
     return;
   }
 
