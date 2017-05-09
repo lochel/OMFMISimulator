@@ -35,7 +35,7 @@
 #include "Logging.h"
 #include "oms_resultfile.h"
 #include "Settings.h"
-#include "oms_model.h"
+#include "CompositeModel.h"
 
 #include <fmilib.h>
 #include <JM/jm_portability.h>
@@ -106,7 +106,7 @@ void fmi2logger(fmi2_component_environment_t env, fmi2_string_t instanceName, fm
   }
 }
 
-oms_fmu::oms_fmu(oms_model& model, std::string fmuPath, std::string instanceName)
+oms_fmu::oms_fmu(CompositeModel& model, std::string fmuPath, std::string instanceName)
   : model(model), fmuPath(fmuPath), parameterLookUp(), instanceName(instanceName)
 {
   logTrace();

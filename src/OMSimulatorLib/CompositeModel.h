@@ -41,12 +41,12 @@
 #include <string>
 #include <map>
 
-class oms_model
+class CompositeModel
 {
 public:
-  oms_model();
-  oms_model(const std::string& descriptionPath);
-  ~oms_model();
+  CompositeModel();
+  CompositeModel(const std::string& descriptionPath);
+  ~CompositeModel();
 
   void instantiateFMU(const std::string& filename, const std::string& instanceName);
   void setReal(const std::string& var, double value);

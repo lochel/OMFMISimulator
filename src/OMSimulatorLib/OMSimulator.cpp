@@ -30,7 +30,7 @@
  */
 
 #include "OMSimulator.h"
-#include "oms_model.h"
+#include "CompositeModel.h"
 #include "Logging.h"
 #include "Settings.h"
 #include "oms_version.h"
@@ -39,14 +39,14 @@
 void* oms_newModel()
 {
   logTrace();
-  oms_model* pModel = new oms_model();
+  CompositeModel* pModel = new CompositeModel();
   return (void*) pModel;
 }
 
 void* oms_loadModel(const char* filename)
 {
   logTrace();
-  oms_model* pModel = new oms_model(filename);
+  CompositeModel* pModel = new CompositeModel(filename);
   return (void*) pModel;
 }
 
@@ -59,7 +59,7 @@ void oms_unload(void* model)
     return;
   }
 
-  oms_model* pModel = (oms_model*) model;
+  CompositeModel* pModel = (CompositeModel*) model;
   delete pModel;
 }
 
@@ -72,7 +72,7 @@ void oms_instantiateFMU(void* model, const char* filename, const char* instanceN
     return;
   }
 
-  oms_model* pModel = (oms_model*) model;
+  CompositeModel* pModel = (CompositeModel*) model;
   pModel->instantiateFMU(filename, instanceName);
 }
 
@@ -85,7 +85,7 @@ void oms_setReal(void *model, const char *var, double value)
     return;
   }
 
-  oms_model *pModel = (oms_model *)model;
+  CompositeModel *pModel = (CompositeModel *)model;
   pModel->setReal(var, value);
 }
 
@@ -98,7 +98,7 @@ double oms_getReal(void *model, const char *var)
     logFatal("oms_getReal: invalid pointer");
   }
 
-  oms_model *pModel = (oms_model *)model;
+  CompositeModel *pModel = (CompositeModel *)model;
   return pModel->getReal(var);
 }
 
@@ -111,7 +111,7 @@ void oms_addConnection(void* model, const char* from, const char* to)
     return;
   }
 
-  oms_model* pModel = (oms_model*) model;
+  CompositeModel* pModel = (CompositeModel*) model;
   pModel->addConnection(from, to);
 }
 
@@ -124,7 +124,7 @@ void oms_simulate(void* model)
     return;
   }
 
-  oms_model* pModel = (oms_model*) model;
+  CompositeModel* pModel = (CompositeModel*) model;
   pModel->simulate();
 }
 
@@ -137,7 +137,7 @@ oms_status_t oms_doSteps(const void* model, const int numberOfSteps)
     return oms_status_error;
   }
 
-  oms_model* pModel = (oms_model*) model;
+  CompositeModel* pModel = (CompositeModel*) model;
   return pModel->doSteps(numberOfSteps);
 }
 
@@ -150,7 +150,7 @@ oms_status_t oms_stepUntil(const void* model, const double timeValue)
     return oms_status_error;
   }
 
-  oms_model* pModel = (oms_model*) model;
+  CompositeModel* pModel = (CompositeModel*) model;
   return pModel->stepUntil(timeValue);
 }
 
@@ -163,7 +163,7 @@ void oms_describe(void* model)
     return;
   }
 
-  oms_model* pModel = (oms_model*) model;
+  CompositeModel* pModel = (CompositeModel*) model;
   pModel->describe();
 }
 
@@ -176,7 +176,7 @@ void oms_exportDependencyGraph(void* model, const char* filename)
     return;
   }
 
-  oms_model* pModel = (oms_model*) model;
+  CompositeModel* pModel = (CompositeModel*) model;
   pModel->exportDependencyGraph(filename);
 }
 
@@ -189,7 +189,7 @@ oms_status_t oms_initialize(void* model)
     return oms_status_error;
   }
 
-  oms_model* pModel = (oms_model*) model;
+  CompositeModel* pModel = (CompositeModel*) model;
   pModel->initialize();
   return oms_status_ok;
 }
@@ -203,7 +203,7 @@ oms_status_t oms_terminate(void* model)
     return oms_status_error;
   }
 
-  oms_model* pModel = (oms_model*) model;
+  CompositeModel* pModel = (CompositeModel*) model;
   pModel->terminate();
   return oms_status_ok;
 }
@@ -217,42 +217,42 @@ oms_status_t oms_getCurrentTime(const void* model, double* time)
     return oms_status_error;
   }
 
-  oms_model* pModel = (oms_model*) model;
+  CompositeModel* pModel = (CompositeModel*) model;
   return pModel->getCurrentTime(time);
 }
 
 void oms_setStartTime(void* model, double startTime)
 {
   logTrace();
-  oms_model* pModel = (oms_model*) model;
+  CompositeModel* pModel = (CompositeModel*) model;
   pModel->getSettings().SetStartTime(startTime);
 }
 
 void oms_setStopTime(void* model, double stopTime)
 {
   logTrace();
-  oms_model* pModel = (oms_model*) model;
+  CompositeModel* pModel = (CompositeModel*) model;
   pModel->getSettings().SetStopTime(stopTime);
 }
 
 void oms_setTolerance(void* model, double tolerance)
 {
   logTrace();
-  oms_model* pModel = (oms_model*) model;
+  CompositeModel* pModel = (CompositeModel*) model;
   pModel->getSettings().SetTolerance(tolerance);
 }
 
 void oms_setWorkingDirectory(void* model, const char* filename)
 {
   logTrace();
-  oms_model* pModel = (oms_model*) model;
+  CompositeModel* pModel = (CompositeModel*) model;
   pModel->getSettings().SetTempDirectory(filename);
 }
 
 void oms_setResultFile(void* model, const char* filename)
 {
   logTrace();
-  oms_model* pModel = (oms_model*) model;
+  CompositeModel* pModel = (CompositeModel*) model;
   pModel->getSettings().SetResultFile(filename);
 }
 
