@@ -198,7 +198,7 @@ oms_fmu::oms_fmu(CompositeModel& model, std::string fmuPath, std::string instanc
     fmi2_causality_enu_t varCausality = fmi2_import_get_causality(var);
     fmi2_value_reference_t vr = fmi2_import_get_variable_vr(var);
     std::string name = fmi2_import_get_variable_name(var);
-    Variable v(name, instanceName, vr, i+1);
+    Variable v(name, instanceName, vr, i+1, varCausality);
     if(fmi2_causality_enu_parameter == varCausality)
     {
       parameterLookUp[name] = vr;

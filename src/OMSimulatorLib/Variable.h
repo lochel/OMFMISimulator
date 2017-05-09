@@ -39,8 +39,11 @@
 class Variable
 {
 public:
-  Variable(std::string name, std::string fmuInstance, fmi2_value_reference_t vr, size_t index);
+  Variable(std::string name, std::string fmuInstance, fmi2_value_reference_t vr, size_t index, fmi2_causality_enu_t causality);
   ~Variable();
+
+  bool isOutput(){return fmi2_causality_enu_output == causality;}
+  bool isInput(){return fmi2_causality_enu_input == causality;}
 
   std::string name;
   std::string fmuInstance;

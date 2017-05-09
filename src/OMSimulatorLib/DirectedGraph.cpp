@@ -99,11 +99,17 @@ void DirectedGraph::dotExport(const std::string& filename)
   dotFile << "digraph G" << std::endl;
   dotFile << "{" << std::endl;
   for(int i=0; i<nodes.size(); i++)
-    dotFile << "  " << i << "[label=\"" << nodes[i].fmuInstance << "." << nodes[i].name << "\", shape=box];" << std::endl;
+    dotFile << "  " << i << " [label=\"" << nodes[i].fmuInstance << "." << nodes[i].name << "\", shape=box];" << std::endl;
   dotFile << std::endl;
 
   for(int i=0; i<edges.size(); i++)
-    dotFile << "  " << edges[i].first << " -> " << edges[i].second << ";" << std::endl;
+  {
+    dotFile << "  " << edges[i].first << " -> " << edges[i].second;
+    if(nodes[edges[i].first].isOutput() && nodes[edges[i].second].isInput())
+      dotFile << " [color=\"red\"];" << std::endl;
+    else
+      dotFile << std::endl;
+  }
   dotFile << "}" << std::endl;
   dotFile.close();
 }

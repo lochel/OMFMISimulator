@@ -40,8 +40,8 @@
 #include <iostream>
 #include <string>
 
-Variable::Variable(std::string name, std::string fmuInstance, fmi2_value_reference_t vr, size_t index)
-  : name(name), fmuInstance(fmuInstance), vr(vr), index(index)
+Variable::Variable(std::string name, std::string fmuInstance, fmi2_value_reference_t vr, size_t index, fmi2_causality_enu_t causality)
+  : name(name), fmuInstance(fmuInstance), vr(vr), index(index), causality(causality)
 {
 }
 
