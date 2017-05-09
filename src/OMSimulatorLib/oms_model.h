@@ -57,6 +57,9 @@ public:
   void describe();
   void simulate();
 
+  oms_status_t doSteps(const int numberOfSteps);
+  oms_status_t stepUntil(const double timeValue);
+
   void initialize();
   void terminate();
 

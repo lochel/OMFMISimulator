@@ -107,6 +107,25 @@ void oms_addConnection(void* model, const char* from, const char* to);
 
 
 void oms_simulate(void* model);
+
+/**
+ * \brief In case of variable step sizes or events we cannot know the final time value.
+ *
+ * @param model Model as opaque pointer.
+ * @param numberOfSteps Number of steps.
+ * @return Error status.
+ */
+oms_status_t oms_doSteps(const void* model, const int numberOfSteps);
+
+/**
+ * \brief Performs a sub-simulation run from the current time instance to a given time value
+ *
+ * @param model Model as opaque pointer.
+ * @param timeValue
+ * @return Error status.
+ */
+oms_status_t oms_stepUntil(const void* model, const double timeValue);
+
 void oms_describe(void* model);
 void oms_exportDependencyGraph(void* model, const char* filename);
 

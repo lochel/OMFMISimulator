@@ -173,10 +173,25 @@ void oms_model::simulate()
 
   initialize();
 
-  double hdef = 1e-1;
   double* pStopTime = settings.GetStopTime();
   fmi2_real_t tend = pStopTime ? *pStopTime : 1.0;
-  while(tcur < tend)
+  stepUntil(tend);
+
+  terminate();
+}
+
+oms_status_t oms_model::doSteps(const int numberOfSteps)
+{
+  logTrace();
+
+  if(!simulation_mode)
+  {
+    logInfo("oms_model::doSteps: Model is not in simulation mode.");
+    return oms_status_error;
+  }
+
+  double hdef = 1e-1;
+  for(int step=0; step<numberOfSteps; step++)
   {
     // input = output
     for(int i=0; i<connections.edges.size(); i++)
@@ -196,7 +211,25 @@ void oms_model::simulate()
     tcur += hdef;
   }
 
-  terminate();
+  return oms_status_ok;
+}
+
+oms_status_t oms_model::stepUntil(const double timeValue)
+{
+  logTrace();
+
+  if(!simulation_mode)
+  {
+    logInfo("oms_model::stepUntil: Model is not in simulation mode.");
+    return oms_status_error;
+  }
+
+  while(tcur < timeValue)
+  {
+    doSteps(1);
+  }
+
+  return oms_status_ok;
 }
 
 void oms_model::initialize()

@@ -128,6 +128,32 @@ void oms_simulate(void* model)
   pModel->simulate();
 }
 
+oms_status_t oms_doSteps(const void* model, const int numberOfSteps)
+{
+  logTrace();
+  if(!model)
+  {
+    logError("oms_doSteps: invalid pointer");
+    return oms_status_error;
+  }
+
+  oms_model* pModel = (oms_model*) model;
+  return pModel->doSteps(numberOfSteps);
+}
+
+oms_status_t oms_stepUntil(const void* model, const double timeValue)
+{
+  logTrace();
+  if(!model)
+  {
+    logError("oms_stepUntil: invalid pointer");
+    return oms_status_error;
+  }
+
+  oms_model* pModel = (oms_model*) model;
+  return pModel->stepUntil(timeValue);
+}
+
 void oms_describe(void* model)
 {
   logTrace();

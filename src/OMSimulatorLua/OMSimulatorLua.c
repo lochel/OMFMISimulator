@@ -137,6 +137,34 @@ static int simulate(lua_State *L)
   return 0;
 }
 
+//oms_status_t oms_doSteps(const void* model, const int numberOfSteps);
+static int doSteps(lua_State *L)
+{
+  if (lua_gettop(L) != 2)
+    return luaL_error(L, "expecting exactly 2 argument");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TNUMBER);
+
+  void *model = topointer(L, 1);
+  int numberOfSteps = lua_tointeger(L, 2);
+  oms_doSteps(model, numberOfSteps);
+  return 0;
+}
+
+//oms_status_t oms_stepUntil(const void* model, const double timeValue);
+static int stepUntil(lua_State *L)
+{
+  if (lua_gettop(L) != 2)
+    return luaL_error(L, "expecting exactly 2 argument");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TNUMBER);
+
+  void *model = topointer(L, 1);
+  double timeValue = lua_tonumber(L, 2);
+  oms_stepUntil(model, timeValue);
+  return 0;
+}
+
 //void oms_describe(void* model);
 static int describe(lua_State *L)
 {
@@ -293,6 +321,8 @@ int luaopen_libOMSimulatorLua(lua_State *L)
   REGISTER_LUA_CALL(getReal);
   REGISTER_LUA_CALL(addConnection);
   REGISTER_LUA_CALL(simulate);
+  REGISTER_LUA_CALL(doSteps);
+  REGISTER_LUA_CALL(stepUntil);
   REGISTER_LUA_CALL(describe);
   REGISTER_LUA_CALL(exportDependencyGraph);
   REGISTER_LUA_CALL(initialize);
