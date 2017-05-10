@@ -40,6 +40,9 @@
 #include <map>
 #include <sstream>
 #include <stdlib.h>
+#include <stack>
+#include <algorithm>
+#include <deque>
 
 DirectedGraph::DirectedGraph()
 {
@@ -54,6 +57,8 @@ DirectedGraph::~DirectedGraph()
 int DirectedGraph::addVariable(const Variable& var)
 {
   nodes.push_back(var);
+  std::vector<int> row;
+  G.push_back(row);
   return nodes.size()-1;
 }
 
@@ -80,6 +85,7 @@ void DirectedGraph::addEdge(const Variable& var1, const Variable& var2)
     index2 = addVariable(var2);
 
   edges.push_back(std::pair<int, int>(index1, index2));
+  G[index1].push_back(index2);
 }
 
 void DirectedGraph::dotExport(const std::string& filename)
@@ -121,4 +127,117 @@ void DirectedGraph::includeGraph(const DirectedGraph& graph)
 
   for(int i=0; i<graph.edges.size(); i++)
     addEdge(graph.nodes[graph.edges[i].first], graph.nodes[graph.edges[i].second]);
+}
+
+void strongconnect(int v, std::vector< std::vector<int> > G, int& index, int *d, int *low, std::stack<int>& S, bool *stacked, std::deque< std::vector<int> >& components)
+{
+  // Set the depth index for v to the smallest unused index
+  d[v] = index;
+  low[v] = index;
+  index++;
+  S.push(v);
+  stacked[v] = true;
+
+  // Consider successors of v
+  std::vector<int> successors = G[v];
+  for (int i=0; i<successors.size(); ++i)
+  {
+    int w = successors[i];
+    if (d[w] == -1)
+    {
+      // Successor w has not yet been visited; recurse on it
+      strongconnect(w, G, index, d, low, S, stacked, components);
+      low[v] = std::min(low[v], low[w]);
+    }
+    else if (stacked[w])
+    {
+      // Successor w is in stack S and hence in the current SCC
+      // Note: The next line may look odd - but is correct.
+      // It says w.index not w.lowlink; that is deliberate and from the original paper
+      low[v] = std::min(low[v], d[w]);
+    }
+  }
+
+  // If v is a root node, pop the stack and generate an SCC
+  if (low[v] == d[v])
+  {
+    // start a new strongly connected component
+    std::vector<int> SCC;
+    int w;
+    do
+    {
+      w = S.top();
+      S.pop();
+      stacked[w] = false;
+      // add w to current strongly connected component
+      SCC.push_back(w);
+    } while (w != v);
+    // output the current strongly connected component
+    components.push_front(SCC);
+  }
+}
+
+std::deque< std::vector<int> > DirectedGraph::getSCCs()
+{
+  //std::cout << "Tarjan's strongly connected components algorithm" << std::endl;
+
+  int numVertices = nodes.size();
+  int *d = new int[numVertices];
+  std::fill(d, d+numVertices, -1);
+  int *low = new int[numVertices];
+  int *scc = new int[numVertices];
+  bool *stacked = new bool[numVertices];
+  std::stack<int> S;
+  int index = 0;
+  int current_scc;
+  std::deque< std::vector<int> > components;
+
+  for (int v=0; v<numVertices; ++v)
+  {
+    if (d[v] == -1)
+      strongconnect(v, G, index, d, low, S, stacked, components);
+  }
+
+  // dump strongly connected components
+  //std::cout << "Strongly connected components:" << std::endl;
+  //for (int i=0; i<components.size(); ++i)
+  //{
+  //  for (int j=0; j<components[i].size(); ++j)
+  //  {
+  //    int v = components[i][j];
+  //    std::cout << nodes[v].fmuInstance << "." << nodes[v].name << " ";
+  //  }
+  //  std::cout << std::endl;
+  //}
+
+  delete[] d;
+  delete[] low;
+  delete[] scc;
+
+  return components;
+}
+
+std::vector< std::pair<int, int> > DirectedGraph::getSortedConnections()
+{
+  std::deque< std::vector<int> > components = getSCCs();
+  std::vector< std::pair<int, int> > connections;
+
+  for (int i=0; i<components.size(); ++i)
+  {
+    for (int j=0; j<components[i].size(); ++j)
+    {
+      int v = components[i][j];
+      if (nodes[v].isOutput())
+      {
+        for (int k=0; k<G[v].size(); ++k)
+        {
+          int w = G[v][k];
+          if (nodes[w].isInput())
+            connections.push_back(std::pair<int, int>(v, w));
+        }
+      }
+    }
+  }
+
+  return connections;
 }

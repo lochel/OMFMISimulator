@@ -38,6 +38,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <deque>
 
 class DirectedGraph
 {
@@ -52,8 +53,15 @@ public:
 
   void includeGraph(const DirectedGraph& graph);
 
+  std::vector< std::pair<int, int> > getSortedConnections();
+
   std::vector<Variable> nodes;
   std::vector< std::pair<int, int> > edges;
+
+private:
+  std::deque< std::vector<int> > getSCCs();
+
+  std::vector< std::vector<int> > G;
 };
 
 #endif

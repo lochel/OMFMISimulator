@@ -40,6 +40,7 @@
 #include <fmilib.h>
 #include <string>
 #include <map>
+#include <deque>
 
 class CompositeModel
 {
@@ -71,9 +72,9 @@ private:
   Settings settings;
   std::map<std::string, oms_fmu*> fmuInstances;
   DirectedGraph outputsGraph;
-  DirectedGraph connections;
   double tcur;
   bool simulation_mode;
+  std::vector< std::pair<int, int> > sortedConnections;
 };
 
 #endif

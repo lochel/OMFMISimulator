@@ -44,6 +44,7 @@
 #include <map>
 #include <sstream>
 #include <stdlib.h>
+#include <deque>
 
 #include <boost/filesystem.hpp>
 
@@ -64,7 +65,6 @@ CompositeModel::CompositeModel(const std::string& descriptionPath)
 CompositeModel::~CompositeModel()
 {
   logTrace();
-
   std::map<std::string, oms_fmu*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
     delete it->second;
@@ -72,12 +72,14 @@ CompositeModel::~CompositeModel()
 
 void CompositeModel::instantiateFMU(const std::string& filename, const std::string& instanceName)
 {
+  logTrace();
   fmuInstances[instanceName] = new oms_fmu(*this, filename, instanceName);
   outputsGraph.includeGraph(fmuInstances[instanceName]->getOutputsGraph());
 }
 
 void CompositeModel::setReal(const std::string& var, double value)
 {
+  logTrace();
   std::stringstream var_(var);
   std::string fmuInstance;
   std::string fmuVar;
@@ -97,6 +99,7 @@ void CompositeModel::setReal(const std::string& var, double value)
 
 double CompositeModel::getReal(const std::string& var)
 {
+  logTrace();
   std::stringstream var_(var);
   std::string fmuInstance;
   std::string fmuVar;
@@ -116,7 +119,7 @@ double CompositeModel::getReal(const std::string& var)
 
 void CompositeModel::addConnection(const std::string& from, const std::string& to)
 {
-  //logError("Function not implemented yet: CompositeModel::addConnection");
+  logTrace();
   std::stringstream var1_(from);
   std::stringstream var2_(to);
   std::string fmuInstance1, fmuInstance2;
@@ -146,14 +149,12 @@ void CompositeModel::addConnection(const std::string& from, const std::string& t
   Variable *var2 = fmuInstances[fmuInstance2]->getVariable(fmuVar2);
 
   outputsGraph.addEdge(*var1, *var2);
-  connections.addEdge(*var1, *var2);
 }
 
 void CompositeModel::exportDependencyGraph(const std::string& prefix)
 {
   logTrace();
   outputsGraph.dotExport(prefix + "_outputsGraph.dot");
-  connections.dotExport(prefix + "_connections.dot");
 }
 
 void CompositeModel::describe()
@@ -195,12 +196,14 @@ oms_status_t CompositeModel::doSteps(const int numberOfSteps)
   for(int step=0; step<numberOfSteps; step++)
   {
     // input = output
-    for(int i=0; i<connections.edges.size(); i++)
+    for(int i=0; i<sortedConnections.size(); i++)
     {
-      std::string outputFMU = connections.nodes[connections.edges[i].first].fmuInstance;
-      std::string outputVar = connections.nodes[connections.edges[i].first].name;
-      std::string inputFMU = connections.nodes[connections.edges[i].second].fmuInstance;
-      std::string inputVar = connections.nodes[connections.edges[i].second].name;
+      int output = sortedConnections[i].first;
+      int input = sortedConnections[i].second;
+      std::string outputFMU = outputsGraph.nodes[output].fmuInstance;
+      std::string outputVar = outputsGraph.nodes[output].name;
+      std::string inputFMU = outputsGraph.nodes[input].fmuInstance;
+      std::string inputVar = outputsGraph.nodes[input].name;
       double value = fmuInstances[outputFMU]->getReal(outputVar);
       fmuInstances[inputFMU]->setReal(inputVar, value);
     }
@@ -241,6 +244,9 @@ void CompositeModel::initialize()
   {
     logFatal("CompositeModel::initialize: Model is already in simulation mode.");
   }
+
+  // calculate sorting
+  sortedConnections = outputsGraph.getSortedConnections();
 
   double* pStartTime = settings.GetStartTime();
   tcur = pStartTime ? *pStartTime : 0.0;
