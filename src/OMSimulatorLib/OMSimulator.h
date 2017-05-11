@@ -32,7 +32,7 @@
 #ifndef _OMSIMULATOR_H_
 #define _OMSIMULATOR_H_
 
-#include "oms_types.h"
+#include "Types.h"
 
 #ifdef __cplusplus
 extern "C"

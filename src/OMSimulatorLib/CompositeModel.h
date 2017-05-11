@@ -35,7 +35,7 @@
 #include "FMUWrapper.h"
 #include "DirectedGraph.h"
 #include "Settings.h"
-#include "oms_types.h"
+#include "Types.h"
 
 #include <fmilib.h>
 #include <string>

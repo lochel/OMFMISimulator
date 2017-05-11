@@ -34,7 +34,7 @@
 #include "oms_resultfile.h"
 #include "DirectedGraph.h"
 #include "Settings.h"
-#include "oms_types.h"
+#include "Types.h"
 
 #include <fmilib.h>
 #include <JM/jm_portability.h>

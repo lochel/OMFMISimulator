@@ -34,7 +34,7 @@
 #include "Logging.h"
 #include "Settings.h"
 #include "oms_version.h"
-#include "oms_types.h"
+#include "Types.h"
 
 void* oms_newModel()
 {
