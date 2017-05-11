@@ -31,6 +31,7 @@
 
 #include "oms_resultfile.h"
 #include "Logging.h"
+#include "Util.h"
 
 #include <fmilib.h>
 
@@ -38,15 +39,6 @@
 #include <fstream>
 #include <stdlib.h>
 #include <string>
-#include <sstream>
-
-template<typename T>
-std::string toString(const T& value)
-{
-  std::ostringstream oss;
-  oss << value;
-  return oss.str();
-}
 
 oms_resultfile::oms_resultfile(std::string filename, fmi2_import_t* fmu)
 {

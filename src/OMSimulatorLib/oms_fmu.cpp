@@ -36,6 +36,7 @@
 #include "oms_resultfile.h"
 #include "Settings.h"
 #include "CompositeModel.h"
+#include "Util.h"
 
 #include <fmilib.h>
 #include <JM/jm_portability.h>
@@ -43,18 +44,9 @@
 #include <iostream>
 #include <string>
 #include <map>
-#include <sstream>
 #include <stdlib.h>
 
 #include <boost/filesystem.hpp>
-
-template<typename T>
-std::string toString(const T& value)
-{
-  std::ostringstream oss;
-  oss << value;
-  return oss.str();
-}
 
 void fmiLogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message)
 {
