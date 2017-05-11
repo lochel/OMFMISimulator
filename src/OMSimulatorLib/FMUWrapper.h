@@ -43,11 +43,11 @@
 
 class CompositeModel;
 
-class oms_fmu
+class FMUWrapper
 {
 public:
-  oms_fmu(CompositeModel& model, std::string fmuPath, std::string instanceName);
-  ~oms_fmu();
+  FMUWrapper(CompositeModel& model, std::string fmuPath, std::string instanceName);
+  ~FMUWrapper();
 
   double getReal(const std::string& var);
   void setReal(const std::string& var, double value);

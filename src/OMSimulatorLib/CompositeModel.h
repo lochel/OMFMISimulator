@@ -32,7 +32,7 @@
 #ifndef _OMS_MODEL_H_
 #define _OMS_MODEL_H_
 
-#include "oms_fmu.h"
+#include "FMUWrapper.h"
 #include "DirectedGraph.h"
 #include "Settings.h"
 #include "oms_types.h"
@@ -70,7 +70,7 @@ public:
 
 private:
   Settings settings;
-  std::map<std::string, oms_fmu*> fmuInstances;
+  std::map<std::string, FMUWrapper*> fmuInstances;
   DirectedGraph outputsGraph;
   double tcur;
   bool simulation_mode;

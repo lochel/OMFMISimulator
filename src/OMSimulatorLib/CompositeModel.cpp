@@ -65,7 +65,7 @@ CompositeModel::CompositeModel(const std::string& descriptionPath)
 CompositeModel::~CompositeModel()
 {
   logTrace();
-  std::map<std::string, oms_fmu*>::iterator it;
+  std::map<std::string, FMUWrapper*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
     delete it->second;
 }
@@ -73,7 +73,7 @@ CompositeModel::~CompositeModel()
 void CompositeModel::instantiateFMU(const std::string& filename, const std::string& instanceName)
 {
   logTrace();
-  fmuInstances[instanceName] = new oms_fmu(*this, filename, instanceName);
+  fmuInstances[instanceName] = new FMUWrapper(*this, filename, instanceName);
   outputsGraph.includeGraph(fmuInstances[instanceName]->getOutputsGraph());
 }
 
@@ -161,7 +161,7 @@ void CompositeModel::describe()
 {
   logTrace();
 
-  std::map<std::string, oms_fmu*>::iterator it;
+  std::map<std::string, FMUWrapper*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
   {
     std::cout << it->first << std::endl;
@@ -206,10 +206,11 @@ oms_status_t CompositeModel::doSteps(const int numberOfSteps)
       std::string inputVar = outputsGraph.nodes[input].name;
       double value = fmuInstances[outputFMU]->getReal(outputVar);
       fmuInstances[inputFMU]->setReal(inputVar, value);
+      //std::cout << inputFMU << "." << inputVar << " = " << outputFMU << "." << outputVar << std::endl;
     }
 
     // do_step
-    std::map<std::string, oms_fmu*>::iterator it;
+    std::map<std::string, FMUWrapper*>::iterator it;
     for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
       it->second->doStep(tcur);
     tcur += hdef;
@@ -250,7 +251,7 @@ void CompositeModel::initialize()
 
   double* pStartTime = settings.GetStartTime();
   tcur = pStartTime ? *pStartTime : 0.0;
-  std::map<std::string, oms_fmu*>::iterator it;
+  std::map<std::string, FMUWrapper*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
     it->second->preSim(tcur);
   simulation_mode = true;
@@ -267,7 +268,7 @@ void CompositeModel::terminate()
   }
 
   simulation_mode = false;
-  std::map<std::string, oms_fmu*>::iterator it;
+  std::map<std::string, FMUWrapper*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
     it->second->postSim();
 }

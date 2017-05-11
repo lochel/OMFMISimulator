@@ -29,7 +29,7 @@
  *
  */
 
-#include "oms_fmu.h"
+#include "FMUWrapper.h"
 #include "Variable.h"
 #include "DirectedGraph.h"
 #include "Logging.h"
@@ -98,7 +98,7 @@ void fmi2logger(fmi2_component_environment_t env, fmi2_string_t instanceName, fm
   }
 }
 
-oms_fmu::oms_fmu(CompositeModel& model, std::string fmuPath, std::string instanceName)
+FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string instanceName)
   : model(model), fmuPath(fmuPath), parameterLookUp(), instanceName(instanceName)
 {
   logTrace();
@@ -208,7 +208,7 @@ oms_fmu::oms_fmu(CompositeModel& model, std::string fmuPath, std::string instanc
   getDependencyGraph();
 }
 
-oms_fmu::~oms_fmu()
+FMUWrapper::~FMUWrapper()
 {
   logTrace();
   fmi2_import_free_instance(fmu);
@@ -222,16 +222,16 @@ oms_fmu::~oms_fmu()
   }
 }
 
-double oms_fmu::getReal(const std::string& var)
+double FMUWrapper::getReal(const std::string& var)
 {
   logTrace();
   if(!fmu)
-    logFatal("oms_fmu::getReal failed");
+    logFatal("FMUWrapper::getReal failed");
 
   Variable* v = getVariable(var);
 
   if(!v)
-    logFatal("oms_fmu::getReal failed");
+    logFatal("FMUWrapper::getReal failed");
 
   double value;
   fmi2_import_get_real(fmu, &v->vr, 1, &value);
@@ -239,28 +239,28 @@ double oms_fmu::getReal(const std::string& var)
   return value;
 }
 
-void oms_fmu::setReal(const std::string& var, double value)
+void FMUWrapper::setReal(const std::string& var, double value)
 {
   logTrace();
   if(!fmu)
-    logFatal("oms_fmu::setReal failed");
+    logFatal("FMUWrapper::setReal failed");
 
   Variable* v = getVariable(var);
 
   if(!v)
-    logFatal("oms_fmu::setReal failed");
+    logFatal("FMUWrapper::setReal failed");
   fmi2_import_set_real(fmu, &v->vr, 1, &value);
 }
 
-void oms_fmu::setRealParameter(const std::string& var, double value)
+void FMUWrapper::setRealParameter(const std::string& var, double value)
 {
   logTrace();
   if(!fmu)
-    logFatal("oms_fmu::setRealParameter failed");
+    logFatal("FMUWrapper::setRealParameter failed");
 
   if (parameterLookUp.find(var) == parameterLookUp.end())
   {
-    logError("oms_fmu::setRealParameter: FMU doesn't contain parameter " + var);
+    logError("FMUWrapper::setRealParameter: FMU doesn't contain parameter " + var);
     return;
   }
 
@@ -268,11 +268,11 @@ void oms_fmu::setRealParameter(const std::string& var, double value)
   fmi2_import_set_real(fmu, &vr, 1, &value);
 }
 
-void oms_fmu::getDependencyGraph()
+void FMUWrapper::getDependencyGraph()
 {
   if(allOutputs.size() == 0)
   {
-    logDebug("oms_fmu::getDependencyGraph: no outputs available");
+    logDebug("FMUWrapper::getDependencyGraph: no outputs available");
     return;
   }
 
@@ -284,7 +284,7 @@ void oms_fmu::getDependencyGraph()
 
   if (!startIndex)
   {
-    logDebug("oms_fmu::getDependencyGraph: dependencies are not available");
+    logDebug("FMUWrapper::getDependencyGraph: dependencies are not available");
     return;
   }
 
@@ -292,11 +292,11 @@ void oms_fmu::getDependencyGraph()
   {
     if (startIndex[i] == startIndex[i + 1])
     {
-      logDebug("oms_fmu::getDependencyGraph: output " + allOutputs[i].name + " has no dependencies");
+      logDebug("FMUWrapper::getDependencyGraph: output " + allOutputs[i].name + " has no dependencies");
     }
     else if ((startIndex[i] + 1 == startIndex[i + 1]) && (dependency[startIndex[i]] == 0))
     {
-      logDebug("oms_fmu::getDependencyGraph: output " + allOutputs[i].name + " depends on all");
+      logDebug("FMUWrapper::getDependencyGraph: output " + allOutputs[i].name + " depends on all");
     }
     else
     {
@@ -310,7 +310,7 @@ void oms_fmu::getDependencyGraph()
   }
 }
 
-Variable* oms_fmu::getVariable(const std::string& varName)
+Variable* FMUWrapper::getVariable(const std::string& varName)
 {
   for (int i=0; i<allVariables.size(); i++)
     if (varName == allVariables[i].name)
@@ -319,7 +319,7 @@ Variable* oms_fmu::getVariable(const std::string& varName)
   return NULL;
 }
 
-void oms_fmu::describe()
+void FMUWrapper::describe()
 {
   logTrace();
 
@@ -343,7 +343,7 @@ void oms_fmu::describe()
     logError("Unsupported FMU kind: " + std::string(fmi2_fmu_kind_to_string(fmuKind)));
 }
 
-void oms_fmu::do_event_iteration()
+void FMUWrapper::do_event_iteration()
 {
   eventInfo.newDiscreteStatesNeeded = fmi2_true;
   eventInfo.terminateSimulation     = fmi2_false;
@@ -351,7 +351,7 @@ void oms_fmu::do_event_iteration()
     fmi2_import_new_discrete_states(fmu, &eventInfo);
 }
 
-void oms_fmu::preSim(double startTime)
+void FMUWrapper::preSim(double startTime)
 {
   fmi2_status_t fmistatus;
 
@@ -438,7 +438,7 @@ void oms_fmu::preSim(double startTime)
   }
 }
 
-void oms_fmu::postSim()
+void FMUWrapper::postSim()
 {
   if(fmi2_fmu_kind_me == fmuKind)
   {
@@ -450,7 +450,7 @@ void oms_fmu::postSim()
   if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_terminate failed");
 }
 
-void oms_fmu::doStep(double stopTime)
+void FMUWrapper::doStep(double stopTime)
 {
   fmi2_status_t fmistatus;
   fmi2_real_t hdef = 1e-2;
@@ -548,7 +548,7 @@ void oms_fmu::doStep(double stopTime)
   }
 }
 
-void oms_fmu::simulate()
+void FMUWrapper::simulate()
 {
   fmi2_status_t fmistatus;
 
@@ -569,7 +569,7 @@ void oms_fmu::simulate()
   if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_terminate failed");
 }
 
-void oms_fmu::simulate_cs(const std::string& resultFileName)
+void FMUWrapper::simulate_cs(const std::string& resultFileName)
 {
   fmi2_status_t fmistatus;
 
@@ -608,7 +608,7 @@ void oms_fmu::simulate_cs(const std::string& resultFileName)
   }
 }
 
-void oms_fmu::simulate_me(const std::string& resultFileName)
+void FMUWrapper::simulate_me(const std::string& resultFileName)
 {
   fmi2_status_t fmistatus;
 
