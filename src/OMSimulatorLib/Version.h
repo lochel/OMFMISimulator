@@ -29,8 +29,8 @@
  *
  */
 
-#ifndef _OMS_CONFIG_H_
-#define _OMS_CONFIG_H_
+#ifndef _OMS_VERSION_H_
+#define _OMS_VERSION_H_
 
 extern const char* oms_git_version;
 

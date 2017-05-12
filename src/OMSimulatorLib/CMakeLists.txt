@@ -2,8 +2,8 @@ project(OMSimulatorLib)
 
 set(OMSIMULATORLIB_SOURCES Logging.cpp FMUWrapper.cpp CompositeModel.cpp Resultfile.cpp DirectedGraph.cpp OMSimulator.cpp Settings.cpp Variable.cpp)
 
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/oms_version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/oms_version.cpp" @ONLY)
-list(APPEND OMSIMULATORLIB_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/oms_version.cpp")
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp" @ONLY)
+list(APPEND OMSIMULATORLIB_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
 
 include_directories(${FMILibrary_INCLUDEDIR})
 link_directories(${FMILibrary_LIBRARYDIR} ${Boost_LIBRARY_DIRS})

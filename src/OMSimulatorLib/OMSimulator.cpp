@@ -33,7 +33,7 @@
 #include "CompositeModel.h"
 #include "Logging.h"
 #include "Settings.h"
-#include "oms_version.h"
+#include "Version.h"
 #include "Types.h"
 
 void* oms_newModel()

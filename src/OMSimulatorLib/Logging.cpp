@@ -30,7 +30,7 @@
  */
 
 #include "Logging.h"
-#include "oms_version.h"
+#include "Version.h"
 
 #include <iostream>
 #include <fstream>
