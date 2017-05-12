@@ -34,7 +34,7 @@
 
 #include "Variable.h"
 #include "DirectedGraph.h"
-#include "oms_resultfile.h"
+#include "Resultfile.h"
 
 #include <fmilib.h>
 #include <string>
@@ -90,7 +90,7 @@ private:
   // ME & CS
   fmi2_real_t tcur;
   fmi2_real_t relativeTolerance;
-  oms_resultfile *omsResultFile;
+  Resultfile *omsResultFile;
 
   // ME
   fmi2_boolean_t callEventUpdate;

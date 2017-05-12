@@ -33,7 +33,7 @@
 #include "Variable.h"
 #include "DirectedGraph.h"
 #include "Logging.h"
-#include "oms_resultfile.h"
+#include "Resultfile.h"
 #include "Settings.h"
 #include "CompositeModel.h"
 #include "Util.h"
@@ -387,7 +387,7 @@ void FMUWrapper::preSim(double startTime)
     if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_exit_initialization_mode failed");
 
     terminateSimulation = fmi2_false;
-    omsResultFile = new oms_resultfile(finalResultFile, fmu);
+    omsResultFile = new Resultfile(finalResultFile, fmu);
 
     eventInfo.newDiscreteStatesNeeded           = fmi2_false;
     eventInfo.terminateSimulation               = fmi2_false;
@@ -433,7 +433,7 @@ void FMUWrapper::preSim(double startTime)
     fmistatus = fmi2_import_exit_initialization_mode(fmu);
     if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_exit_initialization_mode failed");
 
-    omsResultFile = new oms_resultfile(finalResultFile, fmu);
+    omsResultFile = new Resultfile(finalResultFile, fmu);
     omsResultFile->emit(tcur);
   }
 }
@@ -597,7 +597,7 @@ void FMUWrapper::simulate_cs(const std::string& resultFileName)
   fmistatus = fmi2_import_exit_initialization_mode(fmu);
   if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_exit_initialization_mode failed");
 
-  oms_resultfile resultFile(resultFileName, fmu);
+  Resultfile resultFile(resultFileName, fmu);
   resultFile.emit(tcur);
 
   while (tcur < tend)
@@ -636,7 +636,7 @@ void FMUWrapper::simulate_me(const std::string& resultFileName)
   if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_exit_initialization_mode failed");
 
   fmi2_boolean_t terminateSimulation = fmi2_false;
-  oms_resultfile resultFile(resultFileName, fmu);
+  Resultfile resultFile(resultFileName, fmu);
 
   eventInfo.newDiscreteStatesNeeded           = fmi2_false;
   eventInfo.terminateSimulation               = fmi2_false;

@@ -29,7 +29,7 @@
  *
  */
 
-#include "oms_resultfile.h"
+#include "Resultfile.h"
 #include "Logging.h"
 #include "Util.h"
 
@@ -40,7 +40,7 @@
 #include <stdlib.h>
 #include <string>
 
-oms_resultfile::oms_resultfile(std::string filename, fmi2_import_t* fmu)
+Resultfile::Resultfile(std::string filename, fmi2_import_t* fmu)
 {
   this->fmu = fmu;
   resultFile.open(filename.c_str());
@@ -60,13 +60,13 @@ oms_resultfile::oms_resultfile(std::string filename, fmi2_import_t* fmu)
   resultFile << std::endl;
 }
 
-oms_resultfile::~oms_resultfile()
+Resultfile::~Resultfile()
 {
   resultFile.close();
   logDebug("Result file closed");
 }
 
-void oms_resultfile::emit(double time)
+void Resultfile::emit(double time)
 {
   resultFile << time;
 
@@ -100,7 +100,7 @@ void oms_resultfile::emit(double time)
     }
     // TODO: string
     else
-      logWarning("oms_resultfile::emit: unsupported base type");
+      logWarning("Resultfile::emit: unsupported base type");
 
     resultFile << ", " << value;
   }

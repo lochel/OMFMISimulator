@@ -31,7 +31,6 @@
 
 #include "CompositeModel.h"
 #include "Logging.h"
-#include "oms_resultfile.h"
 #include "DirectedGraph.h"
 #include "Settings.h"
 #include "Types.h"

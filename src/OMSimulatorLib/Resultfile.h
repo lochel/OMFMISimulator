@@ -36,18 +36,18 @@
 #include <fstream>
 #include <fmilib.h>
 
-class oms_resultfile
+class Resultfile
 {
 public:
-  oms_resultfile(std::string filename, fmi2_import_t* fmu);
-  ~oms_resultfile();
+  Resultfile(std::string filename, fmi2_import_t* fmu);
+  ~Resultfile();
 
   void emit(double time);
 
 private:
   // Stop the compiler generating methods of copy the object
-  oms_resultfile(oms_resultfile const& copy);            // Not Implemented
-  oms_resultfile& operator=(oms_resultfile const& copy); // Not Implemented
+  Resultfile(Resultfile const& copy);            // Not Implemented
+  Resultfile& operator=(Resultfile const& copy); // Not Implemented
 
   std::ofstream resultFile;
   fmi2_import_t* fmu;
