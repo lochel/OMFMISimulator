@@ -153,7 +153,7 @@ void CompositeModel::addConnection(const std::string& from, const std::string& t
 void CompositeModel::exportDependencyGraph(const std::string& prefix)
 {
   logTrace();
-  outputsGraph.dotExport(prefix + "_outputsGraph.dot");
+  outputsGraph.dotExport(prefix + "_outputs.dot");
 }
 
 void CompositeModel::describe()

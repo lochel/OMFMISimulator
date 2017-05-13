@@ -90,11 +90,11 @@ void DirectedGraph::addEdge(const Variable& var1, const Variable& var2)
 void DirectedGraph::dotExport(const std::string& filename)
 {
   /*
-   * digraph graphname
+   * digraph G
    * {
-   *   0[label="instance.name"];
-   *   1[label="instance.name"];
-   *   2[label="instance.name"];
+   *   0 [label="instance.name", shape=box];
+   *   1 [label="instance.name", shape=box];
+   *   2 [label="instance.name", shape=box];
    *
    *   0 -> 1;
    *   0 -> 2;
@@ -103,8 +103,15 @@ void DirectedGraph::dotExport(const std::string& filename)
   std::ofstream dotFile(filename.c_str());
   dotFile << "digraph G" << std::endl;
   dotFile << "{" << std::endl;
-  for(int i=0; i<nodes.size(); i++)
-    dotFile << "  " << i << " [label=\"" << nodes[i].fmuInstance << "." << nodes[i].name << "\", shape=box];" << std::endl;
+  for (int i=0; i<nodes.size(); i++)
+  {
+    dotFile << "  " << i << " [label=\"" << nodes[i].fmuInstance << "." << nodes[i].name << "\", ";
+    if (nodes[i].isInput())
+      dotFile << "color=\"red\", ";
+    else if (nodes[i].isOutput())
+      dotFile << "color=\"green\", ";
+    dotFile << "shape=box];" << std::endl;
+  }
   dotFile << std::endl;
 
   for(int i=0; i<edges.size(); i++)
