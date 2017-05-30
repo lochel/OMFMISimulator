@@ -7,7 +7,7 @@ OMSimulator:
 	@echo
 	@echo "# make OMSimulator"
 	@echo
-	@$(MAKE) -C build-cmake install
+	@$(MAKE) -C build/linux install
 
 config: config-OMSimulator
 
@@ -15,28 +15,28 @@ config-OMSimulator:
 	@echo
 	@echo "# config OMSimulator"
 	@echo
-	$(RM) build-cmake
+	$(RM) build/linux
 	$(RM) install
-	$(MKDIR) build-cmake
-	cd build-cmake && cmake .. && $(MAKE) install
+	$(MKDIR) build/linux
+	cd build/linux && cmake ../.. && $(MAKE) install
 
 config-fmil:
 	@echo
 	@echo "# config fmil"
 	@echo
-	$(RM) 3rdParty/FMIL/build-fmil
-	$(RM) 3rdParty/FMIL/install
-	$(MKDIR) 3rdParty/FMIL/build-fmil
-	cd 3rdParty/FMIL/build-fmil && cmake .. && $(MAKE) install
+	$(RM) 3rdParty/FMIL/build/linux
+	$(RM) 3rdParty/FMIL/install/linux
+	$(MKDIR) 3rdParty/FMIL/build/linux
+	cd 3rdParty/FMIL/build/linux && cmake -DFMILIB_INSTALL_PREFIX=../../install/linux ../.. && $(MAKE) install
 
 distclean:
 	@echo
 	@echo "# make distclean"
 	@echo
-	$(RM) build-cmake
+	$(RM) build/linux
 	$(RM) install
-	$(RM) 3rdParty/FMIL/build-fmil
-	$(RM) 3rdParty/FMIL/install
+	$(RM) 3rdParty/FMIL/build/linux
+	$(RM) 3rdParty/FMIL/install/linux
 
 testsuite:
 	@echo

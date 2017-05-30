@@ -19,24 +19,31 @@ ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 
 ##########################
 # Configuring for boost "FindBoost.cmake"
-#set(BOOST_ROOT "C:/local/boost_1_63_0")
+IF (WIN32)
+  set(BOOST_ROOT "C:/local/boost_1_63_0")
+ENDIF()
 # BTH FIXME I would prefer to link against static, but Ubuntu 14.04 ships static boost libraries which are compiled without -fPIC and thus cannot be linked into the OMSimulator shared library. Is it Possible to use static versions for linking against executables, but shared versions for linking against shared libraries?
 # set(Boost_USE_STATIC_LIBS ON)
 # BTH There is more what can be set. What do we want?
 #set(Boost_USE_MULTITHREADED ON)
 #set(Boost_USE_STATIC_RUNTIME OFF)
 # Boost v1.54 is the boost shipped with my Ubuntu 14.04, lower versions may work, too.
-find_package(Boost 1.54.0
-  COMPONENTS system filesystem
-  REQUIRED)
+find_package(Boost 1.54.0 COMPONENTS system filesystem REQUIRED)
 IF (Boost_FOUND)
-	include_directories(${Boost_INCLUDE_DIRS})
+  message("-- Boost settings")
+  message("--   Include path: ${Boost_INCLUDE_DIRS}")
+  message("--   Library path: ${Boost_LIBRARY_DIRS}")
+  message("--   Libraries: ${Boost_LIBRARIES}")
 ELSE()
 	MESSAGE(WARNING, "Boost library not found, please give a hint by setting the cmake variable BOOST_ROOT either in the cmake-gui or the command line, e.g., 'cmake -DBOOST_ROOT=C:/local/boost_1_63_0'")
 ENDIF()
 
 # Set where your FMILibrary is installed here
-set(FMILibrary_ROOT ${PROJECT_SOURCE_DIR}/3rdParty/FMIL/install)
+IF (WIN32)
+  set(FMILibrary_ROOT ${PROJECT_SOURCE_DIR}/3rdParty/FMIL/install/win)
+ELSE()
+  set(FMILibrary_ROOT ${PROJECT_SOURCE_DIR}/3rdParty/FMIL/install/linux)
+ENDIF()
 find_package(FMILibrary REQUIRED)
 
 ##########################

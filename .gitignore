@@ -1,5 +1,4 @@
 # generated directories
 /.vscode/
 /build/
-/build-cmake/
 /install/

@@ -9,6 +9,6 @@ link_directories(${FMILibrary_LIBRARYDIR})
 
 # Shared library version
 add_library(OMSimulatorLua SHARED OMSimulatorLua.c)
-target_link_libraries(OMSimulatorLua OMSimulator_shared fmilib)
+target_link_libraries(OMSimulatorLua OMSimulatorLib_shared fmilib)
 
 install(TARGETS OMSimulatorLua DESTINATION lib)
