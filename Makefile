@@ -16,7 +16,6 @@ config-OMSimulator:
 	@echo "# config OMSimulator"
 	@echo
 	$(RM) build/linux
-	$(RM) install
 	$(MKDIR) build/linux
 	cd build/linux && cmake ../.. && $(MAKE) install
 

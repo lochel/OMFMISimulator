@@ -12,7 +12,7 @@ link_directories(${FMILibrary_LIBRARYDIR} ${Boost_LIBRARY_DIRS})
 # Shared library version
 add_library(OMSimulatorLib_shared SHARED ${OMSIMULATORLIB_SOURCES})
 SET_TARGET_PROPERTIES(OMSimulatorLib_shared PROPERTIES OUTPUT_NAME OMSimulatorLib)
-target_link_libraries(OMSimulatorLib_shared fmilib ${Boost_LIBRARIES})
+target_link_libraries(OMSimulatorLib_shared fmilib_shared ${Boost_LIBRARIES})
 install(TARGETS OMSimulatorLib_shared DESTINATION lib)
 
 # Static library version
