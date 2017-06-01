@@ -74,6 +74,7 @@ void CompositeModel::instantiateFMU(const std::string& filename, const std::stri
   logTrace();
   fmuInstances[instanceName] = new FMUWrapper(*this, filename, instanceName);
   outputsGraph.includeGraph(fmuInstances[instanceName]->getOutputsGraph());
+  initialUnknownsGraph.includeGraph(fmuInstances[instanceName]->getInitialUnknownsGraph());
 }
 
 void CompositeModel::setReal(const std::string& var, double value)
@@ -148,12 +149,14 @@ void CompositeModel::addConnection(const std::string& from, const std::string& t
   Variable *var2 = fmuInstances[fmuInstance2]->getVariable(fmuVar2);
 
   outputsGraph.addEdge(*var1, *var2);
+  initialUnknownsGraph.addEdge(*var1, *var2);
 }
 
 void CompositeModel::exportDependencyGraph(const std::string& prefix)
 {
   logTrace();
-  outputsGraph.dotExport(prefix + "_outputs.dot");
+  initialUnknownsGraph.dotExport(prefix + "_initialization.dot");
+  outputsGraph.dotExport(prefix + "_simulation.dot");
 }
 
 void CompositeModel::describe()
@@ -175,28 +178,28 @@ void CompositeModel::describe()
   //std::cout << "TODO" << std::endl;
 
   std::cout << "\n# Simulation settings" << std::endl;
-  std::cout << "start time: " << settings.GetStartTime() << std::endl;
-  std::cout << "stop time: " << settings.GetStopTime() << std::endl;
-  std::cout << "tolerance: " << settings.GetTolerance() << std::endl;
-  std::cout << "result file: " << (settings.GetResultFile() ? settings.GetResultFile() : "<no result file>") << std::endl;
-  //std::cout << "temp directory: " << settings.GetTempDirectory() << std::endl;
+  std::cout << "  - start time: " << settings.GetStartTime() << std::endl;
+  std::cout << "  - stop time: " << settings.GetStopTime() << std::endl;
+  std::cout << "  - tolerance: " << settings.GetTolerance() << std::endl;
+  std::cout << "  - result file: " << (settings.GetResultFile() ? settings.GetResultFile() : "<no result file>") << std::endl;
+  //std::cout << "  - temp directory: " << settings.GetTempDirectory() << std::endl;
 
   std::cout << "\n# Composite structure" << std::endl;
   std::vector< std::pair<int, int> > connections;
 
-  //std::cout << "## Initialization" << std::endl;
-  //// calculate sorting
-  //connections = initialUnknownsGraph.getSortedConnections();
-  //for(int i=0; i<connections.size(); i++)
-  //{
-  //  int output = connections[i].first;
-  //  int input = connections[i].second;
-  //  std::string outputFMU = initialUnknownsGraph.nodes[output].fmuInstance;
-  //  std::string outputVar = initialUnknownsGraph.nodes[output].name;
-  //  std::string inputFMU = initialUnknownsGraph.nodes[input].fmuInstance;
-  //  std::string inputVar = initialUnknownsGraph.nodes[input].name;
-  //  std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
-  //}
+  std::cout << "## Initialization" << std::endl;
+  // calculate sorting
+  connections = initialUnknownsGraph.getSortedConnections();
+  for(int i=0; i<connections.size(); i++)
+  {
+    int output = connections[i].first;
+    int input = connections[i].second;
+    std::string outputFMU = initialUnknownsGraph.nodes[output].fmuInstance;
+    std::string outputVar = initialUnknownsGraph.nodes[output].name;
+    std::string inputFMU = initialUnknownsGraph.nodes[input].fmuInstance;
+    std::string inputVar = initialUnknownsGraph.nodes[input].name;
+    std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
+  }
 
   std::cout << "\n## Simulation" << std::endl;
   // calculate sorting

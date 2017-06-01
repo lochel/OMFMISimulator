@@ -72,6 +72,7 @@ private:
   Settings settings;
   std::map<std::string, FMUWrapper*> fmuInstances;
   DirectedGraph outputsGraph;
+  DirectedGraph initialUnknownsGraph;
   double tcur;
   bool simulation_mode;
   std::vector< std::pair<int, int> > sortedConnections;

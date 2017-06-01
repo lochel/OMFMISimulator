@@ -60,6 +60,7 @@ public:
   void doStep(double stopTime);
 
   const DirectedGraph& getOutputsGraph() {return outputsGraph;}
+  const DirectedGraph& getInitialUnknownsGraph() {return initialUnknownsGraph;}
   Variable* getVariable(const std::string& varName);
 
   std::string& getFMUPath() {return fmuPath;}
@@ -90,6 +91,7 @@ private:
   std::vector<Variable> allVariables;
 
   DirectedGraph outputsGraph;
+  DirectedGraph initialUnknownsGraph;
 
   // ME & CS
   fmi2_real_t tcur;
