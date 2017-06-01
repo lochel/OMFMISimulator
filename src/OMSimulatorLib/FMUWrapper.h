@@ -62,6 +62,10 @@ public:
   const DirectedGraph& getOutputsGraph() {return outputsGraph;}
   Variable* getVariable(const std::string& varName);
 
+  std::string& getFMUPath() {return fmuPath;}
+  std::string getFMUKind();
+  std::string getGUID();
+
 private:
   void do_event_iteration();
   void simulate_cs(const std::string& resultFileName);

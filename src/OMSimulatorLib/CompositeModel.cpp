@@ -161,11 +161,58 @@ void CompositeModel::describe()
   logTrace();
 
   std::map<std::string, FMUWrapper*>::iterator it;
+
+  std::cout << "# FMU instances" << std::endl;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
   {
     std::cout << it->first << std::endl;
-    it->second->describe();
+    std::cout << "  - " << it->second->getFMUKind() << std::endl;
+    std::cout << "  - path: " << it->second->getFMUPath() << std::endl;
+    std::cout << "  - GUID: " << it->second->getGUID() << std::endl;
   }
+
+  //std::cout << "\n# Parameters" << std::endl;
+  //std::cout << "TODO" << std::endl;
+
+  std::cout << "\n# Simulation settings" << std::endl;
+  std::cout << "start time: " << settings.GetStartTime() << std::endl;
+  std::cout << "stop time: " << settings.GetStopTime() << std::endl;
+  std::cout << "tolerance: " << settings.GetTolerance() << std::endl;
+  std::cout << "result file: " << (settings.GetResultFile() ? settings.GetResultFile() : "<no result file>") << std::endl;
+  //std::cout << "temp directory: " << settings.GetTempDirectory() << std::endl;
+
+  std::cout << "\n# Composite structure" << std::endl;
+  std::vector< std::pair<int, int> > connections;
+
+  //std::cout << "## Initialization" << std::endl;
+  //// calculate sorting
+  //connections = initialUnknownsGraph.getSortedConnections();
+  //for(int i=0; i<connections.size(); i++)
+  //{
+  //  int output = connections[i].first;
+  //  int input = connections[i].second;
+  //  std::string outputFMU = initialUnknownsGraph.nodes[output].fmuInstance;
+  //  std::string outputVar = initialUnknownsGraph.nodes[output].name;
+  //  std::string inputFMU = initialUnknownsGraph.nodes[input].fmuInstance;
+  //  std::string inputVar = initialUnknownsGraph.nodes[input].name;
+  //  std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
+  //}
+
+  std::cout << "\n## Simulation" << std::endl;
+  // calculate sorting
+  connections = outputsGraph.getSortedConnections();
+  for(int i=0; i<connections.size(); i++)
+  {
+    int output = connections[i].first;
+    int input = connections[i].second;
+    std::string outputFMU = outputsGraph.nodes[output].fmuInstance;
+    std::string outputVar = outputsGraph.nodes[output].name;
+    std::string inputFMU = outputsGraph.nodes[input].fmuInstance;
+    std::string inputVar = outputsGraph.nodes[input].name;
+    std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
+  }
+
+  std::cout << std::endl;
 }
 
 void CompositeModel::simulate()

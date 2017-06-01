@@ -343,6 +343,19 @@ void FMUWrapper::describe()
     logError("Unsupported FMU kind: " + std::string(fmi2_fmu_kind_to_string(fmuKind)));
 }
 
+std::string FMUWrapper::getFMUKind()
+{
+  if(fmi2_fmu_kind_me == fmuKind) return "FMI 2.0 ME";
+  if(fmi2_fmu_kind_cs == fmuKind) return "FMI 2.0 CS";
+  else "Unsupported FMU kind";
+}
+
+std::string FMUWrapper::getGUID()
+{
+  const char* GUID = fmi2_import_get_GUID(fmu);
+  return std::string(GUID);
+}
+
 void FMUWrapper::do_event_iteration()
 {
   eventInfo.newDiscreteStatesNeeded = fmi2_true;
