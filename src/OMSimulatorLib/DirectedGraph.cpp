@@ -32,6 +32,7 @@
 #include "DirectedGraph.h"
 #include "Variable.h"
 #include "Logging.h"
+#include "Util.h"
 
 #include <iostream>
 #include <string>
@@ -230,6 +231,15 @@ std::vector< std::pair<int, int> > DirectedGraph::getSortedConnections()
 
   for (int i=0; i<components.size(); ++i)
   {
+    if (components[i].size() > 1)
+    {
+      logWarning("Unhandled alg. loop (size " + toString(components[i].size()) + ")");
+      for (int j=0; j<components[i].size(); ++j)
+      {
+        int v = components[i][j];
+        logInfo("  - " + nodes[v].fmuInstance + "." + nodes[v].name);
+      }
+    }
     for (int j=0; j<components[i].size(); ++j)
     {
       int v = components[i][j];
