@@ -26,8 +26,12 @@ OpenModelica FMI &amp; TLM based simulator
 ```
 
 ### Windows
-TODO
+1. configure OMSimulator
+```bash
+> configWinVS14.bat
+```
 
-### Custom configuration
-Update the `FMILibrary_ROOT` variable in the root CMakeFiles.txt in OMSimulator folder to point to the installation folder of FMILibrary.
-  - FMILibrary will install everything by default in to a directory called "install" on the root FMIL directory. e.g. `SET(FMILibrary_ROOT <pathto>/FMIL/install)`
+2. build OMSimulator
+```bash
+> buildWinVS14.bat
+```

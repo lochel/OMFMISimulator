@@ -46,6 +46,13 @@ ELSE()
 ENDIF()
 find_package(FMILibrary REQUIRED)
 
+IF (WIN32)
+  set(LUALibrary_ROOT ${PROJECT_SOURCE_DIR}/3rdParty/Lua/install/win)
+ELSE()
+  set(LUALibrary_ROOT ${PROJECT_SOURCE_DIR}/3rdParty/Lua/install/linux)
+ENDIF()
+find_package(LUALibrary REQUIRED)
+
 ##########################
 # Add project modules
 add_subdirectory(src/OMSimulatorLib)

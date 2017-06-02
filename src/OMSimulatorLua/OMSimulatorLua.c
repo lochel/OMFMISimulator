@@ -6,6 +6,12 @@
 
 #define REGISTER_LUA_CALL(name) lua_register(L, #name, name)
 
+#ifdef _WIN32
+  #define DLLEXPORT __declspec(dllexport)
+#else
+  #define DLLEXPORT
+#endif
+
 void push_pointer(lua_State *L, void *p)
 {
   void **bp = lua_newuserdata(L, sizeof(p));
@@ -146,7 +152,7 @@ static int doSteps(lua_State *L)
   luaL_checktype(L, 2, LUA_TNUMBER);
 
   void *model = topointer(L, 1);
-  int numberOfSteps = lua_tointeger(L, 2);
+  int numberOfSteps = (int)lua_tointeger(L, 2);
   oms_doSteps(model, numberOfSteps);
   return 0;
 }
@@ -311,7 +317,7 @@ static int getVersion(lua_State *L)
   return 1;
 }
 
-int luaopen_libOMSimulatorLua(lua_State *L)
+DLLEXPORT int luaopen_OMSimulatorLua(lua_State *L)
 {
   REGISTER_LUA_CALL(newModel);
   REGISTER_LUA_CALL(loadModel);
