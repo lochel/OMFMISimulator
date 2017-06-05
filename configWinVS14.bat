@@ -12,6 +12,12 @@ echo # build fmil
 @call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86_amd64
 msbuild.exe "3rdParty\FMIL\build\win\INSTALL.vcxproj" /t:Build /p:configuration=Debug
 
+echo # build Lua
+CD 3rdParty\Lua
+if exist "install\win\" RMDIR /S /Q install\win
+call buildWinVS14.bat
+CD ..\..
+
 echo # config OMFMISimulator
 if exist "build\win\" RMDIR /S /Q build\win
 MKDIR build\win
