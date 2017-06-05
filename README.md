@@ -11,7 +11,7 @@ OpenModelica FMI &amp; TLM based simulator
 ### Linux/OSX
 1. configure OMSimulator
 ```bash
-> make config-fmil
+> make config-3rdParty
 > make config-OMSimulator
 ```
 

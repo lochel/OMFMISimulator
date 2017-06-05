@@ -1,7 +1,7 @@
 RM=rm -rf
 MKDIR=mkdir -p
 
-.PHONY: OMSimulator config config-OMSimulator config-fmil distclean testsuite
+.PHONY: OMSimulator config config-OMSimulator config-fmil config-lua config-3rdParty distclean testsuite
 
 OMSimulator:
 	@echo
@@ -10,6 +10,7 @@ OMSimulator:
 	@$(MAKE) -C build/linux install
 
 config: config-OMSimulator
+config-3rdParty: config-fmil config-lua
 
 config-OMSimulator:
 	@echo
@@ -27,6 +28,13 @@ config-fmil:
 	$(RM) 3rdParty/FMIL/install/linux
 	$(MKDIR) 3rdParty/FMIL/build/linux
 	cd 3rdParty/FMIL/build/linux && cmake -DFMILIB_INSTALL_PREFIX=../../install/linux ../.. && $(MAKE) install
+
+config-lua:
+	@echo
+	@echo "# config Lua"
+	@echo
+	$(RM) 3rdParty/Lua/install/linux
+	@$(MAKE) -C 3rdParty/Lua
 
 distclean:
 	@echo
