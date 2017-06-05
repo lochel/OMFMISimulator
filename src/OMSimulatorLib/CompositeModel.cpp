@@ -86,7 +86,7 @@ void CompositeModel::setReal(const std::string& var, double value)
 
   // TODO: Improve this
   std::getline(var_, fmuInstance, '.');
-  std::getline(var_, fmuVar, '.');
+  std::getline(var_, fmuVar);
 
   if (fmuInstances.find(fmuInstance) == fmuInstances.end())
   {
@@ -106,7 +106,7 @@ double CompositeModel::getReal(const std::string& var)
 
   // TODO: Improve this
   std::getline(var_, fmuInstance, '.');
-  std::getline(var_, fmuVar, '.');
+  std::getline(var_, fmuVar);
 
   if (fmuInstances.find(fmuInstance) == fmuInstances.end())
   {
@@ -127,11 +127,11 @@ void CompositeModel::addConnection(const std::string& from, const std::string& t
 
   // TODO: Improve this
   std::getline(var1_, fmuInstance1, '.');
-  std::getline(var1_, fmuVar1, '.');
+  std::getline(var1_, fmuVar1);
 
   // TODO: Improve this
   std::getline(var2_, fmuInstance2, '.');
-  std::getline(var2_, fmuVar2, '.');
+  std::getline(var2_, fmuVar2);
 
   if (fmuInstances.find(fmuInstance1) == fmuInstances.end())
   {
