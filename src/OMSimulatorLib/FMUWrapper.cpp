@@ -356,6 +356,14 @@ std::string FMUWrapper::getGUID()
   return std::string(GUID);
 }
 
+std::string FMUWrapper::getGenerationTool()
+{
+  const char* tool = fmi2_import_get_generation_tool(fmu);
+  if (tool)
+    return std::string(tool);
+  return "<unknown>";
+}
+
 void FMUWrapper::do_event_iteration()
 {
   eventInfo.newDiscreteStatesNeeded = fmi2_true;

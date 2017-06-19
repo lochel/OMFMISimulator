@@ -66,6 +66,7 @@ public:
   std::string& getFMUPath() {return fmuPath;}
   std::string getFMUKind();
   std::string getGUID();
+  std::string getGenerationTool();
 
 private:
   void do_event_iteration();

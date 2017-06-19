@@ -172,6 +172,7 @@ void CompositeModel::describe()
     std::cout << "  - " << it->second->getFMUKind() << std::endl;
     std::cout << "  - path: " << it->second->getFMUPath() << std::endl;
     std::cout << "  - GUID: " << it->second->getGUID() << std::endl;
+    std::cout << "  - tool: " << it->second->getGenerationTool() << std::endl;
 
     std::cout << "  - input interface:" << std::endl;
     DirectedGraph graph = it->second->getOutputsGraph();
