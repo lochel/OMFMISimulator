@@ -51,14 +51,14 @@ CompositeModel::CompositeModel()
   : fmuInstances()
 {
   logTrace();
-  simulation_mode = false;
+  modelState = oms_modelState_instantiated;
 }
 
 CompositeModel::CompositeModel(const std::string& descriptionPath)
 {
   logTrace();
   logError("Function not implemented yet: CompositeModel::CompositeModel");
-  simulation_mode = false;
+  modelState = oms_modelState_instantiated;
 }
 
 CompositeModel::~CompositeModel()
@@ -197,11 +197,9 @@ void CompositeModel::describe()
   //std::cout << "  - temp directory: " << settings.GetTempDirectory() << std::endl;
 
   std::cout << "\n# Composite structure" << std::endl;
-  std::vector< std::pair<int, int> > connections;
-
   std::cout << "## Initialization" << std::endl;
   // calculate sorting
-  connections = initialUnknownsGraph.getSortedConnections();
+  std::vector< std::pair<int, int> >& connections = initialUnknownsGraph.getSortedConnections();
   for(int i=0; i<connections.size(); i++)
   {
     int output = connections[i].first;
@@ -230,6 +228,25 @@ void CompositeModel::describe()
   std::cout << std::endl;
 }
 
+void CompositeModel::updateInputs(DirectedGraph& graph)
+{
+  std::vector< std::pair<int, int> >& sortedConnections = graph.getSortedConnections();
+
+  // input = output
+  for(int i=0; i<sortedConnections.size(); i++)
+  {
+    int output = sortedConnections[i].first;
+    int input = sortedConnections[i].second;
+    std::string outputFMU = graph.nodes[output].fmuInstance;
+    std::string outputVar = graph.nodes[output].name;
+    std::string inputFMU = graph.nodes[input].fmuInstance;
+    std::string inputVar = graph.nodes[input].name;
+    double value = fmuInstances[outputFMU]->getReal(outputVar);
+    fmuInstances[inputFMU]->setReal(inputVar, value);
+    //std::cout << inputFMU << "." << inputVar << " = " << outputFMU << "." << outputVar << std::endl;
+  }
+}
+
 void CompositeModel::simulate()
 {
   logTrace();
@@ -247,9 +264,9 @@ oms_status_t CompositeModel::doSteps(const int numberOfSteps)
 {
   logTrace();
 
-  if(!simulation_mode)
+  if (oms_modelState_simulation != modelState)
   {
-    logInfo("CompositeModel::doSteps: Model is not in simulation mode.");
+    logError("CompositeModel::doSteps: Model is not in simulation mode.");
     return oms_status_error;
   }
 
@@ -257,18 +274,7 @@ oms_status_t CompositeModel::doSteps(const int numberOfSteps)
   for(int step=0; step<numberOfSteps; step++)
   {
     // input = output
-    for(int i=0; i<sortedConnections.size(); i++)
-    {
-      int output = sortedConnections[i].first;
-      int input = sortedConnections[i].second;
-      std::string outputFMU = outputsGraph.nodes[output].fmuInstance;
-      std::string outputVar = outputsGraph.nodes[output].name;
-      std::string inputFMU = outputsGraph.nodes[input].fmuInstance;
-      std::string inputVar = outputsGraph.nodes[input].name;
-      double value = fmuInstances[outputFMU]->getReal(outputVar);
-      fmuInstances[inputFMU]->setReal(inputVar, value);
-      //std::cout << inputFMU << "." << inputVar << " = " << outputFMU << "." << outputVar << std::endl;
-    }
+    updateInputs(outputsGraph);
 
     // do_step
     std::map<std::string, FMUWrapper*>::iterator it;
@@ -284,9 +290,9 @@ oms_status_t CompositeModel::stepUntil(const double timeValue)
 {
   logTrace();
 
-  if(!simulation_mode)
+  if (oms_modelState_simulation != modelState)
   {
-    logInfo("CompositeModel::stepUntil: Model is not in simulation mode.");
+    logError("CompositeModel::stepUntil: Model is not in simulation mode.");
     return oms_status_error;
   }
 
@@ -302,43 +308,52 @@ void CompositeModel::initialize()
 {
   logTrace();
 
-  if(simulation_mode)
+  if (oms_modelState_instantiated != modelState)
   {
     logFatal("CompositeModel::initialize: Model is already in simulation mode.");
   }
 
-  // calculate sorting
-  sortedConnections = outputsGraph.getSortedConnections();
-
   double* pStartTime = settings.GetStartTime();
   tcur = pStartTime ? *pStartTime : 0.0;
+
+  // Enter initialization
+  modelState = oms_modelState_initialization;
   std::map<std::string, FMUWrapper*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
-    it->second->preSim(tcur);
-  simulation_mode = true;
+    it->second->enterInitialization(tcur);
+
+  updateInputs(initialUnknownsGraph);
+
+  // Exit initialization
+  for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
+    it->second->exitInitialization();
+  modelState = oms_modelState_simulation;
 }
 
 void CompositeModel::terminate()
 {
   logTrace();
 
-  if(!simulation_mode)
+  if (oms_modelState_initialization != modelState &&
+      oms_modelState_simulation != modelState)
   {
     logInfo("CompositeModel::terminate: No simulation to terminate.");
     return;
   }
 
-  simulation_mode = false;
   std::map<std::string, FMUWrapper*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
-    it->second->postSim();
+    it->second->terminate();
+
+  modelState = oms_modelState_instantiated;
 }
 
 oms_status_t CompositeModel::getCurrentTime(double *time)
 {
   logTrace();
 
-  if(!simulation_mode)
+  if (oms_modelState_initialization != modelState &&
+      oms_modelState_simulation != modelState)
   {
     logError("It is only allowed to call 'getCurrentTime' while running a simulation.");
     return oms_status_error;

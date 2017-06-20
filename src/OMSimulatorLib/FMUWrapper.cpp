@@ -111,7 +111,11 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
   callbacks.realloc = realloc;
   callbacks.free = free;
   callbacks.logger = fmiLogger;
+#ifdef OMS_DEBUG_LOGGING
+  callbacks.log_level = jm_log_level_all;
+#else
   callbacks.log_level = jm_log_level_warning;
+#endif
   callbacks.context = 0;
 
   //set working directory
@@ -197,15 +201,31 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
     }
     if (fmi2_causality_enu_output == varCausality)
     {
-      allOutputs.push_back(v);
+      outputs.push_back(v);
     }
     allVariables.push_back(v);
     outputsGraph.addVariable(v);
   }
   fmi2_import_free_variable_list(varList);
 
+  varList = fmi2_import_get_initial_unknowns_list(fmu);
+
+  varListSize = fmi2_import_get_variable_list_size(varList);
+  logDebug(toString(varListSize) + " initial unknowns");
+  for(size_t i=0; i<varListSize; ++i)
+  {
+    fmi2_import_variable_t* var = fmi2_import_get_variable(varList, i);
+    fmi2_causality_enu_t varCausality = fmi2_import_get_causality(var);
+    fmi2_value_reference_t vr = fmi2_import_get_variable_vr(var);
+    std::string name = fmi2_import_get_variable_name(var);
+    Variable v(name, instanceName, vr, 0, varCausality);
+    initialUnknowns.push_back(v);
+  }
+  fmi2_import_free_variable_list(varList);
+
   // generate internal dependency graph
   getDependencyGraph();
+  getDependencyGraph_Initialization();
 }
 
 FMUWrapper::~FMUWrapper()
@@ -270,12 +290,6 @@ void FMUWrapper::setRealParameter(const std::string& var, double value)
 
 void FMUWrapper::getDependencyGraph()
 {
-  if(allOutputs.size() == 0)
-  {
-    logDebug("FMUWrapper::getDependencyGraph: no outputs available");
-    return;
-  }
-
   size_t *startIndex, *dependency;
   char* factorKind;
   //std::cout << "Listing outputs and dependencies on inputs:" << std::endl;
@@ -284,27 +298,79 @@ void FMUWrapper::getDependencyGraph()
 
   if (!startIndex)
   {
-    logDebug("FMUWrapper::getDependencyGraph: dependencies are not available");
+    logDebug("FMUWrapper::getDependencyGraph: [" + instanceName + ": " + fmuPath + "] dependencies are not available");
+    /* all outputs depend on all inputs */
+    for (int i=0; i<allVariables.size(); i++)
+      if (allVariables[i].isInput())
+        for (int j=0; j<outputs.size(); j++)
+          outputsGraph.addEdge(allVariables[i], outputs[j]);
     return;
   }
 
-  for (int i=0; i<allOutputs.size(); i++)
+  for (int i=0; i<outputs.size(); i++)
   {
     if (startIndex[i] == startIndex[i + 1])
     {
-      logDebug("FMUWrapper::getDependencyGraph: output " + allOutputs[i].name + " has no dependencies");
+      logDebug("FMUWrapper::getDependencyGraph: [" + instanceName + ": " + fmuPath + "] output " + outputs[i].name + " has no dependencies");
     }
     else if ((startIndex[i] + 1 == startIndex[i + 1]) && (dependency[startIndex[i]] == 0))
     {
-      logDebug("FMUWrapper::getDependencyGraph: output " + allOutputs[i].name + " depends on all");
+      logDebug("FMUWrapper::getDependencyGraph: [" + instanceName + ": " + fmuPath + "] output " + outputs[i].name + " depends on all");
+      for (int j=0; j<allVariables.size(); j++)
+        if (allVariables[j].isInput())
+          outputsGraph.addEdge(allVariables[j], outputs[i]);
     }
     else
     {
-      //std::cout << "output " << allOutputs[i].name << " depends on:" << std::endl;
+      //std::cout << "output " << outputs[i].name << " depends on:" << std::endl;
       for (int j=startIndex[i]; j<startIndex[i+1]; j++)
       {
-        outputsGraph.addEdge(allVariables[dependency[j]-1], allOutputs[i]);
+        outputsGraph.addEdge(allVariables[dependency[j]-1], outputs[i]);
         //std::cout << "  " << allVariables[dependency[j]-1].name << " (factor kind: " << fmi2_dependency_factor_kind_to_string((fmi2_dependency_factor_kind_enu_t)factorKind[j]) << ")" << std::endl;
+      }
+    }
+  }
+}
+
+void FMUWrapper::getDependencyGraph_Initialization()
+{
+  size_t *startIndex, *dependency;
+  char* factorKind;
+  //std::cout << "Listing outputs and dependencies on inputs:" << std::endl;
+
+  fmi2_import_get_initial_unknowns_dependencies(fmu, &startIndex, &dependency, &factorKind);
+
+  if (!startIndex)
+  {
+    logDebug("FMUWrapper::getDependencyGraph_Initialization: [" + instanceName + ": " + fmuPath + "] dependencies are not available");
+    /* all outputs depend on all inputs */
+    for (int i=0; i<allVariables.size(); i++)
+      if (allVariables[i].isInput())
+        for (int j=0; j<outputs.size(); j++)
+          initialUnknownsGraph.addEdge(allVariables[i], outputs[j]);
+    return;
+  }
+
+  for (int i=0; i<initialUnknowns.size(); i++)
+  {
+    if (startIndex[i] == startIndex[i + 1])
+    {
+      logDebug("FMUWrapper::getDependencyGraph_Initialization: [" + instanceName + ": " + fmuPath + "] output " + initialUnknowns[i].name + " has no dependencies");
+    }
+    else if ((startIndex[i] + 1 == startIndex[i + 1]) && (dependency[startIndex[i]] == 0))
+    {
+      logDebug("FMUWrapper::getDependencyGraph_Initialization: [" + instanceName + ": " + fmuPath + "] output " + initialUnknowns[i].name + " depends on all");
+      for (int j=0; j<allVariables.size(); j++)
+        if (allVariables[j].isInput())
+          outputsGraph.addEdge(allVariables[j], initialUnknowns[i]);
+    }
+    else
+    {
+      //std::cout << "initial unknown (" << i+1 << ") " << initialUnknowns[i].name << " depends on:" << std::endl;
+      for (int j=startIndex[i]; j<startIndex[i+1]; j++)
+      {
+        initialUnknownsGraph.addEdge(allVariables[dependency[j]-1], initialUnknowns[i]);
+        //std::cout << "  (" << dependency[j] << ") " << allVariables[dependency[j]-1].name << " (factor kind: " << fmi2_dependency_factor_kind_to_string((fmi2_dependency_factor_kind_enu_t)factorKind[j]) << ")" << std::endl;
       }
     }
   }
@@ -372,17 +438,9 @@ void FMUWrapper::do_event_iteration()
     fmi2_import_new_discrete_states(fmu, &eventInfo);
 }
 
-void FMUWrapper::preSim(double startTime)
+void FMUWrapper::enterInitialization(double startTime)
 {
   fmi2_status_t fmistatus;
-
-  const char* resultFile = model.getSettings().GetResultFile();
-  std::string finalResultFile;
-  if(resultFile)
-    finalResultFile = std::string(resultFile) + "_" + instanceName + "_res.csv";
-  else
-    finalResultFile = instanceName + "_res.csv";
-  logDebug("result file: " + finalResultFile);
 
   double* pTolerance = model.getSettings().GetTolerance();
   relativeTolerance = pTolerance ? *pTolerance : fmi2_import_get_default_experiment_tolerance(fmu);
@@ -403,7 +461,33 @@ void FMUWrapper::preSim(double startTime)
 
     fmistatus = fmi2_import_enter_initialization_mode(fmu);
     if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_enter_initialization_mode failed");
+  }
+  else if(fmi2_fmu_kind_cs == fmuKind)
+  {
+    fmistatus = fmi2_import_setup_experiment(fmu, toleranceControlled, relativeTolerance, tcur, StopTimeDefined, tend);
+    if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_setup_experiment failed");
 
+    fmistatus = fmi2_import_enter_initialization_mode(fmu);
+    if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_enter_initialization_mode failed");
+  }
+  else
+    logFatal("Unsupported FMU kind");
+}
+
+void FMUWrapper::exitInitialization()
+{
+  fmi2_status_t fmistatus;
+
+  const char* resultFile = model.getSettings().GetResultFile();
+  std::string finalResultFile;
+  if(resultFile)
+    finalResultFile = std::string(resultFile) + "_" + instanceName + "_res.csv";
+  else
+    finalResultFile = instanceName + "_res.csv";
+  logDebug("result file: " + finalResultFile);
+
+  if(fmi2_fmu_kind_me == fmuKind)
+  {
     fmistatus = fmi2_import_exit_initialization_mode(fmu);
     if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_exit_initialization_mode failed");
 
@@ -445,21 +529,17 @@ void FMUWrapper::preSim(double startTime)
   }
   else if(fmi2_fmu_kind_cs == fmuKind)
   {
-    fmistatus = fmi2_import_setup_experiment(fmu, toleranceControlled, relativeTolerance, tcur, StopTimeDefined, tend);
-    if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_setup_experiment failed");
-
-    fmistatus = fmi2_import_enter_initialization_mode(fmu);
-    if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_enter_initialization_mode failed");
-
     fmistatus = fmi2_import_exit_initialization_mode(fmu);
     if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_exit_initialization_mode failed");
 
     omsResultFile = new Resultfile(finalResultFile, fmu);
     omsResultFile->emit(tcur);
   }
+  else
+    logFatal("Unsupported FMU kind");
 }
 
-void FMUWrapper::postSim()
+void FMUWrapper::terminate()
 {
   if(fmi2_fmu_kind_me == fmuKind)
   {

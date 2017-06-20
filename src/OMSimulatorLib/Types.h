@@ -47,6 +47,12 @@ typedef enum {
   oms_status_pending
 } oms_status_t;
 
+typedef enum {
+  oms_modelState_instantiated,
+  oms_modelState_initialization,
+  oms_modelState_simulation
+} oms_modelState_t;
+
 #ifdef __cplusplus
 }
 #endif

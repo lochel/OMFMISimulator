@@ -52,8 +52,7 @@ bool operator==(const Variable& v1, const Variable& v2)
 {
   return v1.name == v2.name &&
          v1.fmuInstance == v2.fmuInstance &&
-         v1.vr == v2.vr &&
-         v1.index == v2.index;
+         v1.vr == v2.vr;
 }
 bool operator!=(const Variable& v1, const Variable& v2)
 {

@@ -69,13 +69,15 @@ public:
   Settings& getSettings() {return settings;}
 
 private:
+  void updateInputs(DirectedGraph& graph);
+
+private:
   Settings settings;
   std::map<std::string, FMUWrapper*> fmuInstances;
   DirectedGraph outputsGraph;
   DirectedGraph initialUnknownsGraph;
   double tcur;
-  bool simulation_mode;
-  std::vector< std::pair<int, int> > sortedConnections;
+  oms_modelState_t modelState;
 };
 
 #endif

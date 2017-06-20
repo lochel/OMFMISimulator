@@ -53,15 +53,18 @@ public:
 
   void includeGraph(const DirectedGraph& graph);
 
-  std::vector< std::pair<int, int> > getSortedConnections();
-
+  std::vector< std::pair<int, int> >& getSortedConnections();
   std::vector<Variable> nodes;
   std::vector< std::pair<int, int> > edges;
 
 private:
   std::deque< std::vector<int> > getSCCs();
+  void calculateSortedConnections();
 
+private:
   std::vector< std::vector<int> > G;
+  std::vector< std::pair<int, int> > sortedConnections;
+  bool sortedConnectionsAreValid;
 };
 
 #endif

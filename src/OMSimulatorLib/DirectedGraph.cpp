@@ -46,7 +46,7 @@
 
 DirectedGraph::DirectedGraph()
 {
-
+  sortedConnectionsAreValid = true;
 }
 
 DirectedGraph::~DirectedGraph()
@@ -86,6 +86,7 @@ void DirectedGraph::addEdge(const Variable& var1, const Variable& var2)
 
   edges.push_back(std::pair<int, int>(index1, index2));
   G[index1].push_back(index2);
+  sortedConnectionsAreValid = false;
 }
 
 void DirectedGraph::dotExport(const std::string& filename)
@@ -224,10 +225,17 @@ std::deque< std::vector<int> > DirectedGraph::getSCCs()
   return components;
 }
 
-std::vector< std::pair<int, int> > DirectedGraph::getSortedConnections()
+std::vector< std::pair<int, int> >& DirectedGraph::getSortedConnections()
+{
+  if (!sortedConnectionsAreValid)
+    calculateSortedConnections();
+  return sortedConnections;
+}
+
+void DirectedGraph::calculateSortedConnections()
 {
   std::deque< std::vector<int> > components = getSCCs();
-  std::vector< std::pair<int, int> > connections;
+  sortedConnections.clear();
 
   for (int i=0; i<components.size(); ++i)
   {
@@ -249,11 +257,11 @@ std::vector< std::pair<int, int> > DirectedGraph::getSortedConnections()
         {
           int w = G[v][k];
           if (nodes[w].isInput())
-            connections.push_back(std::pair<int, int>(v, w));
+            sortedConnections.push_back(std::pair<int, int>(v, w));
         }
       }
     }
   }
 
-  return connections;
+  sortedConnectionsAreValid = true;
 }

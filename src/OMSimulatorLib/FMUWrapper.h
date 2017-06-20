@@ -55,8 +55,9 @@ public:
   void describe();
   void simulate();
 
-  void preSim(double startTime);
-  void postSim();
+  void enterInitialization(double startTime);
+  void exitInitialization();
+  void terminate();
   void doStep(double stopTime);
 
   const DirectedGraph& getOutputsGraph() {return outputsGraph;}
@@ -73,6 +74,7 @@ private:
   void simulate_cs(const std::string& resultFileName);
   void simulate_me(const std::string& resultFileName);
   void getDependencyGraph();
+  void getDependencyGraph_Initialization();
 
 private:
   CompositeModel& model;
@@ -88,8 +90,9 @@ private:
   fmi2_event_info_t eventInfo;
 
   std::map<std::string, fmi2_value_reference_t> parameterLookUp;
-  std::vector<Variable> allOutputs;
+  std::vector<Variable> outputs;
   std::vector<Variable> allVariables;
+  std::vector<Variable> initialUnknowns;
 
   DirectedGraph outputsGraph;
   DirectedGraph initialUnknownsGraph;
