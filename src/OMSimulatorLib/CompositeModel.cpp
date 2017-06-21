@@ -237,10 +237,10 @@ void CompositeModel::updateInputs(DirectedGraph& graph)
   {
     int output = sortedConnections[i].first;
     int input = sortedConnections[i].second;
-    std::string outputFMU = graph.nodes[output].fmuInstance;
-    std::string outputVar = graph.nodes[output].name;
-    std::string inputFMU = graph.nodes[input].fmuInstance;
-    std::string inputVar = graph.nodes[input].name;
+    std::string& outputFMU = graph.nodes[output].fmuInstance;
+    std::string& outputVar = graph.nodes[output].name;
+    std::string& inputFMU = graph.nodes[input].fmuInstance;
+    std::string& inputVar = graph.nodes[input].name;
     double value = fmuInstances[outputFMU]->getReal(outputVar);
     fmuInstances[inputFMU]->setReal(inputVar, value);
     //std::cout << inputFMU << "." << inputVar << " = " << outputFMU << "." << outputVar << std::endl;
