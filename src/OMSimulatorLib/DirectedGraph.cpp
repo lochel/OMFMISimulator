@@ -225,7 +225,7 @@ std::deque< std::vector<int> > DirectedGraph::getSCCs()
   return components;
 }
 
-std::vector< std::pair<int, int> >& DirectedGraph::getSortedConnections()
+const std::vector< std::pair<int, int> >& DirectedGraph::getSortedConnections()
 {
   if (!sortedConnectionsAreValid)
     calculateSortedConnections();

@@ -53,7 +53,7 @@ public:
 
   void includeGraph(const DirectedGraph& graph);
 
-  std::vector< std::pair<int, int> >& getSortedConnections();
+  const std::vector< std::pair<int, int> >& getSortedConnections();
   std::vector<Variable> nodes;
   std::vector< std::pair<int, int> > edges;
 

@@ -199,11 +199,11 @@ void CompositeModel::describe()
   std::cout << "\n# Composite structure" << std::endl;
   std::cout << "## Initialization" << std::endl;
   // calculate sorting
-  std::vector< std::pair<int, int> >& connections = initialUnknownsGraph.getSortedConnections();
-  for(int i=0; i<connections.size(); i++)
+  const std::vector< std::pair<int, int> >& connectionsInitialUnknowns = initialUnknownsGraph.getSortedConnections();
+  for(int i=0; i<connectionsInitialUnknowns.size(); i++)
   {
-    int output = connections[i].first;
-    int input = connections[i].second;
+    int output = connectionsInitialUnknowns[i].first;
+    int input = connectionsInitialUnknowns[i].second;
     std::string outputFMU = initialUnknownsGraph.nodes[output].fmuInstance;
     std::string outputVar = initialUnknownsGraph.nodes[output].name;
     std::string inputFMU = initialUnknownsGraph.nodes[input].fmuInstance;
@@ -213,11 +213,11 @@ void CompositeModel::describe()
 
   std::cout << "\n## Simulation" << std::endl;
   // calculate sorting
-  connections = outputsGraph.getSortedConnections();
-  for(int i=0; i<connections.size(); i++)
+  const std::vector< std::pair<int, int> >& connectionsOutputs = outputsGraph.getSortedConnections();
+  for(int i=0; i<connectionsOutputs.size(); i++)
   {
-    int output = connections[i].first;
-    int input = connections[i].second;
+    int output = connectionsOutputs[i].first;
+    int input = connectionsOutputs[i].second;
     std::string outputFMU = outputsGraph.nodes[output].fmuInstance;
     std::string outputVar = outputsGraph.nodes[output].name;
     std::string inputFMU = outputsGraph.nodes[input].fmuInstance;
@@ -230,7 +230,7 @@ void CompositeModel::describe()
 
 void CompositeModel::updateInputs(DirectedGraph& graph)
 {
-  std::vector< std::pair<int, int> >& sortedConnections = graph.getSortedConnections();
+  const std::vector< std::pair<int, int> >& sortedConnections = graph.getSortedConnections();
 
   // input = output
   for(int i=0; i<sortedConnections.size(); i++)
