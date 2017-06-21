@@ -44,6 +44,7 @@ public:
 
   bool isOutput(){return fmi2_causality_enu_output == causality;}
   bool isInput(){return fmi2_causality_enu_input == causality;}
+  bool isParameter(){return fmi2_causality_enu_parameter == causality;}
 
   std::string name;
   std::string fmuInstance;
