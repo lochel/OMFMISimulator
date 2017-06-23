@@ -74,8 +74,8 @@ private:
   void do_event_iteration();
   void simulate_cs(const std::string& resultFileName);
   void simulate_me(const std::string& resultFileName);
-  void getDependencyGraph();
-  void getDependencyGraph_Initialization();
+  void getDependencyGraph_outputs();
+  void getDependencyGraph_initialUnknowns();
 
 private:
   CompositeModel& model;
@@ -90,10 +90,16 @@ private:
   fmi2_import_t* fmu;
   fmi2_event_info_t eventInfo;
 
-  std::map<std::string, fmi2_value_reference_t> parameterLookUp;
-  std::vector<Variable> outputs;
   std::vector<Variable> allVariables;
-  std::vector<Variable> initialUnknowns;
+  std::vector<unsigned int> realVariables;
+  std::vector<unsigned int> intVariables;
+  std::vector<unsigned int> boolVariables;
+  std::vector<unsigned int> strVariables;
+  std::vector<unsigned int> enumVariables;
+  std::vector<unsigned int> allInputs;
+  std::vector<unsigned int> allOutputs;
+  std::vector<unsigned int> allParameters;
+  std::vector<unsigned int> initialUnknowns;
 
   DirectedGraph outputsGraph;
   DirectedGraph initialUnknownsGraph;

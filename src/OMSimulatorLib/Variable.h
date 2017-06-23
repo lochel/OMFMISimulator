@@ -39,18 +39,44 @@
 class Variable
 {
 public:
-  Variable(std::string name, std::string fmuInstance, fmi2_value_reference_t vr, size_t index, fmi2_causality_enu_t causality);
+  Variable(fmi2_import_variable_t *var, std::string fmuInstance);
   ~Variable();
 
-  bool isOutput(){return fmi2_causality_enu_output == causality;}
-  bool isInput(){return fmi2_causality_enu_input == causality;}
-  bool isParameter(){return fmi2_causality_enu_parameter == causality;}
+  void markAsState() {is_state = true;}
 
+  // causality attribute
+  bool isParameter(){return fmi2_causality_enu_parameter == causality;}
+  bool isCalculatedParameter(){return fmi2_causality_enu_calculated_parameter == causality;}
+  bool isInput(){return fmi2_causality_enu_input == causality;}
+  bool isOutput(){return fmi2_causality_enu_output == causality;}
+  bool isLocal(){return fmi2_causality_enu_local == causality;}
+  bool& isState(){return is_state;}
+  bool isIndependent(){return fmi2_causality_enu_independent == causality;}
+
+  // initial attribute
+  bool isExact(){return fmi2_initial_enu_exact == initialProperty;}
+  bool isApprox(){return fmi2_initial_enu_approx == initialProperty;}
+  bool isCalculated(){return fmi2_initial_enu_calculated == initialProperty;}
+
+  bool isInitialUnknown(){return (isOutput() && (isApprox() || isCalculated()))
+                              || (isCalculatedParameter())
+                              || (isState() && (isApprox() || isCalculated()));}
+
+  std::string& getName() {return name;}
+  std::string& getFMUInstance() {return fmuInstance;}
+  fmi2_value_reference_t& getValueReference() {return vr;}
+  fmi2_base_type_enu_t& getBaseType() {return baseType;}
+protected:
   std::string name;
   std::string fmuInstance;
   fmi2_value_reference_t vr;
-  size_t index; // 1-based
   fmi2_causality_enu_t causality;
+  fmi2_initial_enu_t initialProperty;
+  bool is_state;
+  fmi2_base_type_enu_t baseType;
+
+  friend bool operator==(const Variable& v1, const Variable& v2);
+  friend bool operator!=(const Variable& v1, const Variable& v2);
 };
 
 bool operator==(const Variable& v1, const Variable& v2);

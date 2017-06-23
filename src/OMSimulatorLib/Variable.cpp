@@ -39,9 +39,15 @@
 #include <iostream>
 #include <string>
 
-Variable::Variable(std::string name, std::string fmuInstance, fmi2_value_reference_t vr, size_t index, fmi2_causality_enu_t causality)
-  : name(name), fmuInstance(fmuInstance), vr(vr), index(index), causality(causality)
+Variable::Variable(fmi2_import_variable_t *var, std::string fmuInstance)
+  : fmuInstance(fmuInstance), is_state(false)
 {
+  // extract the attributes
+  name = fmi2_import_get_variable_name(var);
+  vr = fmi2_import_get_variable_vr(var);
+  causality = fmi2_import_get_causality(var);
+  initialProperty = fmi2_import_get_initial(var);
+  baseType = fmi2_import_get_variable_base_type(var);
 }
 
 Variable::~Variable()

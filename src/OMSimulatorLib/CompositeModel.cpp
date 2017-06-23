@@ -188,10 +188,10 @@ void CompositeModel::exportXML(const char* filename)
     pugi::xml_node connection = connections.append_child("Connection");
     int output = connectionsOutputs[i].first;
     int input = connectionsOutputs[i].second;
-    std::string outputFMU = outputsGraph.nodes[output].fmuInstance;
-    std::string outputVar = outputsGraph.nodes[output].name;
-    std::string inputFMU = outputsGraph.nodes[input].fmuInstance;
-    std::string inputVar = outputsGraph.nodes[input].name;
+    std::string outputFMU = outputsGraph.nodes[output].getFMUInstance();
+    std::string outputVar = outputsGraph.nodes[output].getName();
+    std::string inputFMU = outputsGraph.nodes[input].getFMUInstance();
+    std::string inputVar = outputsGraph.nodes[input].getName();
     //std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
     std::string fromfmu=outputFMU + '.' + outputVar;
     std::string tofmu=inputFMU + '.' + inputVar;
@@ -227,12 +227,12 @@ void CompositeModel::describe()
     DirectedGraph graph = it->second->getOutputsGraph();
     for (int j=0; j<graph.nodes.size(); j++)
       if (graph.nodes[j].isInput())
-        std::cout << "    - input " << graph.nodes[j].name << std::endl;
+        std::cout << "    - input " << graph.nodes[j].getName() << std::endl;
 
     std::cout << "  - output interface:" << std::endl;
     for (int j=0; j<graph.nodes.size(); j++)
       if (graph.nodes[j].isOutput())
-        std::cout << "    - output " << graph.nodes[j].name << std::endl;
+        std::cout << "    - output " << graph.nodes[j].getName() << std::endl;
   }
 
   //std::cout << "\n# Parameters" << std::endl;
@@ -253,10 +253,10 @@ void CompositeModel::describe()
   {
     int output = connectionsInitialUnknowns[i].first;
     int input = connectionsInitialUnknowns[i].second;
-    std::string outputFMU = initialUnknownsGraph.nodes[output].fmuInstance;
-    std::string outputVar = initialUnknownsGraph.nodes[output].name;
-    std::string inputFMU = initialUnknownsGraph.nodes[input].fmuInstance;
-    std::string inputVar = initialUnknownsGraph.nodes[input].name;
+    std::string outputFMU = initialUnknownsGraph.nodes[output].getFMUInstance();
+    std::string outputVar = initialUnknownsGraph.nodes[output].getName();
+    std::string inputFMU = initialUnknownsGraph.nodes[input].getFMUInstance();
+    std::string inputVar = initialUnknownsGraph.nodes[input].getName();
     std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
   }
 
@@ -267,10 +267,10 @@ void CompositeModel::describe()
   {
     int output = connectionsOutputs[i].first;
     int input = connectionsOutputs[i].second;
-    std::string outputFMU = outputsGraph.nodes[output].fmuInstance;
-    std::string outputVar = outputsGraph.nodes[output].name;
-    std::string inputFMU = outputsGraph.nodes[input].fmuInstance;
-    std::string inputVar = outputsGraph.nodes[input].name;
+    std::string outputFMU = outputsGraph.nodes[output].getFMUInstance();
+    std::string outputVar = outputsGraph.nodes[output].getName();
+    std::string inputFMU = outputsGraph.nodes[input].getFMUInstance();
+    std::string inputVar = outputsGraph.nodes[input].getName();
     std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
   }
 
@@ -286,10 +286,10 @@ void CompositeModel::updateInputs(DirectedGraph& graph)
   {
     int output = sortedConnections[i].first;
     int input = sortedConnections[i].second;
-    std::string& outputFMU = graph.nodes[output].fmuInstance;
-    std::string& outputVar = graph.nodes[output].name;
-    std::string& inputFMU = graph.nodes[input].fmuInstance;
-    std::string& inputVar = graph.nodes[input].name;
+    std::string& outputFMU = graph.nodes[output].getFMUInstance();
+    std::string& outputVar = graph.nodes[output].getName();
+    std::string& inputFMU = graph.nodes[input].getFMUInstance();
+    std::string& inputVar = graph.nodes[input].getName();
     double value = fmuInstances[outputFMU]->getReal(outputVar);
     fmuInstances[inputFMU]->setReal(inputVar, value);
     //std::cout << inputFMU << "." << inputVar << " = " << outputFMU << "." << outputVar << std::endl;

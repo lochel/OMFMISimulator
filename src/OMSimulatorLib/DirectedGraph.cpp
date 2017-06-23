@@ -107,7 +107,7 @@ void DirectedGraph::dotExport(const std::string& filename)
   dotFile << "{" << std::endl;
   for (int i=0; i<nodes.size(); i++)
   {
-    dotFile << "  " << i << " [label=\"" << nodes[i].fmuInstance << "." << nodes[i].name << "\", ";
+    dotFile << "  " << i << " [label=\"" << nodes[i].getFMUInstance() << "." << nodes[i].getName() << "\", ";
     if (nodes[i].isInput())
       dotFile << "color=\"red\", ";
     else if (nodes[i].isOutput())
@@ -213,7 +213,7 @@ std::deque< std::vector<int> > DirectedGraph::getSCCs()
   //  for (int j=0; j<components[i].size(); ++j)
   //  {
   //    int v = components[i][j];
-  //    std::cout << nodes[v].fmuInstance << "." << nodes[v].name << " ";
+  //    std::cout << nodes[v].getFMUInstance() << "." << nodes[v].getName() << " ";
   //  }
   //  std::cout << std::endl;
   //}
@@ -245,7 +245,7 @@ void DirectedGraph::calculateSortedConnections()
       for (int j=0; j<components[i].size(); ++j)
       {
         int v = components[i][j];
-        logInfo("  - " + nodes[v].fmuInstance + "." + nodes[v].name);
+        logInfo("  - " + nodes[v].getFMUInstance() + "." + nodes[v].getName());
       }
     }
     for (int j=0; j<components[i].size(); ++j)

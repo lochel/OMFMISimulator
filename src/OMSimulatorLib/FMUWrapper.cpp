@@ -99,7 +99,7 @@ void fmi2logger(fmi2_component_environment_t env, fmi2_string_t instanceName, fm
 }
 
 FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string instanceName)
-  : model(model), fmuPath(fmuPath), parameterLookUp(), instanceName(instanceName)
+  : model(model), fmuPath(fmuPath), instanceName(instanceName)
 {
   logTrace();
 
@@ -184,48 +184,71 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
     if (jm_status_error == jmstatus) logFatal("fmi2_import_instantiate failed");
   }
 
-  // create variable look-up
+  // create variable lists
   fmi2_import_variable_list_t *varList = fmi2_import_get_variable_list(fmu, 0);
   size_t varListSize = fmi2_import_get_variable_list_size(varList);
   logDebug(toString(varListSize) + " variables");
   for(size_t i=0; i<varListSize; ++i)
   {
     fmi2_import_variable_t* var = fmi2_import_get_variable(varList, i);
-    fmi2_causality_enu_t varCausality = fmi2_import_get_causality(var);
-    fmi2_value_reference_t vr = fmi2_import_get_variable_vr(var);
-    std::string name = fmi2_import_get_variable_name(var);
-    Variable v(name, instanceName, vr, i+1, varCausality);
-    if(fmi2_causality_enu_parameter == varCausality)
-    {
-      parameterLookUp[name] = vr;
-    }
-    if (fmi2_causality_enu_output == varCausality)
-    {
-      outputs.push_back(v);
-    }
+    Variable v(var, instanceName);
     allVariables.push_back(v);
-    outputsGraph.addVariable(v);
+
+    switch(v.getBaseType())
+    {
+      case fmi2_base_type_real:
+        realVariables.push_back(i+1);
+        break;
+      case fmi2_base_type_int:
+        intVariables.push_back(i+1);
+        break;
+      case fmi2_base_type_bool:
+        boolVariables.push_back(i+1);
+        break;
+      case fmi2_base_type_str:
+        strVariables.push_back(i+1);
+        break;
+      case fmi2_base_type_enum:
+        enumVariables.push_back(i+1);
+        break;
+      default:
+        logWarning("FMUWrapper: Unsupported base type");
+        break;
+    }
+    if(v.isInput())
+      allInputs.push_back(i+1);
+    if(v.isOutput())
+      allOutputs.push_back(i+1);
+    if(v.isParameter())
+      allParameters.push_back(i+1);
   }
   fmi2_import_free_variable_list(varList);
 
-  varList = fmi2_import_get_initial_unknowns_list(fmu);
-
+  // mark states
+  varList = fmi2_import_get_derivatives_list(fmu);
   varListSize = fmi2_import_get_variable_list_size(varList);
-  logDebug(toString(varListSize) + " initial unknowns");
+  logDebug(toString(varListSize) + " states");
   for(size_t i=0; i<varListSize; ++i)
   {
     fmi2_import_variable_t* var = fmi2_import_get_variable(varList, i);
-    fmi2_causality_enu_t varCausality = fmi2_import_get_causality(var);
-    fmi2_value_reference_t vr = fmi2_import_get_variable_vr(var);
-    std::string name = fmi2_import_get_variable_name(var);
-    Variable v(name, instanceName, vr, 0, varCausality);
-    initialUnknowns.push_back(v);
+    fmi2_import_real_variable_t* varReal = fmi2_import_get_variable_as_real(var);
+    fmi2_import_variable_t* varState = (fmi2_import_variable_t*)fmi2_import_get_real_variable_derivative_of(varReal);
+    fmi2_value_reference_t state_vr = fmi2_import_get_variable_vr(varState);
+    if(varState)
+      allVariables[state_vr].markAsState();
   }
   fmi2_import_free_variable_list(varList);
 
+  // initial unknowns
+  for (int i=0; i<allVariables.size(); i++)
+  {
+    if (allVariables[i].isInitialUnknown())
+      initialUnknowns.push_back(i+1);
+  }
+
   // generate internal dependency graph
-  getDependencyGraph();
-  getDependencyGraph_Initialization();
+  getDependencyGraph_outputs();
+  getDependencyGraph_initialUnknowns();
 }
 
 FMUWrapper::~FMUWrapper()
@@ -254,7 +277,7 @@ double FMUWrapper::getReal(const std::string& var)
     logFatal("FMUWrapper::getReal failed");
 
   double value;
-  fmi2_import_get_real(fmu, &v->vr, 1, &value);
+  fmi2_import_get_real(fmu, &v->getValueReference(), 1, &value);
 
   return value;
 }
@@ -269,7 +292,7 @@ void FMUWrapper::setReal(const std::string& var, double value)
 
   if(!v)
     logFatal("FMUWrapper::setReal failed");
-  fmi2_import_set_real(fmu, &v->vr, 1, &value);
+  fmi2_import_set_real(fmu, &v->getValueReference(), 1, &value);
 }
 
 void FMUWrapper::setRealParameter(const std::string& var, double value)
@@ -278,21 +301,20 @@ void FMUWrapper::setRealParameter(const std::string& var, double value)
   if(!fmu)
     logFatal("FMUWrapper::setRealParameter failed");
 
-  if (parameterLookUp.find(var) == parameterLookUp.end())
-  {
-    logError("FMUWrapper::setRealParameter: FMU doesn't contain parameter " + var);
-    return;
-  }
+  for (int i=0; i<allParameters.size(); i++)
+    if (var == allVariables[allParameters[i]-1].getName())
+    {
+      fmi2_import_set_real(fmu, &allVariables[allParameters[i]-1].getValueReference(), 1, &value);
+      return;
+    }
 
-  fmi2_value_reference_t vr = parameterLookUp[var];
-  fmi2_import_set_real(fmu, &vr, 1, &value);
+  logError("FMUWrapper::setRealParameter: FMU doesn't contain parameter " + var);
 }
 
-void FMUWrapper::getDependencyGraph()
+void FMUWrapper::getDependencyGraph_outputs()
 {
   size_t *startIndex, *dependency;
   char* factorKind;
-  //std::cout << "Listing outputs and dependencies on inputs:" << std::endl;
 
   fmi2_import_get_outputs_dependencies(fmu, &startIndex, &dependency, &factorKind);
 
@@ -300,54 +322,54 @@ void FMUWrapper::getDependencyGraph()
   {
     logDebug("FMUWrapper::getDependencyGraph: [" + instanceName + ": " + fmuPath + "] dependencies are not available");
     /* all outputs depend on all inputs */
-    for (int i=0; i<allVariables.size(); i++)
-      if (allVariables[i].isInput())
-        for (int j=0; j<outputs.size(); j++)
-          outputsGraph.addEdge(allVariables[i], outputs[j]);
+    for (int i=0; i<allInputs.size(); i++)
+      for (int j=0; j<allOutputs.size(); j++)
+        outputsGraph.addEdge(allVariables[allInputs[i]-1], allVariables[allOutputs[j]-1]);
     return;
   }
 
-  for (int i=0; i<outputs.size(); i++)
+  for (int i=0; i<allOutputs.size(); i++)
   {
     if (startIndex[i] == startIndex[i + 1])
     {
-      logDebug("FMUWrapper::getDependencyGraph: [" + instanceName + ": " + fmuPath + "] output " + outputs[i].name + " has no dependencies");
+      logDebug("FMUWrapper::getDependencyGraph: [" + instanceName + ": " + fmuPath + "] output " + allVariables[allOutputs[i]-1].getName() + " has no dependencies");
     }
     else if ((startIndex[i] + 1 == startIndex[i + 1]) && (dependency[startIndex[i]] == 0))
     {
-      logDebug("FMUWrapper::getDependencyGraph: [" + instanceName + ": " + fmuPath + "] output " + outputs[i].name + " depends on all");
-      for (int j=0; j<allVariables.size(); j++)
-        if (allVariables[j].isInput())
-          outputsGraph.addEdge(allVariables[j], outputs[i]);
+      logDebug("FMUWrapper::getDependencyGraph: [" + instanceName + ": " + fmuPath + "] output " + allVariables[allOutputs[i]-1].getName() + " depends on all");
+      for (int j=0; j<allInputs.size(); j++)
+        outputsGraph.addEdge(allVariables[allInputs[j]-1], allVariables[allOutputs[i]-1]);
     }
     else
     {
-      //std::cout << "output " << outputs[i].name << " depends on:" << std::endl;
       for (int j=startIndex[i]; j<startIndex[i+1]; j++)
       {
-        outputsGraph.addEdge(allVariables[dependency[j]-1], outputs[i]);
-        //std::cout << "  " << allVariables[dependency[j]-1].name << " (factor kind: " << fmi2_dependency_factor_kind_to_string((fmi2_dependency_factor_kind_enu_t)factorKind[j]) << ")" << std::endl;
+        logDebug("FMUWrapper::getDependencyGraph: [" + instanceName + ": " + fmuPath + "] output " + allVariables[allOutputs[i]-1].getName() + " depends on " + allVariables[dependency[j]-1].getName());
+        outputsGraph.addEdge(allVariables[dependency[j]-1], allVariables[allOutputs[i]-1]);
       }
     }
   }
 }
 
-void FMUWrapper::getDependencyGraph_Initialization()
+void FMUWrapper::getDependencyGraph_initialUnknowns()
 {
   size_t *startIndex, *dependency;
   char* factorKind;
-  //std::cout << "Listing outputs and dependencies on inputs:" << std::endl;
 
   fmi2_import_get_initial_unknowns_dependencies(fmu, &startIndex, &dependency, &factorKind);
 
   if (!startIndex)
   {
-    logDebug("FMUWrapper::getDependencyGraph_Initialization: [" + instanceName + ": " + fmuPath + "] dependencies are not available");
-    /* all outputs depend on all inputs */
-    for (int i=0; i<allVariables.size(); i++)
-      if (allVariables[i].isInput() || allVariables[i].isParameter())
-        for (int j=0; j<outputs.size(); j++)
-          initialUnknownsGraph.addEdge(allVariables[i], outputs[j]);
+    logDebug("FMUWrapper::getDependencyGraph_initialUnknowns: [" + instanceName + ": " + fmuPath + "] dependencies are not available");
+    /* all outputs depend on all initial unknowns */
+    /* all initial unknowns depend on all inputs */
+    for (int i=0; i<initialUnknowns.size(); i++)
+    {
+      for (int j=0; j<allOutputs.size(); j++)
+        initialUnknownsGraph.addEdge(allVariables[initialUnknowns[i]-1], allVariables[allOutputs[j]-1]);
+      for (int j=0; j<allInputs.size(); j++)
+        initialUnknownsGraph.addEdge(allVariables[allInputs[j]-1], allVariables[initialUnknowns[i]-1]);
+    }
     return;
   }
 
@@ -355,33 +377,32 @@ void FMUWrapper::getDependencyGraph_Initialization()
   {
     if (startIndex[i] == startIndex[i + 1])
     {
-      logDebug("FMUWrapper::getDependencyGraph_Initialization: [" + instanceName + ": " + fmuPath + "] output " + initialUnknowns[i].name + " has no dependencies");
+      logDebug("FMUWrapper::getDependencyGraph_initialUnknowns: [" + instanceName + ": " + fmuPath + "] initial unknown " + allVariables[initialUnknowns[i]-1].getName() + " has no dependencies");
     }
     else if ((startIndex[i] + 1 == startIndex[i + 1]) && (dependency[startIndex[i]] == 0))
     {
-      logDebug("FMUWrapper::getDependencyGraph_Initialization: [" + instanceName + ": " + fmuPath + "] output " + initialUnknowns[i].name + " depends on all");
-      for (int j=0; j<allVariables.size(); j++)
-        if (allVariables[j].isInput() || allVariables[j].isParameter())
-          outputsGraph.addEdge(allVariables[j], initialUnknowns[i]);
+      logDebug("FMUWrapper::getDependencyGraph_initialUnknowns: [" + instanceName + ": " + fmuPath + "] initial unknown " + allVariables[initialUnknowns[i]-1].getName() + " depends on all");
+      for (int j=0; j<allOutputs.size(); j++)
+        initialUnknownsGraph.addEdge(allVariables[initialUnknowns[i]-1], allVariables[allOutputs[j]-1]);
+      for (int j=0; j<allInputs.size(); j++)
+        initialUnknownsGraph.addEdge(allVariables[allInputs[j]-1], allVariables[initialUnknowns[i]-1]);
     }
     else
     {
-      //std::cout << "initial unknown (" << i+1 << ") " << initialUnknowns[i].name << " depends on:" << std::endl;
       for (int j=startIndex[i]; j<startIndex[i+1]; j++)
       {
-        initialUnknownsGraph.addEdge(allVariables[dependency[j]-1], initialUnknowns[i]);
-        //std::cout << "  (" << dependency[j] << ") " << allVariables[dependency[j]-1].name << " (factor kind: " << fmi2_dependency_factor_kind_to_string((fmi2_dependency_factor_kind_enu_t)factorKind[j]) << ")" << std::endl;
+        logDebug("FMUWrapper::getDependencyGraph_initialUnknowns: [" + instanceName + ": " + fmuPath + "] initial unknown " + allVariables[initialUnknowns[i]-1].getName() + " depends on " + allVariables[dependency[j]-1].getName());
+        initialUnknownsGraph.addEdge(allVariables[dependency[j]-1], allVariables[initialUnknowns[i]-1]);
       }
     }
   }
 }
 
-Variable* FMUWrapper::getVariable(const std::string& varName)
+Variable* FMUWrapper::getVariable(const std::string& name)
 {
   for (int i=0; i<allVariables.size(); i++)
-    if (varName == allVariables[i].name)
+    if (name == allVariables[i].getName())
       return &allVariables[i];
-
   return NULL;
 }
 
