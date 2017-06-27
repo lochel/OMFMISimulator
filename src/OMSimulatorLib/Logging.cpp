@@ -81,17 +81,23 @@ Log& Log::getInstance()
 void Log::Info(const std::string& msg)
 {
   logFile << TimeStr() << " | info:    " << msg << endl;
+  if (useStdStream)
+    cout << "info:    " << msg << endl;
 }
 
 void Log::Debug(const std::string& msg)
 {
   logFile << TimeStr() << " | debug:   " << msg << endl;
+  if (useStdStream)
+    cout << "debug:   " << msg << endl;
 }
 
 void Log::Warning(const std::string& msg)
 {
   numWarnings++;
   logFile << TimeStr() << " | warning: " << msg << endl;
+  if (useStdStream)
+    cout << "warning: " << msg << endl;
 }
 
 void Log::Error(const std::string& msg)
@@ -112,4 +118,11 @@ void Log::Fatal(const std::string& msg)
 void Log::Trace(const std::string& function, const std::string& file, const long line)
 {
   logFile << TimeStr() << " | trace:   " << function << " (" << file << ":" << line << ")" << endl;
+  if (useStdStream)
+    cout << "trace:   " << function << " (" << file << ":" << line << ")" << endl;
+}
+
+void Log::DumpToStdStream(bool useStdStream)
+{
+  this->useStdStream = useStdStream;
 }

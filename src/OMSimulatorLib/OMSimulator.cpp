@@ -256,6 +256,11 @@ void oms_setResultFile(void* model, const char* filename)
   pModel->getSettings().SetResultFile(filename);
 }
 
+void oms_logToStdStream(int useStdStream)
+{
+  Log::getInstance().DumpToStdStream(useStdStream);
+}
+
 const char* oms_getVersion()
 {
   return oms_git_version;

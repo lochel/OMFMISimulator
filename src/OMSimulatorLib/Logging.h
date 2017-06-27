@@ -56,6 +56,8 @@ public:
   void Fatal(const std::string& msg);
   void Trace(const std::string& function, const std::string& file, const long line);
 
+  void DumpToStdStream(bool useStdStream);
+
 private:
   Log();
   ~Log();
@@ -67,6 +69,7 @@ private:
   std::ofstream logFile;
   unsigned int numWarnings;
   unsigned int numErrors;
+  bool useStdStream;
 };
 
 #define logInfo(msg)    Log::getInstance().Info(msg)

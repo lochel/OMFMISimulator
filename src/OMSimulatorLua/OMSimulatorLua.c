@@ -306,6 +306,18 @@ static int setResultFile(lua_State *L)
   return 0;
 }
 
+//void oms_logToStdStream(bool useStdStream);
+static int logToStdStream(lua_State *L)
+{
+  if (lua_gettop(L) != 1)
+    return luaL_error(L, "expecting exactly 1 argument");
+  luaL_checktype(L, 1, LUA_TBOOLEAN);
+
+  int useStdStream = lua_toboolean(L, 1);
+  oms_logToStdStream(useStdStream);
+  return 0;
+}
+
 //const char* oms_getVersion();
 static int getVersion(lua_State *L)
 {
@@ -339,6 +351,7 @@ DLLEXPORT int luaopen_OMSimulatorLua(lua_State *L)
   REGISTER_LUA_CALL(setTolerance);
   REGISTER_LUA_CALL(setWorkingDirectory);
   REGISTER_LUA_CALL(setResultFile);
+  REGISTER_LUA_CALL(logToStdStream);
   REGISTER_LUA_CALL(getVersion);
   return 0;
 }

@@ -159,6 +159,7 @@ void oms_setStopTime(void* model, double stopTime);
 void oms_setTolerance(void* model, double tolerance);
 void oms_setWorkingDirectory(void* model, const char* filename);
 void oms_setResultFile(void* model, const char* filename);
+void oms_logToStdStream(int useStdStream);
 
 /**
  * \brief Returns the library's version string.
