@@ -57,7 +57,8 @@ public:
 
   void describe();
   void simulate();
-
+  void exportXML(const char* filename);
+  
   oms_status_t doSteps(const int numberOfSteps);
   oms_status_t stepUntil(const double timeValue);
 

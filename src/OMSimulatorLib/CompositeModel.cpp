@@ -34,7 +34,6 @@
 #include "DirectedGraph.h"
 #include "Settings.h"
 #include "Types.h"
-
 #include <fmilib.h>
 #include <JM/jm_portability.h>
 
@@ -42,10 +41,13 @@
 #include <string>
 #include <map>
 #include <sstream>
+#include <fstream>
+#include <cstdlib>
 #include <stdlib.h>
 #include <deque>
-
 #include <boost/filesystem.hpp>
+#define PUGIXML_HEADER_ONLY
+#include "../../3rdParty/PugiXml/pugixml.hpp"
 
 CompositeModel::CompositeModel()
   : fmuInstances()
@@ -158,6 +160,53 @@ void CompositeModel::exportDependencyGraph(const std::string& prefix)
   initialUnknownsGraph.dotExport(prefix + "_initialization.dot");
   outputsGraph.dotExport(prefix + "_simulation.dot");
 }
+
+void CompositeModel::exportXML(const char* filename)
+{
+  pugi::xml_document doc;
+  // Generate XML declaration
+  auto declarationNode = doc.append_child(pugi::node_declaration);
+  declarationNode.append_attribute("version")    = "1.0";
+  declarationNode.append_attribute("encoding")   = "UTF-8";
+  pugi::xml_node model = doc.append_child("Model");
+  pugi::xml_node submodels = model.append_child("SubModels");
+  pugi::xml_node connections = model.append_child("Connections");
+  
+  std::map<std::string, FMUWrapper*>::iterator it; 
+  for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
+  {
+    std::string getfmu= it->second->getFMUPath();
+    std::string getinstance= it->second->getFMUInstanceName();
+    pugi::xml_node submodel = submodels.append_child("SubModel");
+    submodel.append_attribute("Name") = getinstance.c_str();
+    submodel.append_attribute("ModelFile") = getfmu.c_str();
+  }
+
+  const std::vector< std::pair<int, int> >& connectionsOutputs = outputsGraph.getSortedConnections();
+  for(int i=0; i<connectionsOutputs.size(); i++)
+  {
+    pugi::xml_node connection = connections.append_child("Connection");
+    int output = connectionsOutputs[i].first;
+    int input = connectionsOutputs[i].second;
+    std::string outputFMU = outputsGraph.nodes[output].fmuInstance;
+    std::string outputVar = outputsGraph.nodes[output].name;
+    std::string inputFMU = outputsGraph.nodes[input].fmuInstance;
+    std::string inputVar = outputsGraph.nodes[input].name;
+    //std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
+    std::string fromfmu=outputFMU + '.' + outputVar;
+    std::string tofmu=inputFMU + '.' + inputVar;
+    connection.append_attribute("From") = fromfmu.c_str();
+    connection.append_attribute("To") = tofmu.c_str();
+  }
+  
+  bool saveSucceeded = doc.save_file(filename);
+  if (!saveSucceeded)
+  {
+    logError("CompositeModel::exportXML: The file is not saved to XML.");
+  }
+
+}
+
 
 void CompositeModel::describe()
 {

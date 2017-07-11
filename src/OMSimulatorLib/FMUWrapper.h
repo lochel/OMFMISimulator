@@ -65,6 +65,7 @@ public:
   Variable* getVariable(const std::string& varName);
 
   std::string& getFMUPath() {return fmuPath;}
+  std::string getFMUInstanceName() {return instanceName;}
   std::string getFMUKind();
   std::string getGUID();
   std::string getGenerationTool();
