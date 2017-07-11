@@ -165,14 +165,14 @@ void CompositeModel::exportXML(const char* filename)
 {
   pugi::xml_document doc;
   // Generate XML declaration
-  auto declarationNode = doc.append_child(pugi::node_declaration);
+  pugi::xml_node declarationNode = doc.append_child(pugi::node_declaration);
   declarationNode.append_attribute("version")    = "1.0";
   declarationNode.append_attribute("encoding")   = "UTF-8";
   pugi::xml_node model = doc.append_child("Model");
   pugi::xml_node submodels = model.append_child("SubModels");
   pugi::xml_node connections = model.append_child("Connections");
-  
-  std::map<std::string, FMUWrapper*>::iterator it; 
+
+  std::map<std::string, FMUWrapper*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
   {
     std::string getfmu= it->second->getFMUPath();
@@ -198,7 +198,7 @@ void CompositeModel::exportXML(const char* filename)
     connection.append_attribute("From") = fromfmu.c_str();
     connection.append_attribute("To") = tofmu.c_str();
   }
-  
+
   bool saveSucceeded = doc.save_file(filename);
   if (!saveSucceeded)
   {
