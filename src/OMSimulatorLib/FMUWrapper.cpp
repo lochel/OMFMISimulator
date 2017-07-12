@@ -184,7 +184,7 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
     if (jm_status_error == jmstatus) logFatal("fmi2_import_instantiate failed");
   }
 
-  // create variable lists
+  // create variable list
   fmi2_import_variable_list_t *varList = fmi2_import_get_variable_list(fmu, 0);
   size_t varListSize = fmi2_import_get_variable_list_size(varList);
   logDebug(toString(varListSize) + " variables");
@@ -193,8 +193,37 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
     fmi2_import_variable_t* var = fmi2_import_get_variable(varList, i);
     Variable v(var, instanceName);
     allVariables.push_back(v);
+  }
+  fmi2_import_free_variable_list(varList);
 
-    switch(v.getBaseType())
+  // mark states
+  varList = fmi2_import_get_derivatives_list(fmu);
+  varListSize = fmi2_import_get_variable_list_size(varList);
+  logDebug(toString(varListSize) + " states");
+  for(size_t i=0; i<varListSize; ++i)
+  {
+    fmi2_import_variable_t* var = fmi2_import_get_variable(varList, i);
+    fmi2_import_real_variable_t* varReal = fmi2_import_get_variable_as_real(var);
+    fmi2_import_variable_t* varState = (fmi2_import_variable_t*)fmi2_import_get_real_variable_derivative_of(varReal);
+    fmi2_value_reference_t state_vr = fmi2_import_get_variable_vr(varState);
+    Variable* state_var = getVariable(state_vr);
+    state_var->markAsState();
+  }
+  fmi2_import_free_variable_list(varList);
+
+  // create some special variable maps
+  for (int i=0; i<allVariables.size(); i++)
+  {
+    if (allVariables[i].isInitialUnknown())
+      initialUnknowns.push_back(i+1);
+    if (allVariables[i].isInput())
+      allInputs.push_back(i+1);
+    if (allVariables[i].isOutput())
+      allOutputs.push_back(i+1);
+    if (allVariables[i].isParameter())
+      allParameters.push_back(i+1);
+
+    switch(allVariables[i].getBaseType())
     {
       case fmi2_base_type_real:
         realVariables.push_back(i+1);
@@ -215,38 +244,9 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
         logWarning("FMUWrapper: Unsupported base type");
         break;
     }
-    if(v.isInput())
-      allInputs.push_back(i+1);
-    if(v.isOutput())
-      allOutputs.push_back(i+1);
-    if(v.isParameter())
-      allParameters.push_back(i+1);
-  }
-  fmi2_import_free_variable_list(varList);
-
-  // mark states
-  varList = fmi2_import_get_derivatives_list(fmu);
-  varListSize = fmi2_import_get_variable_list_size(varList);
-  logDebug(toString(varListSize) + " states");
-  for(size_t i=0; i<varListSize; ++i)
-  {
-    fmi2_import_variable_t* var = fmi2_import_get_variable(varList, i);
-    fmi2_import_real_variable_t* varReal = fmi2_import_get_variable_as_real(var);
-    fmi2_import_variable_t* varState = (fmi2_import_variable_t*)fmi2_import_get_real_variable_derivative_of(varReal);
-    fmi2_value_reference_t state_vr = fmi2_import_get_variable_vr(varState);
-    Variable* state_var = getVariable(state_vr);
-    state_var->markAsState();
-  }
-  fmi2_import_free_variable_list(varList);
-
-  // initial unknowns
-  for (int i=0; i<allVariables.size(); i++)
-  {
-    if (allVariables[i].isInitialUnknown())
-      initialUnknowns.push_back(i+1);
   }
 
-  // generate internal dependency graph
+  // generate internal dependency graphs
   getDependencyGraph_outputs();
   getDependencyGraph_initialUnknowns();
 }
@@ -315,6 +315,9 @@ void FMUWrapper::getDependencyGraph_outputs()
   size_t *startIndex, *dependency;
   char* factorKind;
 
+  for (int i=0; i<allOutputs.size(); i++)
+    outputsGraph.addVariable(allVariables[allOutputs[i]-1]);
+
   fmi2_import_get_outputs_dependencies(fmu, &startIndex, &dependency, &factorKind);
 
   if (!startIndex)
@@ -354,6 +357,9 @@ void FMUWrapper::getDependencyGraph_initialUnknowns()
 {
   size_t *startIndex, *dependency;
   char* factorKind;
+
+  for (int i=0; i<initialUnknowns.size(); i++)
+    initialUnknownsGraph.addVariable(allVariables[initialUnknowns[i]-1]);
 
   fmi2_import_get_initial_unknowns_dependencies(fmu, &startIndex, &dependency, &factorKind);
 
