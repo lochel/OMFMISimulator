@@ -63,6 +63,7 @@ public:
   const DirectedGraph& getOutputsGraph() {return outputsGraph;}
   const DirectedGraph& getInitialUnknownsGraph() {return initialUnknownsGraph;}
   Variable* getVariable(const std::string& varName);
+  Variable* getVariable(const fmi2_value_reference_t& state_vr);
 
   std::string& getFMUPath() {return fmuPath;}
   std::string getFMUInstanceName() {return instanceName;}

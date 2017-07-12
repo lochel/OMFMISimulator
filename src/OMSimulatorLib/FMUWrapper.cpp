@@ -234,8 +234,8 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
     fmi2_import_real_variable_t* varReal = fmi2_import_get_variable_as_real(var);
     fmi2_import_variable_t* varState = (fmi2_import_variable_t*)fmi2_import_get_real_variable_derivative_of(varReal);
     fmi2_value_reference_t state_vr = fmi2_import_get_variable_vr(varState);
-    if(varState)
-      allVariables[state_vr].markAsState();
+    Variable* state_var = getVariable(state_vr);
+    state_var->markAsState();
   }
   fmi2_import_free_variable_list(varList);
 
@@ -290,8 +290,9 @@ void FMUWrapper::setReal(const std::string& var, double value)
 
   Variable* v = getVariable(var);
 
-  if(!v)
+  if(!v || v->isParameter())
     logFatal("FMUWrapper::setReal failed");
+
   fmi2_import_set_real(fmu, &v->getValueReference(), 1, &value);
 }
 
@@ -301,14 +302,12 @@ void FMUWrapper::setRealParameter(const std::string& var, double value)
   if(!fmu)
     logFatal("FMUWrapper::setRealParameter failed");
 
-  for (int i=0; i<allParameters.size(); i++)
-    if (var == allVariables[allParameters[i]-1].getName())
-    {
-      fmi2_import_set_real(fmu, &allVariables[allParameters[i]-1].getValueReference(), 1, &value);
-      return;
-    }
+  Variable* v = getVariable(var);
 
-  logError("FMUWrapper::setRealParameter: FMU doesn't contain parameter " + var);
+  if(!v || !v->isParameter())
+    logError("FMUWrapper::setRealParameter: FMU doesn't contain parameter " + var);
+
+  fmi2_import_set_real(fmu, &v->getValueReference(), 1, &value);
 }
 
 void FMUWrapper::getDependencyGraph_outputs()
@@ -402,6 +401,14 @@ Variable* FMUWrapper::getVariable(const std::string& name)
 {
   for (int i=0; i<allVariables.size(); i++)
     if (name == allVariables[i].getName())
+      return &allVariables[i];
+  return NULL;
+}
+
+Variable* FMUWrapper::getVariable(const fmi2_value_reference_t& state_vr)
+{
+  for (int i=0; i<allVariables.size(); i++)
+    if (state_vr == allVariables[i].getValueReference())
       return &allVariables[i];
   return NULL;
 }
