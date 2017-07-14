@@ -215,7 +215,7 @@ void CompositeModel::importXML(const char* filename)
   {
     logError("CompositeModel::importXML : \"" + std::string(filename) + "\" the file is not loaded");
   }
-  
+
   pugi::xml_node root = doc.document_element();
   pugi::xml_node submodel = root.child("SubModels");
   pugi::xml_node connection = root.child("Connections");
@@ -230,7 +230,7 @@ void CompositeModel::importXML(const char* filename)
         if(value =="Name")
         {
           instancename = ait->value();
-        }        
+        }
         if(value =="ModelFile")
         {
           filename = ait->value();
@@ -250,7 +250,7 @@ void CompositeModel::importXML(const char* filename)
         if(value =="From")
         {
           fromconnection = ait->value();
-        }        
+        }
         if(value =="To")
         {
           toconnection = ait->value();
@@ -372,7 +372,6 @@ oms_status_t CompositeModel::doSteps(const int numberOfSteps)
     return oms_status_error;
   }
 
-  double hdef = 1e-1;
   for(int step=0; step<numberOfSteps; step++)
   {
     // input = output
@@ -382,7 +381,7 @@ oms_status_t CompositeModel::doSteps(const int numberOfSteps)
     std::map<std::string, FMUWrapper*>::iterator it;
     for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
       it->second->doStep(tcur);
-    tcur += hdef;
+    tcur += communicationInterval;
   }
 
   return oms_status_ok;
@@ -417,6 +416,9 @@ void CompositeModel::initialize()
 
   double* pStartTime = settings.GetStartTime();
   tcur = pStartTime ? *pStartTime : 0.0;
+
+  double* pCommunicationInterval = settings.GetCommunicationInterval();
+  communicationInterval = pCommunicationInterval ? *pCommunicationInterval : 1e-1;
 
   // Enter initialization
   modelState = oms_modelState_initialization;

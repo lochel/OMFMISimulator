@@ -197,7 +197,7 @@ static int exportXML(lua_State *L)
   return 0;
 }
 
-//void oms_importXML(void* model,const char* filename);
+//void oms_importXML(void* model, const char* filename);
 static int importXML(lua_State *L)
 {
   if (lua_gettop(L) != 2)
@@ -318,6 +318,20 @@ static int setTolerance(lua_State *L)
   return 0;
 }
 
+//void oms_setCommunicationInterval(void* model, double communicationInterval);
+static int setCommunicationInterval(lua_State *L)
+{
+  if (lua_gettop(L) != 2)
+    return luaL_error(L, "expecting exactly 2 argument");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TNUMBER);
+
+  void *model = topointer(L, 1);
+  double communicationInterval = lua_tonumber(L, 2);
+  oms_setCommunicationInterval(model, communicationInterval);
+  return 0;
+}
+
 //void oms_setResultFile(void* model, const char* filename);
 static int setResultFile(lua_State *L)
 {
@@ -375,6 +389,7 @@ DLLEXPORT int luaopen_OMSimulatorLua(lua_State *L)
   REGISTER_LUA_CALL(setStartTime);
   REGISTER_LUA_CALL(setStopTime);
   REGISTER_LUA_CALL(setTolerance);
+  REGISTER_LUA_CALL(setCommunicationInterval);
   REGISTER_LUA_CALL(setTempDirectory);
   REGISTER_LUA_CALL(setResultFile);
   REGISTER_LUA_CALL(logToStdStream);

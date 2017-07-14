@@ -50,6 +50,10 @@ public:
   double* GetTolerance();
   void ClearTolerance();
 
+  void SetCommunicationInterval(double communicationInterval);
+  double* GetCommunicationInterval();
+  void ClearCommunicationInterval();
+
   void SetResultFile(const char* resultFile);
   const char* GetResultFile();
   void ClearResultFile();
@@ -62,6 +66,7 @@ private:
   double* startTime;
   double* stopTime;
   double* tolerance;
+  double* communicationInterval;
   char* resultFile;
 };
 

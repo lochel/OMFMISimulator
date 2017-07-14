@@ -41,6 +41,7 @@ Settings::Settings()
   startTime = NULL;
   stopTime = NULL;
   tolerance = NULL;
+  communicationInterval = NULL;
   resultFile = NULL;
 }
 
@@ -50,6 +51,7 @@ Settings::~Settings()
   ClearStartTime();
   ClearStopTime();
   ClearTolerance();
+  ClearCommunicationInterval();
   ClearResultFile();
 }
 
@@ -105,6 +107,24 @@ void Settings::ClearTolerance()
 {
   if(tolerance)
     delete tolerance;
+}
+
+void Settings::SetCommunicationInterval(double communicationInterval)
+{
+  if(!this->communicationInterval)
+    this->communicationInterval = new double;
+  *(this->communicationInterval) = communicationInterval;
+}
+
+double* Settings::GetCommunicationInterval()
+{
+  return communicationInterval;
+}
+
+void Settings::ClearCommunicationInterval()
+{
+  if(communicationInterval)
+    delete communicationInterval;
 }
 
 void Settings::SetResultFile(const char* resultFile)

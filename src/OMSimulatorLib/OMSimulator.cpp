@@ -275,6 +275,13 @@ void oms_setTolerance(void* model, double tolerance)
   pModel->getSettings().SetTolerance(tolerance);
 }
 
+void oms_setCommunicationInterval(void* model, double CommunicationInterval)
+{
+  logTrace();
+  CompositeModel* pModel = (CompositeModel*) model;
+  pModel->getSettings().SetCommunicationInterval(CommunicationInterval);
+}
+
 void oms_setResultFile(void* model, const char* filename)
 {
   logTrace();

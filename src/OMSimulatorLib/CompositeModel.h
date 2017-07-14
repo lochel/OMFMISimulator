@@ -59,7 +59,7 @@ public:
   void simulate();
   void exportXML(const char* filename);
   void importXML(const char* filename);
-  
+
   oms_status_t doSteps(const int numberOfSteps);
   oms_status_t stepUntil(const double timeValue);
 
@@ -80,6 +80,7 @@ private:
   DirectedGraph initialUnknownsGraph;
   double tcur;
   oms_modelState_t modelState;
+  double communicationInterval;
 };
 
 #endif

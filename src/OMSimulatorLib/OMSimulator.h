@@ -163,6 +163,7 @@ void oms_setTempDirectory(const char* filename);
 void oms_setStartTime(void* model, double startTime);
 void oms_setStopTime(void* model, double stopTime);
 void oms_setTolerance(void* model, double tolerance);
+void oms_setCommunicationInterval(void* model, double communicationInterval);
 void oms_setResultFile(void* model, const char* filename);
 void oms_logToStdStream(int useStdStream);
 
