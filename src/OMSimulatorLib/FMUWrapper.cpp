@@ -205,9 +205,17 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
     fmi2_import_variable_t* var = fmi2_import_get_variable(varList, i);
     fmi2_import_real_variable_t* varReal = fmi2_import_get_variable_as_real(var);
     fmi2_import_variable_t* varState = (fmi2_import_variable_t*)fmi2_import_get_real_variable_derivative_of(varReal);
-    fmi2_value_reference_t state_vr = fmi2_import_get_variable_vr(varState);
-    Variable* state_var = getVariable(state_vr);
-    state_var->markAsState();
+    if (varState)
+    {
+      fmi2_value_reference_t state_vr = fmi2_import_get_variable_vr(varState);
+      Variable* state_var = getVariable(state_vr);
+      if (state_var)
+        state_var->markAsState();
+      else
+        logError("Couldn't find " + toString(fmi2_import_get_variable_name(varState)));
+    }
+    else
+      logError("Couldn't map " + toString(fmi2_import_get_variable_name(var)) + " to the corresponding state variable");
   }
   fmi2_import_free_variable_list(varList);
 

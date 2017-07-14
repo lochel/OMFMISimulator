@@ -183,7 +183,7 @@ static int describe(lua_State *L)
   return 0;
 }
 
-//void oms_exportXML(void* model);
+//void oms_exportXML(void* model, const char* filename);
 static int exportXML(lua_State *L)
 {
   if (lua_gettop(L) != 2)
@@ -192,8 +192,8 @@ static int exportXML(lua_State *L)
   luaL_checktype(L, 2, LUA_TSTRING);
 
   void *model = topointer(L, 1);
-  const char* prefix = lua_tostring(L, 2);
-  oms_exportXML(model, prefix);
+  const char* filename = lua_tostring(L, 2);
+  oms_exportXML(model, filename);
   return 0;
 }
 
