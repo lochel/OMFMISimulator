@@ -35,6 +35,7 @@
 #include "Logging.h"
 #include "Resultfile.h"
 #include "Settings.h"
+#include "GlobalSettings.h"
 #include "CompositeModel.h"
 #include "Util.h"
 
@@ -119,7 +120,7 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
   callbacks.context = 0;
 
   //set working directory
-  tempDir = fmi_import_mk_temp_dir(&callbacks, model.getSettings().GetTempDirectory(), "temp_");
+  tempDir = fmi_import_mk_temp_dir(&callbacks, GlobalSettings::getInstance().GetTempDirectory().c_str(), "temp_");
   logDebug("set working directory to \"" + tempDir + "\"");
 
   context = fmi_import_allocate_context(&callbacks);

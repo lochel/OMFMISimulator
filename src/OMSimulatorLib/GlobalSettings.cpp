@@ -29,40 +29,48 @@
  *
  */
 
-#ifndef _OMS_SETTINGS_H_
-#define _OMS_SETTINGS_H_
+#include "GlobalSettings.h"
+#include "Logging.h"
 
-class Settings
+#include <stdio.h>
+#include <string>
+
+#include <boost/filesystem.hpp>
+
+GlobalSettings::GlobalSettings()
 {
-public:
-  Settings();
-  ~Settings();
+  logDebug("Initializing global settings");
+  SetTempDirectory(".");
+}
 
-  void SetStartTime(double startTime);
-  double* GetStartTime();
-  void ClearStartTime();
+GlobalSettings::~GlobalSettings()
+{
+  logDebug("Free global settings");
+}
 
-  void SetStopTime(double stopTime);
-  double* GetStopTime();
-  void ClearStopTime();
+GlobalSettings& GlobalSettings::getInstance()
+{
+  // The only instance
+  static GlobalSettings instance;
+  return instance;
+}
 
-  void SetTolerance(double tolerance);
-  double* GetTolerance();
-  void ClearTolerance();
+void GlobalSettings::SetTempDirectory(const std::string& newTempDir)
+{
+  if (!boost::filesystem::is_directory(newTempDir))
+  {
+    logError("set working directory to \"" + std::string(newTempDir) + "\" failed");
+    return;
+  }
 
-  void SetResultFile(const char* resultFile);
-  const char* GetResultFile();
-  void ClearResultFile();
+  boost::filesystem::path path(newTempDir.c_str());
+  path = boost::filesystem::canonical(path);
 
-private:
-  // stop the compiler generating methods of copy the object
-  Settings(Settings const& copy);            // not implemented
-  Settings& operator=(Settings const& copy); // not implemented
+  tempDir = path.string();
+}
 
-  double* startTime;
-  double* stopTime;
-  double* tolerance;
-  char* resultFile;
-};
+const std::string& GlobalSettings::GetTempDirectory()
+{
+  return tempDir;
+}
 
-#endif

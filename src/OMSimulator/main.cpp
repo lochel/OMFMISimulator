@@ -82,7 +82,7 @@ int main(int argc, char *argv[])
     }
     else if(0 == arg.compare(0, 10, "--tempDir="))
     {
-      oms_setWorkingDirectory(pModel, arg.substr(10).c_str());
+      oms_setTempDirectory(arg.substr(10).c_str());
     }
     else if(0 == arg.compare(0, 12, "--tolerance="))
     {

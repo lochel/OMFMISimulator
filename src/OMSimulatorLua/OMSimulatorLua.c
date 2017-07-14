@@ -250,6 +250,18 @@ static int getCurrentTime(lua_State *L)
   return 1;
 }
 
+//void oms_setTempDirectory(const char* filename);
+static int setTempDirectory(lua_State *L)
+{
+  if (lua_gettop(L) != 1)
+    return luaL_error(L, "expecting exactly 1 argument");
+  luaL_checktype(L, 1, LUA_TSTRING);
+
+  const char* filename = lua_tostring(L, 1);
+  oms_setTempDirectory(filename);
+  return 0;
+}
+
 //void oms_setStartTime(void* model, double startTime);
 static int setStartTime(lua_State *L)
 {
@@ -289,20 +301,6 @@ static int setTolerance(lua_State *L)
   void *model = topointer(L, 1);
   double tolerance = lua_tonumber(L, 2);
   oms_setTolerance(model, tolerance);
-  return 0;
-}
-
-//void oms_setWorkingDirectory(const char* filename);
-static int setWorkingDirectory(lua_State *L)
-{
-  if (lua_gettop(L) != 2)
-    return luaL_error(L, "expecting exactly 2 argument");
-  luaL_checktype(L, 1, LUA_TUSERDATA);
-  luaL_checktype(L, 2, LUA_TSTRING);
-
-  void *model = topointer(L, 1);
-  const char* filename = lua_tostring(L, 2);
-  oms_setWorkingDirectory(model, filename);
   return 0;
 }
 
@@ -363,7 +361,7 @@ DLLEXPORT int luaopen_OMSimulatorLua(lua_State *L)
   REGISTER_LUA_CALL(setStartTime);
   REGISTER_LUA_CALL(setStopTime);
   REGISTER_LUA_CALL(setTolerance);
-  REGISTER_LUA_CALL(setWorkingDirectory);
+  REGISTER_LUA_CALL(setTempDirectory);
   REGISTER_LUA_CALL(setResultFile);
   REGISTER_LUA_CALL(logToStdStream);
   REGISTER_LUA_CALL(getVersion);

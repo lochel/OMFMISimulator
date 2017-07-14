@@ -29,40 +29,27 @@
  *
  */
 
-#ifndef _OMS_SETTINGS_H_
-#define _OMS_SETTINGS_H_
+#ifndef _OMS_GLOBAL_SETTINGS_H_
+#define _OMS_GLOBAL_SETTINGS_H_
 
-class Settings
+#include <string>
+
+class GlobalSettings
 {
 public:
-  Settings();
-  ~Settings();
+  static GlobalSettings& getInstance();
 
-  void SetStartTime(double startTime);
-  double* GetStartTime();
-  void ClearStartTime();
-
-  void SetStopTime(double stopTime);
-  double* GetStopTime();
-  void ClearStopTime();
-
-  void SetTolerance(double tolerance);
-  double* GetTolerance();
-  void ClearTolerance();
-
-  void SetResultFile(const char* resultFile);
-  const char* GetResultFile();
-  void ClearResultFile();
-
+  void SetTempDirectory(const std::string& newTempDir);
+  const std::string& GetTempDirectory();
 private:
-  // stop the compiler generating methods of copy the object
-  Settings(Settings const& copy);            // not implemented
-  Settings& operator=(Settings const& copy); // not implemented
+  GlobalSettings();
+  ~GlobalSettings();
 
-  double* startTime;
-  double* stopTime;
-  double* tolerance;
-  char* resultFile;
+  // Stop the compiler generating methods of copy the object
+  GlobalSettings(GlobalSettings const& copy);            // Not Implemented
+  GlobalSettings& operator=(GlobalSettings const& copy); // Not Implemented
+
+  std::string tempDir;
 };
 
 #endif

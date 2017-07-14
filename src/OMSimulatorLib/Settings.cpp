@@ -32,10 +32,8 @@
 #include "Settings.h"
 #include "Logging.h"
 
-#include <stdio.h>
+#include <cstring>
 #include <string>
-
-#include <boost/filesystem.hpp>
 
 Settings::Settings()
 {
@@ -43,7 +41,6 @@ Settings::Settings()
   startTime = NULL;
   stopTime = NULL;
   tolerance = NULL;
-  tempDir = NULL;
   resultFile = NULL;
 }
 
@@ -53,7 +50,6 @@ Settings::~Settings()
   ClearStartTime();
   ClearStopTime();
   ClearTolerance();
-  ClearTempDirectory();
   ClearResultFile();
 }
 
@@ -111,38 +107,11 @@ void Settings::ClearTolerance()
     delete tolerance;
 }
 
-void Settings::SetTempDirectory(const char* tempDir)
-{
-  if (!boost::filesystem::is_directory(tempDir))
-  {
-    logError("set working directory to \"" + std::string(tempDir) + "\" failed");
-    return;
-  }
-
-  boost::filesystem::path path(tempDir);
-  path = boost::filesystem::canonical(path);
-
-  ClearTempDirectory();
-  this->tempDir = new char[path.string().length()+1];
-  strcpy(this->tempDir, path.string().c_str());
-}
-
-const char* Settings::GetTempDirectory()
-{
-  return tempDir;
-}
-
-void Settings::ClearTempDirectory()
-{
-  if(tempDir)
-    delete[] tempDir;
-}
-
 void Settings::SetResultFile(const char* resultFile)
 {
   ClearResultFile();
-  this->resultFile = new char[strlen(resultFile)+1];
-  strcpy(this->resultFile, resultFile);
+  this->resultFile = new char[std::strlen(resultFile)+1];
+  std::strcpy(this->resultFile, resultFile);
 }
 
 const char* Settings::GetResultFile()

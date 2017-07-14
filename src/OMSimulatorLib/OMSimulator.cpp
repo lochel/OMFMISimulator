@@ -33,6 +33,7 @@
 #include "CompositeModel.h"
 #include "Logging.h"
 #include "Settings.h"
+#include "GlobalSettings.h"
 #include "Version.h"
 #include "Types.h"
 
@@ -234,6 +235,12 @@ oms_status_t oms_getCurrentTime(const void* model, double* time)
   return pModel->getCurrentTime(time);
 }
 
+void oms_setTempDirectory(const char* filename)
+{
+  logTrace();
+  GlobalSettings::getInstance().SetTempDirectory(filename);
+}
+
 void oms_setStartTime(void* model, double startTime)
 {
   logTrace();
@@ -253,13 +260,6 @@ void oms_setTolerance(void* model, double tolerance)
   logTrace();
   CompositeModel* pModel = (CompositeModel*) model;
   pModel->getSettings().SetTolerance(tolerance);
-}
-
-void oms_setWorkingDirectory(void* model, const char* filename)
-{
-  logTrace();
-  CompositeModel* pModel = (CompositeModel*) model;
-  pModel->getSettings().SetTempDirectory(filename);
 }
 
 void oms_setResultFile(void* model, const char* filename)
