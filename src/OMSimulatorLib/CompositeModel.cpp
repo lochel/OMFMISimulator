@@ -56,10 +56,10 @@ CompositeModel::CompositeModel()
   modelState = oms_modelState_instantiated;
 }
 
-CompositeModel::CompositeModel(const std::string& descriptionPath)
+CompositeModel::CompositeModel(const char * descriptionPath)
 {
   logTrace();
-  logError("Function not implemented yet: CompositeModel::CompositeModel");
+  importXML(descriptionPath);
   modelState = oms_modelState_instantiated;
 }
 
@@ -207,6 +207,59 @@ void CompositeModel::exportXML(const char* filename)
 
 }
 
+void CompositeModel::importXML(const char* filename)
+{
+  pugi::xml_document doc;
+  pugi::xml_parse_result result = doc.load_file(filename);
+  if (!result)
+  {
+    logError("CompositeModel::importXML : \"" + std::string(filename) + "\" the file is not loaded");
+  }
+  
+  pugi::xml_node root = doc.document_element();
+  pugi::xml_node submodel = root.child("SubModels");
+  pugi::xml_node connection = root.child("Connections");
+  /* instantiate FMus after reading from xml */
+  for (pugi::xml_node_iterator it = submodel.begin(); it != submodel.end(); ++it)
+   {
+     std::string instancename;
+     std::string filename;
+     for (pugi::xml_attribute_iterator ait = it->attributes_begin(); ait != it->attributes_end(); ++ait)
+      {
+        std::string value =ait->name();
+        if(value =="Name")
+        {
+          instancename = ait->value();
+        }        
+        if(value =="ModelFile")
+        {
+          filename = ait->value();
+        }
+      }
+      //std::cout << "Fmus List:" << " " << "instancename =" << instancename << " " << "filepath =" << filename << std::endl;
+      instantiateFMU(filename,instancename);
+   }
+   /* add connections to FMus after reading from xml */
+   for (pugi::xml_node_iterator it = connection.begin(); it != connection.end(); ++it)
+   {
+     std::string fromconnection;
+     std::string toconnection;
+     for (pugi::xml_attribute_iterator ait = it->attributes_begin(); ait != it->attributes_end(); ++ait)
+      {
+        std::string value =ait->name();
+        if(value =="From")
+        {
+          fromconnection = ait->value();
+        }        
+        if(value =="To")
+        {
+          toconnection = ait->value();
+        }
+      }
+      //std::cout << "Connections List:" << fromconnection << "->" << toconnection << std::endl;
+      addConnection(fromconnection,toconnection);
+   }
+}
 
 void CompositeModel::describe()
 {

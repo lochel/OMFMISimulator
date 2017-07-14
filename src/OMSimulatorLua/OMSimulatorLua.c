@@ -197,6 +197,20 @@ static int exportXML(lua_State *L)
   return 0;
 }
 
+//void oms_importXML(void* model,const char* filename);
+static int importXML(lua_State *L)
+{
+  if (lua_gettop(L) != 2)
+    return luaL_error(L, "expecting exactly 2 argument");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TSTRING);
+
+  void *model = topointer(L, 1);
+  const char* filename = lua_tostring(L, 2);
+  oms_importXML(model, filename);
+  return 0;
+}
+
 //void oms_exportDependencyGraph(void* model, const char* prefix);
 static int exportDependencyGraph(lua_State *L)
 {
@@ -366,5 +380,6 @@ DLLEXPORT int luaopen_OMSimulatorLua(lua_State *L)
   REGISTER_LUA_CALL(logToStdStream);
   REGISTER_LUA_CALL(getVersion);
   REGISTER_LUA_CALL(exportXML);
+  REGISTER_LUA_CALL(importXML);
   return 0;
 }

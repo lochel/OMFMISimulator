@@ -181,6 +181,19 @@ void oms_exportXML(void* model, const char* filename)
   pModel->exportXML(filename);
 }
 
+void oms_importXML(void* model, const char* filename)
+{
+  logTrace();
+  if(!model)
+  {
+    logError("oms_importXML: invalid pointer");
+    return;
+  }
+
+  CompositeModel* pModel = (CompositeModel*) model;
+  pModel->importXML(filename);
+}
+
 void oms_exportDependencyGraph(void* model, const char* filename)
 {
   logTrace();
