@@ -34,6 +34,7 @@
 #include "DirectedGraph.h"
 #include "Settings.h"
 #include "Types.h"
+#include "Util.h"
 #include <fmilib.h>
 #include <JM/jm_portability.h>
 
@@ -292,9 +293,9 @@ void CompositeModel::describe()
   //std::cout << "TODO" << std::endl;
 
   std::cout << "\n# Simulation settings" << std::endl;
-  std::cout << "  - start time: " << settings.GetStartTime() << std::endl;
-  std::cout << "  - stop time: " << settings.GetStopTime() << std::endl;
-  std::cout << "  - tolerance: " << settings.GetTolerance() << std::endl;
+  std::cout << "  - start time: " << (settings.GetStartTime() ? toString(*(settings.GetStartTime())) : "<undefined>") << std::endl;
+  std::cout << "  - stop time: " << (settings.GetStopTime() ? toString(*(settings.GetStopTime())) : "<undefined>") << std::endl;
+  std::cout << "  - tolerance: " << (settings.GetTolerance() ? toString(*(settings.GetTolerance())) : "<undefined>") << std::endl;
   std::cout << "  - result file: " << (settings.GetResultFile() ? settings.GetResultFile() : "<no result file>") << std::endl;
   //std::cout << "  - temp directory: " << settings.GetTempDirectory() << std::endl;
 
