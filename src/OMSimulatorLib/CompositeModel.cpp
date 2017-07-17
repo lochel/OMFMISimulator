@@ -173,7 +173,7 @@ void CompositeModel::exportXML(const char* filename)
   pugi::xml_node submodels = model.append_child("SubModels");
   pugi::xml_node connections = model.append_child("Connections");
   pugi::xml_node simulationparams = model.append_child("SimulationParams");
-  
+
   /* add simulation settings */
   std::string startTime=(settings.GetStartTime() ? toString(*(settings.GetStartTime())) : "");
   std::string stopTime=(settings.GetStopTime() ? toString(*(settings.GetStopTime())) : "");
@@ -196,7 +196,7 @@ void CompositeModel::exportXML(const char* filename)
   {
     simulationparams.append_attribute("communicationInterval")=communicationInterval.c_str();
   }
- 
+
    /* add FMus List */
   std::map<std::string, FMUWrapper*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
@@ -206,7 +206,7 @@ void CompositeModel::exportXML(const char* filename)
     pugi::xml_node submodel = submodels.append_child("SubModel");
     submodel.append_attribute("Name") = getinstance.c_str();
     submodel.append_attribute("ModelFile") = getfmu.c_str();
-  }   
+  }
   /* add connection informations */
   const std::vector< std::pair<int, int> >& connectionsOutputs = outputsGraph.getSortedConnections();
   for(int i=0; i<connectionsOutputs.size(); i++)
@@ -246,7 +246,7 @@ void CompositeModel::importXML(const char* filename)
   pugi::xml_node submodel = root.child("SubModels");
   pugi::xml_node connection = root.child("Connections");
   pugi::xml_node SimulationParams = root.child("SimulationParams");
-  
+
   /* instantiate FMus after reading from xml */
   for (pugi::xml_node_iterator it = submodel.begin(); it != submodel.end(); ++it)
    {
@@ -289,40 +289,40 @@ void CompositeModel::importXML(const char* filename)
    }
    /* read the simulation settings and set*/
   for (pugi::xml_attribute attr = SimulationParams.first_attribute(); attr; attr = attr.next_attribute())
+  {
+    std::string value =attr.name();
+    if (value=="StartTime")
     {
-        std::string value =attr.name();
-        if (value=="StartTime")
-        {
-          if (toString(attr.value())!="")
-          {
-            settings.SetStartTime(std::stod(attr.value()));
-          } 
-        }
-
-        if (value=="StopTime")
-        {
-          if (toString(attr.value())!="")
-          {
-            settings.SetStopTime(std::stod(attr.value()));
-          } 
-        } 
-
-        if (value=="tolerance")
-        {
-          if (toString(attr.value())!="")
-          {
-            settings.SetTolerance(std::stod(attr.value()));
-          } 
-        }  
-
-        if (value=="communicationInterval")
-        {
-          if (toString(attr.value())!="")
-          {
-            settings.SetCommunicationInterval(std::stod(attr.value()));
-          } 
-        }  
+      if (toString(attr.value())!="")
+      {
+        settings.SetStartTime(std::strtod(attr.value(), NULL));
+      }
     }
+
+    if (value=="StopTime")
+    {
+      if (toString(attr.value())!="")
+      {
+        settings.SetStopTime(std::strtod(attr.value(), NULL));
+      }
+    }
+
+    if (value=="tolerance")
+    {
+      if (toString(attr.value())!="")
+      {
+        settings.SetTolerance(std::strtod(attr.value(), NULL));
+      }
+    }
+
+    if (value=="communicationInterval")
+    {
+      if (toString(attr.value())!="")
+      {
+        settings.SetCommunicationInterval(std::strtod(attr.value(), NULL));
+      }
+    }
+  }
 }
 
 void CompositeModel::describe()
