@@ -172,7 +172,32 @@ void CompositeModel::exportXML(const char* filename)
   pugi::xml_node model = doc.append_child("Model");
   pugi::xml_node submodels = model.append_child("SubModels");
   pugi::xml_node connections = model.append_child("Connections");
+  pugi::xml_node simulationparams = model.append_child("SimulationParams");
+  
+  /* add simulation settings */
+  std::string startTime=(settings.GetStartTime() ? toString(*(settings.GetStartTime())) : "");
+  std::string stopTime=(settings.GetStopTime() ? toString(*(settings.GetStopTime())) : "");
+  std::string tolerance=(settings.GetTolerance() ? toString(*(settings.GetTolerance())) : "");
+  std::string communicationInterval=(settings.GetCommunicationInterval() ? toString(*(settings.GetCommunicationInterval())) : "");
 
+  if (startTime!="")
+  {
+    simulationparams.append_attribute("StartTime")=startTime.c_str();
+  }
+  if (stopTime!="")
+  {
+    simulationparams.append_attribute("StopTime")=stopTime.c_str();
+  }
+  if (tolerance!="")
+  {
+    simulationparams.append_attribute("tolerance")=tolerance.c_str();
+  }
+  if (communicationInterval!="")
+  {
+    simulationparams.append_attribute("communicationInterval")=communicationInterval.c_str();
+  }
+ 
+   /* add FMus List */
   std::map<std::string, FMUWrapper*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
   {
@@ -181,8 +206,8 @@ void CompositeModel::exportXML(const char* filename)
     pugi::xml_node submodel = submodels.append_child("SubModel");
     submodel.append_attribute("Name") = getinstance.c_str();
     submodel.append_attribute("ModelFile") = getfmu.c_str();
-  }
-
+  }   
+  /* add connection informations */
   const std::vector< std::pair<int, int> >& connectionsOutputs = outputsGraph.getSortedConnections();
   for(int i=0; i<connectionsOutputs.size(); i++)
   {
@@ -220,6 +245,8 @@ void CompositeModel::importXML(const char* filename)
   pugi::xml_node root = doc.document_element();
   pugi::xml_node submodel = root.child("SubModels");
   pugi::xml_node connection = root.child("Connections");
+  pugi::xml_node SimulationParams = root.child("SimulationParams");
+  
   /* instantiate FMus after reading from xml */
   for (pugi::xml_node_iterator it = submodel.begin(); it != submodel.end(); ++it)
    {
@@ -260,6 +287,42 @@ void CompositeModel::importXML(const char* filename)
       //std::cout << "Connections List:" << fromconnection << "->" << toconnection << std::endl;
       addConnection(fromconnection,toconnection);
    }
+   /* read the simulation settings and set*/
+  for (pugi::xml_attribute attr = SimulationParams.first_attribute(); attr; attr = attr.next_attribute())
+    {
+        std::string value =attr.name();
+        if (value=="StartTime")
+        {
+          if (toString(attr.value())!="")
+          {
+            settings.SetStartTime(std::stod(attr.value()));
+          } 
+        }
+
+        if (value=="StopTime")
+        {
+          if (toString(attr.value())!="")
+          {
+            settings.SetStopTime(std::stod(attr.value()));
+          } 
+        } 
+
+        if (value=="tolerance")
+        {
+          if (toString(attr.value())!="")
+          {
+            settings.SetTolerance(std::stod(attr.value()));
+          } 
+        }  
+
+        if (value=="communicationInterval")
+        {
+          if (toString(attr.value())!="")
+          {
+            settings.SetCommunicationInterval(std::stod(attr.value()));
+          } 
+        }  
+    }
 }
 
 void CompositeModel::describe()
