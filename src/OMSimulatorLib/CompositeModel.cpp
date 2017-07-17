@@ -358,6 +358,7 @@ void CompositeModel::simulate()
 
   double* pStopTime = settings.GetStopTime();
   fmi2_real_t tend = pStopTime ? *pStopTime : 1.0;
+
   stepUntil(tend);
 
   terminate();
@@ -381,7 +382,7 @@ oms_status_t CompositeModel::doSteps(const int numberOfSteps)
     // do_step
     std::map<std::string, FMUWrapper*>::iterator it;
     for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
-      it->second->doStep(tcur);
+      it->second->doStep(tcur+communicationInterval);
     tcur += communicationInterval;
   }
 
@@ -400,7 +401,17 @@ oms_status_t CompositeModel::stepUntil(const double timeValue)
 
   while(tcur < timeValue)
   {
-    doSteps(1);
+    // input = output
+    updateInputs(outputsGraph);
+
+    tcur += communicationInterval;
+    if (tcur > timeValue)
+      tcur = timeValue;
+
+    // do_step
+    std::map<std::string, FMUWrapper*>::iterator it;
+    for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
+      it->second->doStep(tcur);
   }
 
   return oms_status_ok;
@@ -415,11 +426,8 @@ void CompositeModel::initialize()
     logFatal("CompositeModel::initialize: Model is already in simulation mode.");
   }
 
-  double* pStartTime = settings.GetStartTime();
-  tcur = pStartTime ? *pStartTime : 0.0;
-
-  double* pCommunicationInterval = settings.GetCommunicationInterval();
-  communicationInterval = pCommunicationInterval ? *pCommunicationInterval : 1e-1;
+  tcur = settings.GetStartTime() ? *settings.GetStartTime() : 0.0;
+  communicationInterval = settings.GetCommunicationInterval() ? *settings.GetCommunicationInterval() : 1e-1;
 
   // Enter initialization
   modelState = oms_modelState_initialization;
