@@ -105,8 +105,11 @@ double oms_getReal(void *model, const char *var);
  */
 void oms_addConnection(void* model, const char* from, const char* to);
 
-
-void oms_simulate(void* model);
+/**
+ * @param model Model as opaque pointer.
+ * @return Error status.
+ */
+oms_status_t oms_simulate(void* model);
 
 /**
  * \brief In case of variable step sizes or events we cannot know the final time value.

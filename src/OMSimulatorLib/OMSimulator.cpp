@@ -116,17 +116,17 @@ void oms_addConnection(void* model, const char* from, const char* to)
   pModel->addConnection(from, to);
 }
 
-void oms_simulate(void* model)
+oms_status_t oms_simulate(void* model)
 {
   logTrace();
   if(!model)
   {
     logError("oms_simulate: invalid pointer");
-    return;
+    return oms_status_error;
   }
 
   CompositeModel* pModel = (CompositeModel*) model;
-  pModel->simulate();
+  return pModel->simulate();
 }
 
 oms_status_t oms_doSteps(const void* model, const int numberOfSteps)

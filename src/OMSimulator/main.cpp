@@ -123,7 +123,9 @@ int main(int argc, char *argv[])
   else
   {
     // OMSimulator example.fmu
+    oms_initialize(pModel);
     oms_simulate(pModel);
+    oms_terminate(pModel);
   }
 
   oms_unload(pModel);

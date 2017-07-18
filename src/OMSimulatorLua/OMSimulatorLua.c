@@ -131,7 +131,7 @@ static int addConnection(lua_State *L)
   return 0;
 }
 
-//void oms_simulate(void* model);
+//oms_status_t oms_simulate(void* model);
 static int simulate(lua_State *L)
 {
   if (lua_gettop(L) != 1)
@@ -139,8 +139,9 @@ static int simulate(lua_State *L)
   luaL_checktype(L, 1, LUA_TUSERDATA);
 
   void *model = topointer(L, 1);
-  oms_simulate(model);
-  return 0;
+  oms_status_t returnValue = oms_simulate(model);
+  lua_pushinteger(L, returnValue);
+  return 1;
 }
 
 //oms_status_t oms_doSteps(const void* model, const int numberOfSteps);

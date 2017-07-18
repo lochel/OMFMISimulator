@@ -414,18 +414,20 @@ void CompositeModel::updateInputs(DirectedGraph& graph)
   }
 }
 
-void CompositeModel::simulate()
+oms_status_t CompositeModel::simulate()
 {
   logTrace();
 
-  initialize();
+  if (oms_modelState_simulation != modelState)
+  {
+    logError("CompositeModel::simulate: Model is not in simulation mode.");
+    return oms_status_error;
+  }
 
   double* pStopTime = settings.GetStopTime();
   fmi2_real_t tend = pStopTime ? *pStopTime : 1.0;
 
-  stepUntil(tend);
-
-  terminate();
+  return stepUntil(tend);
 }
 
 oms_status_t CompositeModel::doSteps(const int numberOfSteps)

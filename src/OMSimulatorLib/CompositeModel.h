@@ -56,10 +56,10 @@ public:
   void exportDependencyGraph(const std::string& prefix);
 
   void describe();
-  void simulate();
   void exportXML(const char* filename);
   void importXML(const char* filename);
 
+  oms_status_t simulate();
   oms_status_t doSteps(const int numberOfSteps);
   oms_status_t stepUntil(const double timeValue);
 
