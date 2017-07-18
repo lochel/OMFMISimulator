@@ -15,6 +15,11 @@ OpenModelica FMI &amp; TLM based simulator
 > make config-OMSimulator
 ```
 
+```bash
+> cp 3rdParty/FMIL/install/linux/lib/libfmilib_shared.so install/bin/
+> cp 3rdParty/FMIL/install/linux/lib/libfmilib_shared.so install/lib/
+```
+
 2. build OMSimulator
 ```bash
 > make OMSimulator

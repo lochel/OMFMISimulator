@@ -9,12 +9,16 @@ list(APPEND OMSIMULATORLIB_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
 
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${FMILibrary_INCLUDEDIR})
-link_directories(${FMILibrary_LIBRARYDIR} ${Boost_LIBRARY_DIRS})
+include_directories(${CVODELibrary_INCLUDEDIR})
+
+link_directories(${Boost_LIBRARY_DIRS})
+link_directories(${FMILibrary_LIBRARYDIR})
+link_directories(${CVODELibrary_LIBRARYDIR})
 
 # Shared library version
 add_library(OMSimulatorLib_shared SHARED ${OMSIMULATORLIB_SOURCES})
 SET_TARGET_PROPERTIES(OMSimulatorLib_shared PROPERTIES OUTPUT_NAME OMSimulatorLib)
-target_link_libraries(OMSimulatorLib_shared fmilib_shared ${Boost_LIBRARIES})
+target_link_libraries(OMSimulatorLib_shared fmilib_shared sundials_cvode sundials_nvecserial ${Boost_LIBRARIES})
 install(TARGETS OMSimulatorLib_shared DESTINATION lib)
 
 # Static library version

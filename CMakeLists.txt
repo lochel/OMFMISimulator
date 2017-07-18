@@ -53,6 +53,13 @@ ELSE()
 ENDIF()
 find_package(LUALibrary REQUIRED)
 
+IF (WIN32)
+  set(CVODELibrary_ROOT ${PROJECT_SOURCE_DIR}/3rdParty/cvode/install/win)
+ELSE()
+  set(CVODELibrary_ROOT ${PROJECT_SOURCE_DIR}/3rdParty/cvode/install/linux)
+ENDIF()
+find_package(CVODELibrary REQUIRED)
+
 ##########################
 # Add project modules
 add_subdirectory(src/OMSimulatorLib)

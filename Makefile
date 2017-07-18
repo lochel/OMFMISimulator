@@ -1,7 +1,7 @@
 RM=rm -rf
 MKDIR=mkdir -p
 
-.PHONY: OMSimulator config config-OMSimulator config-fmil config-lua config-3rdParty distclean testsuite
+.PHONY: OMSimulator config config-OMSimulator config-fmil config-lua config-cvode config-3rdParty distclean testsuite
 
 OMSimulator:
 	@echo
@@ -10,7 +10,7 @@ OMSimulator:
 	@$(MAKE) -C build/linux install
 
 config: config-OMSimulator
-config-3rdParty: config-fmil config-lua
+config-3rdParty: config-fmil config-lua config-cvode
 
 config-OMSimulator:
 	@echo
@@ -36,6 +36,15 @@ config-lua:
 	$(RM) 3rdParty/Lua/install/linux
 	@$(MAKE) -C 3rdParty/Lua
 
+config-cvode:
+	@echo
+	@echo "# config cvode"
+	@echo
+	$(RM) 3rdParty/cvode/build-linux
+	$(RM) 3rdParty/cvode/install/linux
+	$(MKDIR) 3rdParty/cvode/build-linux
+	cd 3rdParty/cvode/build-linux && cmake -DCMAKE_INSTALL_PREFIX=../install/linux .. -DEXAMPLES_ENABLE:BOOL="0" -DBUILD_SHARED_LIBS:BOOL="0" -DCMAKE_C_FLAGS="-fPIC" && $(MAKE) install
+
 distclean:
 	@echo
 	@echo "# make distclean"
@@ -44,6 +53,8 @@ distclean:
 	$(RM) install
 	$(RM) 3rdParty/FMIL/build/linux
 	$(RM) 3rdParty/FMIL/install/linux
+	$(RM) 3rdParty/cvode/build-linux
+	$(RM) 3rdParty/cvode/install/linux
 
 testsuite:
 	@echo
