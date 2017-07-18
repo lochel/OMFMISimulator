@@ -151,6 +151,7 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
   callBackFunctions.allocateMemory = calloc;
   callBackFunctions.freeMemory = free;
   callBackFunctions.componentEnvironment = fmu;
+  callBackFunctions.stepFinished = NULL;
 
   if(fmi2_fmu_kind_me == fmuKind)
   {
