@@ -154,8 +154,9 @@ static int doSteps(lua_State *L)
 
   void *model = topointer(L, 1);
   int numberOfSteps = (int)lua_tointeger(L, 2);
-  oms_doSteps(model, numberOfSteps);
-  return 0;
+  oms_status_t returnValue = oms_doSteps(model, numberOfSteps);
+  lua_pushinteger(L, returnValue);
+  return 1;
 }
 
 //oms_status_t oms_stepUntil(const void* model, const double timeValue);
@@ -168,8 +169,9 @@ static int stepUntil(lua_State *L)
 
   void *model = topointer(L, 1);
   double timeValue = lua_tonumber(L, 2);
-  oms_stepUntil(model, timeValue);
-  return 0;
+  oms_status_t returnValue = oms_stepUntil(model, timeValue);
+  lua_pushinteger(L, returnValue);
+  return 1;
 }
 
 //void oms_describe(void* model);
