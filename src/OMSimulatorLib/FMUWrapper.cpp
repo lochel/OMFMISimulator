@@ -566,6 +566,7 @@ void FMUWrapper::terminate()
     free(states);
     free(states_der);
   }
+  if(omsResultFile) delete omsResultFile;
 
   fmi2_status_t fmistatus = fmi2_import_terminate(fmu);
   if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_terminate failed");
@@ -668,4 +669,3 @@ void FMUWrapper::doStep(double stopTime)
     }
   }
 }
-
