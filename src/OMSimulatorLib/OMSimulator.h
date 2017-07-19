@@ -151,6 +151,16 @@ oms_status_t oms_initialize(void* model);
 oms_status_t oms_terminate(void* model);
 
 /**
+ * \brief Reset the FMUs after a simulation run.
+ *
+ * The FMUs go into the same state as after instantiation.
+ *
+ * @param model Model as opaque pointer.
+ * @return Error status.
+ */
+oms_status_t oms_reset(void* model);
+
+/**
  * \brief Get current simulation time.
  *
  * @param model [in]  Model as opaque pointer.

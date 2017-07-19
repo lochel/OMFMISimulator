@@ -527,6 +527,17 @@ void CompositeModel::terminate()
   modelState = oms_modelState_instantiated;
 }
 
+void CompositeModel::reset()
+{
+  logTrace();
+
+  std::map<std::string, FMUWrapper*>::iterator it;
+  for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
+    it->second->reset();
+
+  modelState = oms_modelState_instantiated;
+}
+
 oms_status_t CompositeModel::getCurrentTime(double *time)
 {
   logTrace();
@@ -541,4 +552,3 @@ oms_status_t CompositeModel::getCurrentTime(double *time)
   *time = tcur;
   return oms_status_ok;
 }
-

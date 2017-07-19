@@ -65,6 +65,7 @@ public:
 
   void initialize();
   void terminate();
+  void reset();
 
   oms_status_t getCurrentTime(double *time);
 

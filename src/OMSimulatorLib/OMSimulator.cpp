@@ -235,6 +235,20 @@ oms_status_t oms_terminate(void* model)
   return oms_status_ok;
 }
 
+oms_status_t oms_reset(void* model)
+{
+  logTrace();
+  if(!model)
+  {
+    logError("oms_reset: invalid pointer");
+    return oms_status_error;
+  }
+
+  CompositeModel* pModel = (CompositeModel*) model;
+  pModel->reset();
+  return oms_status_ok;
+}
+
 oms_status_t oms_getCurrentTime(const void* model, double* time)
 {
   logTrace();

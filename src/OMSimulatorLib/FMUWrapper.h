@@ -56,6 +56,7 @@ public:
   void enterInitialization(double startTime);
   void exitInitialization();
   void terminate();
+  void reset();
   void doStep(double stopTime);
 
   const DirectedGraph& getOutputsGraph() {return outputsGraph;}

@@ -572,6 +572,19 @@ void FMUWrapper::terminate()
   if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_terminate failed");
 }
 
+void FMUWrapper::reset()
+{
+  if(fmi2_fmu_kind_me == fmuKind)
+  {
+    free(states);
+    free(states_der);
+  }
+  if(omsResultFile) delete omsResultFile;
+
+  fmi2_status_t fmistatus = fmi2_import_reset(fmu);
+  if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_reset failed");
+}
+
 void FMUWrapper::doStep(double stopTime)
 {
   fmi2_status_t fmistatus;
