@@ -314,8 +314,8 @@ void FMUWrapper::setRealParameter(const std::string& var, double value)
 
   Variable* v = getVariable(var);
 
-  if(!v || !v->isParameter())
-    logError("FMUWrapper::setRealParameter: FMU doesn't contain parameter " + var);
+  if(!v || !v->isParameter() || !v->isTypeReal())
+    logError("FMUWrapper::setRealParameter: FMU doesn't contain parameter real " + var);
 
   fmi2_import_set_real(fmu, &v->getValueReference(), 1, &value);
 }

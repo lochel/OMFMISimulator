@@ -66,6 +66,9 @@ public:
   std::string& getFMUInstance() {return fmuInstance;}
   fmi2_value_reference_t& getValueReference() {return vr;}
   fmi2_base_type_enu_t& getBaseType() {return baseType;}
+
+  bool isTypeReal() {return fmi2_base_type_real == baseType;}
+
 protected:
   std::string name;
   std::string fmuInstance;
