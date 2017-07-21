@@ -77,6 +77,7 @@ private:
 private:
   Settings settings;
   std::map<std::string, FMUWrapper*> fmuInstances;
+  std::map<std::string,double> ParameterList;
   DirectedGraph outputsGraph;
   DirectedGraph initialUnknownsGraph;
   double tcur;

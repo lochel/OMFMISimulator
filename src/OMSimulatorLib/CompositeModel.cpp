@@ -37,8 +37,8 @@
 #include "Util.h"
 #include <fmilib.h>
 #include <JM/jm_portability.h>
-
 #include <iostream>
+#include <vector>
 #include <string>
 #include <map>
 #include <sstream>
@@ -96,8 +96,12 @@ void CompositeModel::setReal(const std::string& var, double value)
     logError("CompositeModel::setReal: FMU instance \"" + fmuInstance + "\" doesn't exist in model");
     return;
   }
-
-  fmuInstances[fmuInstance]->setRealParameter(fmuVar, value);
+  bool val=fmuInstances[fmuInstance]->setRealParameter(fmuVar, value);
+  /*store the list of Modified parameter values */
+  if (val)
+  {
+    ParameterList[var]=value;
+  }
 }
 
 double CompositeModel::getReal(const std::string& var)
@@ -173,13 +177,11 @@ void CompositeModel::exportXML(const char* filename)
   pugi::xml_node submodels = model.append_child("SubModels");
   pugi::xml_node connections = model.append_child("Connections");
   pugi::xml_node simulationparams = model.append_child("SimulationParams");
-
   /* add simulation settings */
   std::string startTime=(settings.GetStartTime() ? toString(*(settings.GetStartTime())) : "");
   std::string stopTime=(settings.GetStopTime() ? toString(*(settings.GetStopTime())) : "");
   std::string tolerance=(settings.GetTolerance() ? toString(*(settings.GetTolerance())) : "");
   std::string communicationInterval=(settings.GetCommunicationInterval() ? toString(*(settings.GetCommunicationInterval())) : "");
-
   if (startTime!="")
   {
     simulationparams.append_attribute("StartTime")=startTime.c_str();
@@ -196,8 +198,7 @@ void CompositeModel::exportXML(const char* filename)
   {
     simulationparams.append_attribute("communicationInterval")=communicationInterval.c_str();
   }
-
-   /* add FMus List */
+  /* add FMus List */
   std::map<std::string, FMUWrapper*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
   {
@@ -224,13 +225,29 @@ void CompositeModel::exportXML(const char* filename)
     connection.append_attribute("From") = fromfmu.c_str();
     connection.append_attribute("To") = tofmu.c_str();
   }
-
+  /* add simulation parameters */
+  std::map<std::string, double>::iterator param;
+  for (param=ParameterList.begin(); param!=ParameterList.end(); ++param)
+  {
+     std::string varname= param->first;
+     double varvalue=param->second;
+     //std::string varname ="Source.A.y_dfdfds";
+     std::string name;
+     std::string value;
+     std::stringstream var_(varname);
+     std::getline(var_, name, '.');
+     std::getline(var_, value);
+     /* find the appropriate node instances and add the ModelParams */
+     pugi::xml_node param = submodels.find_child_by_attribute("SubModel", "Name", name.c_str());
+     pugi::xml_node modelparams = param.append_child("ModelParams");
+     modelparams.append_attribute("Name") = value.c_str();
+     modelparams.append_attribute("Value") = varvalue;
+  }
   bool saveSucceeded = doc.save_file(filename);
   if (!saveSucceeded)
   {
     logError("CompositeModel::exportXML: The file is not saved to XML.");
   }
-
 }
 
 void CompositeModel::importXML(const char* filename)
@@ -241,12 +258,10 @@ void CompositeModel::importXML(const char* filename)
   {
     logError("CompositeModel::importXML : \"" + std::string(filename) + "\" the file is not loaded");
   }
-
   pugi::xml_node root = doc.document_element();
   pugi::xml_node submodel = root.child("SubModels");
   pugi::xml_node connection = root.child("Connections");
   pugi::xml_node SimulationParams = root.child("SimulationParams");
-
   /* instantiate FMus after reading from xml */
   for (pugi::xml_node_iterator it = submodel.begin(); it != submodel.end(); ++it)
    {
@@ -266,6 +281,15 @@ void CompositeModel::importXML(const char* filename)
       }
       //std::cout << "Fmus List:" << " " << "instancename =" << instancename << " " << "filepath =" << filename << std::endl;
       instantiateFMU(filename,instancename);
+      /* read and set the parameter from the node instances*/
+      for (pugi::xml_node modelparam = it->first_child(); modelparam; modelparam = modelparam.next_sibling())
+       {
+       std::string name = modelparam.attribute("Name").as_string();
+       double varvalue = modelparam.attribute("Value").as_double();
+       std::string varname=instancename+"."+name;
+       //std::cout << "find value" << modelparam.name() << instancename << " " << varname << "=" <<varvalue << std::endl;
+       setReal(varname,varvalue);
+      }
    }
    /* add connections to FMus after reading from xml */
    for (pugi::xml_node_iterator it = connection.begin(); it != connection.end(); ++it)
@@ -298,7 +322,6 @@ void CompositeModel::importXML(const char* filename)
         settings.SetStartTime(std::strtod(attr.value(), NULL));
       }
     }
-
     if (value=="StopTime")
     {
       if (toString(attr.value())!="")
@@ -306,7 +329,6 @@ void CompositeModel::importXML(const char* filename)
         settings.SetStopTime(std::strtod(attr.value(), NULL));
       }
     }
-
     if (value=="tolerance")
     {
       if (toString(attr.value())!="")
@@ -314,7 +336,6 @@ void CompositeModel::importXML(const char* filename)
         settings.SetTolerance(std::strtod(attr.value(), NULL));
       }
     }
-
     if (value=="communicationInterval")
     {
       if (toString(attr.value())!="")
