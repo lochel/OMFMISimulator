@@ -303,6 +303,13 @@ void oms_setResultFile(void* model, const char* filename)
   pModel->getSettings().SetResultFile(filename);
 }
 
+void oms_setSolverMethod(void* model, const char* instanceName, const char* method)
+{
+  logTrace();
+  CompositeModel* pModel = (CompositeModel*) model;
+  pModel->SetSolverMethod(instanceName, method);
+}
+
 void oms_logToStdStream(int useStdStream)
 {
   Log::getInstance().DumpToStdStream(useStdStream);

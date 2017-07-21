@@ -70,6 +70,7 @@ public:
   oms_status_t getCurrentTime(double *time);
 
   Settings& getSettings() {return settings;}
+  void SetSolverMethod(std::string instanceName, std::string method);
 
 private:
   void updateInputs(DirectedGraph& graph);

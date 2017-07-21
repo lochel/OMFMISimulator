@@ -361,6 +361,22 @@ static int setResultFile(lua_State *L)
   return 0;
 }
 
+//void oms_setSolverMethod(void* model, const char* instanceName, const char* method);
+static int setSolverMethod(lua_State *L)
+{
+  if (lua_gettop(L) != 3)
+    return luaL_error(L, "expecting exactly 3 argument");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TSTRING);
+  luaL_checktype(L, 3, LUA_TSTRING);
+
+  void *model = topointer(L, 1);
+  const char* instanceName = lua_tostring(L, 2);
+  const char* method = lua_tostring(L, 3);
+  oms_setSolverMethod(model, instanceName, method);
+  return 0;
+}
+
 //void oms_logToStdStream(bool useStdStream);
 static int logToStdStream(lua_State *L)
 {
@@ -408,6 +424,7 @@ DLLEXPORT int luaopen_OMSimulatorLua(lua_State *L)
   REGISTER_LUA_CALL(setCommunicationInterval);
   REGISTER_LUA_CALL(setTempDirectory);
   REGISTER_LUA_CALL(setResultFile);
+  REGISTER_LUA_CALL(setSolverMethod);
   REGISTER_LUA_CALL(logToStdStream);
   REGISTER_LUA_CALL(getVersion);
   REGISTER_LUA_CALL(exportXML);

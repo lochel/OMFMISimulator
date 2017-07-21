@@ -49,6 +49,12 @@
 
 #include <boost/filesystem.hpp>
 
+#include "cvode/cvode.h"             /* prototypes for CVODE fcts., consts. */
+#include "nvector/nvector_serial.h"  /* serial N_Vector types, fcts., macros */
+#include "cvode/cvode_dense.h"       /* prototype for CVDense */
+#include "sundials/sundials_dense.h" /* definitions DlsMat DENSE_ELEM */
+#include "sundials/sundials_types.h" /* definition of type realtype */
+
 void fmiLogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message)
 {
   switch(log_level)
@@ -99,8 +105,30 @@ void fmi2logger(fmi2_component_environment_t env, fmi2_string_t instanceName, fm
   }
 }
 
+int cvode_rhs(realtype t, N_Vector y, N_Vector ydot, void *user_data)
+{
+  FMUWrapper *fmu = (FMUWrapper*) user_data;
+
+  // update states in FMU
+  for(size_t i=0; i<fmu->n_states; ++i)
+    fmu->states[i] = NV_Ith_S(y, i);
+
+  // set states
+  fmi2_status_t fmistatus;
+  fmistatus = fmi2_import_set_continuous_states(fmu->fmu, fmu->states, fmu->n_states);
+  if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_set_continuous_states failed");
+  // get state derivatives
+  fmistatus = fmi2_import_get_derivatives(fmu->fmu, fmu->states_der, fmu->n_states);
+  if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_derivatives failed");
+
+  for(size_t i=0; i<fmu->n_states; ++i)
+    NV_Ith_S(ydot, i) = fmu->states_der[i];
+
+  return 0;
+}
+
 FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string instanceName)
-  : model(model), fmuPath(fmuPath), instanceName(instanceName)
+  : model(model), fmuPath(fmuPath), instanceName(instanceName), solverMethod(EXPLICIT_EULER)
 {
   logTrace();
 
@@ -440,6 +468,12 @@ std::string FMUWrapper::getFMUKind()
   else "Unsupported FMU kind";
 }
 
+bool FMUWrapper::isFMUKindME()
+{
+  if(fmi2_fmu_kind_me == fmuKind) return true;
+  return false;
+}
+
 std::string FMUWrapper::getGUID()
 {
   const char* GUID = fmi2_import_get_GUID(fmu);
@@ -538,8 +572,12 @@ void FMUWrapper::exitInitialization()
     logDebug(toString(n_states) + " states");
     logDebug(toString(n_event_indicators) + " event indicators");
 
+    if (n_states < 1)
+      solverMethod = NO_SOLVER;
+
     states = (double*)calloc(n_states, sizeof(double));
     states_der = (double*)calloc(n_states, sizeof(double));
+    states_nominal = (double*)calloc(n_states, sizeof(double));
     event_indicators = (double*)calloc(n_event_indicators, sizeof(double));
     event_indicators_prev = (double*)calloc(n_event_indicators, sizeof(double));
 
@@ -548,8 +586,63 @@ void FMUWrapper::exitInitialization()
     if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_continuous_states failed");
     fmistatus = fmi2_import_get_derivatives(fmu, states_der, n_states);
     if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_derivatives failed");
+    fmistatus = fmi2_import_get_nominals_of_continuous_states(fmu, states_nominal, n_states);
+    if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_nominals_of_continuous_states failed");
     fmistatus = fmi2_import_get_event_indicators(fmu, event_indicators, n_event_indicators);
     if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_event_indicators failed");
+
+    if (n_states < 1)
+    {
+      this->solverMethod = NO_SOLVER;
+      logDebug("FMU '" + instanceName + "' doesn't contain any state.");
+    }
+
+    // initialize solver data
+    if (NO_SOLVER == solverMethod)
+    {
+      if (n_states > 0)
+        logFatal("No solver specified for FMU '" + instanceName + "'");
+    }
+    else if (EXPLICIT_EULER == solverMethod)
+    {
+    }
+    else if (CVODE == solverMethod)
+    {
+      solverData.cvode.y = N_VNew_Serial(n_states);
+      if (!solverData.cvode.y) logFatal("SUNDIALS_ERROR: N_VNew_Serial() failed - returned NULL pointer");
+      for(size_t i=0; i<n_states; ++i)
+        NV_Ith_S(solverData.cvode.y, i) = states[i];
+
+      solverData.cvode.abstol = N_VNew_Serial(n_states);
+      if (!solverData.cvode.abstol) logFatal("SUNDIALS_ERROR: N_VNew_Serial() failed - returned NULL pointer");
+      for(size_t i=0; i<n_states; ++i)
+        NV_Ith_S(solverData.cvode.abstol, i) = 0.01*relativeTolerance*states_nominal[i];
+
+      // Call CVodeCreate to create the solver memory and specify the
+      // Backward Differentiation Formula and the use of a Newton iteration
+      solverData.cvode.mem = CVodeCreate(CV_BDF, CV_NEWTON);
+      if (!solverData.cvode.mem) logFatal("SUNDIALS_ERROR: CVodeCreate() failed - returned NULL pointer");
+
+      int flag = CVodeSetUserData(solverData.cvode.mem, (void*)this);
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetUserData() failed with flag = " + toString(flag));
+
+      // Call CVodeInit to initialize the integrator memory and specify the
+      // user's right hand side function in y'=cvode_rhs(t,y), the inital time T0, and
+      // the initial dependent variable vector y.
+      flag = CVodeInit(solverData.cvode.mem, cvode_rhs, tcur, solverData.cvode.y);
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeInit() failed with flag = " + toString(flag));
+
+      // Call CVodeSVtolerances to specify the scalar relative tolerance
+      // and vector absolute tolerances
+      flag = CVodeSVtolerances(solverData.cvode.mem, relativeTolerance, solverData.cvode.abstol);
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSVtolerances() failed with flag = " + toString(flag));
+
+      // Call CVDense to specify the CVDENSE dense linear solver */
+      flag = CVDense(solverData.cvode.mem, n_states);
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVDense() failed with flag = " + toString(flag));
+    }
+    else
+      logFatal("Unknown solver method");
   }
   else if(fmi2_fmu_kind_cs == fmuKind)
   {
@@ -567,8 +660,27 @@ void FMUWrapper::terminate()
 {
   if(fmi2_fmu_kind_me == fmuKind)
   {
+    // free solver data
+    if (NO_SOLVER == solverMethod)
+    {
+
+    }
+    else if (EXPLICIT_EULER == solverMethod)
+    {
+    }
+    else if (CVODE == solverMethod)
+    {
+      N_VDestroy_Serial(solverData.cvode.y);
+      N_VDestroy_Serial(solverData.cvode.abstol);
+      CVodeFree(&(solverData.cvode.mem));
+    }
+    else
+      logFatal("Unknown solver method");
+
+    // free common data
     free(states);
     free(states_der);
+    free(states_nominal);
   }
   if(omsResultFile) delete omsResultFile;
 
@@ -580,8 +692,25 @@ void FMUWrapper::reset()
 {
   if(fmi2_fmu_kind_me == fmuKind)
   {
+    // free solver data
+    if (NO_SOLVER == solverMethod)
+    {
+    }
+    else if (EXPLICIT_EULER == solverMethod)
+    {
+    }
+    else if (CVODE == solverMethod)
+    {
+      N_VDestroy_Serial(solverData.cvode.y);
+      N_VDestroy_Serial(solverData.cvode.abstol);
+      CVodeFree(&(solverData.cvode.mem));
+    }
+    else
+      logFatal("Unknown solver method");
+
     free(states);
     free(states_der);
+    free(states_nominal);
   }
   if(omsResultFile) delete omsResultFile;
 
@@ -642,6 +771,14 @@ void FMUWrapper::doStep(double stopTime)
         fmistatus = fmi2_import_get_event_indicators(fmu, event_indicators, n_event_indicators);
         if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_event_indicators failed");
         omsResultFile->emit(tcur);
+
+        if (CVODE == solverMethod)
+        {
+          for(size_t i=0; i<n_states; ++i)
+            NV_Ith_S(solverData.cvode.y, i) = states[i];
+          int flag = CVodeReInit(solverData.cvode.mem, tcur, solverData.cvode.y);
+          if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeReInit() failed with flag = " + toString(flag));
+        }
       }
 
       // calculate next time step
@@ -659,8 +796,27 @@ void FMUWrapper::doStep(double stopTime)
         hcur = tcur - tlast;
       }
 
-      for(int k=0; k<n_states; k++)
-        states[k] = states[k] + hcur*states_der[k];
+      // integrate using specified solver
+      if (NO_SOLVER == solverMethod)
+      {
+      }
+      else if (EXPLICIT_EULER == solverMethod)
+      {
+        for(int k=0; k<n_states; k++)
+          states[k] = states[k] + hcur*states_der[k];
+      }
+      else if (CVODE == solverMethod)
+      {
+        double cvode_time = tlast;
+        while (cvode_time < tcur)
+        {
+          int flag = CVode(solverData.cvode.mem, tcur, solverData.cvode.y, &cvode_time, CV_ONE_STEP);
+          if (flag < 0) logFatal("SUNDIALS_ERROR: CVode() failed with flag = " + toString(flag));
+        }
+        tcur = cvode_time;
+      }
+      else
+        logFatal("Unknown solver method");
 
       // set states
       fmistatus = fmi2_import_set_continuous_states(fmu, states, n_states);
@@ -684,5 +840,36 @@ void FMUWrapper::doStep(double stopTime)
       tcur += hdef;
       omsResultFile->emit(tcur);
     }
+  }
+}
+
+void FMUWrapper::SetSolverMethod(const std::string& solverMethod)
+{
+  if (!isFMUKindME())
+    logError("FMUWrapper::SetSolverMethod: Solver method can only be specified for FMU ME");
+
+  if (solverMethod == "none")
+    this->solverMethod = NO_SOLVER;
+  if (solverMethod == "euler")
+    this->solverMethod = EXPLICIT_EULER;
+  else if (solverMethod == "cvode")
+    this->solverMethod = CVODE;
+  else
+    logError("Settings::SetSolverMethod: Unknown solver method '" + solverMethod + "'");
+}
+
+std::string FMUWrapper::GetSolverMethodString()
+{
+  switch (solverMethod)
+  {
+    case NO_SOLVER:
+      return std::string("none");
+    case EXPLICIT_EULER:
+      return std::string("euler");
+    case CVODE:
+      return std::string("cvode");
+    default:
+      logError("FMUWrapper::GetSolverMethodString: Unknown solver method " + toString(solverMethod));
+      return std::string("unknown");
   }
 }

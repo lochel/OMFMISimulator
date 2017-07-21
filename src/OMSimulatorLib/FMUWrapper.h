@@ -41,6 +41,9 @@
 #include <vector>
 #include <map>
 
+#include "cvode/cvode.h"             /* prototypes for CVODE fcts., consts. */
+#include "nvector/nvector_serial.h"  /* serial N_Vector types, fcts., macros */
+
 class CompositeModel;
 
 class FMUWrapper
@@ -67,8 +70,33 @@ public:
   std::string& getFMUPath() {return fmuPath;}
   std::string getFMUInstanceName() {return instanceName;}
   std::string getFMUKind();
+  bool isFMUKindME();
   std::string getGUID();
   std::string getGenerationTool();
+
+  void SetSolverMethod(const std::string& solverMethod);
+  std::string GetSolverMethodString();
+
+private:
+  enum Solver_t { NO_SOLVER, EXPLICIT_EULER, CVODE };
+
+  struct SolverDataEuler_t
+  {
+    // empty
+  };
+
+  struct SolverDataCVODE_t
+  {
+    void *mem;
+    N_Vector y;
+    N_Vector abstol;
+  };
+
+  union SolverData_t
+  {
+    SolverDataEuler_t euler;
+    SolverDataCVODE_t cvode;
+  };
 
 private:
   void do_event_iteration();
@@ -76,6 +104,8 @@ private:
   void simulate_me(const std::string& resultFileName);
   void getDependencyGraph_outputs();
   void getDependencyGraph_initialUnknowns();
+
+  friend int cvode_rhs(realtype t, N_Vector y, N_Vector ydot, void *user_data);
 
 private:
   CompositeModel& model;
@@ -116,8 +146,11 @@ private:
   size_t n_event_indicators;
   double* states;
   double* states_der;
+  double* states_nominal;
   double* event_indicators;
   double* event_indicators_prev;
+  Solver_t solverMethod;
+  SolverData_t solverData;
 };
 
 #endif

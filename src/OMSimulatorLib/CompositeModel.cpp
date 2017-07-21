@@ -356,7 +356,10 @@ void CompositeModel::describe()
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
   {
     std::cout << it->first << std::endl;
-    std::cout << "  - " << it->second->getFMUKind() << std::endl;
+    if (it->second->isFMUKindME())
+      std::cout << "  - " << it->second->getFMUKind() << " (solver: " << it->second->GetSolverMethodString() << ")" << std::endl;
+    else
+      std::cout << "  - " << it->second->getFMUKind() << std::endl;
     std::cout << "  - path: " << it->second->getFMUPath() << std::endl;
     std::cout << "  - GUID: " << it->second->getGUID() << std::endl;
     std::cout << "  - tool: " << it->second->getGenerationTool() << std::endl;
@@ -572,4 +575,15 @@ oms_status_t CompositeModel::getCurrentTime(double *time)
 
   *time = tcur;
   return oms_status_ok;
+}
+
+void CompositeModel::SetSolverMethod(std::string instanceName, std::string method)
+{
+  if (fmuInstances.find(instanceName) == fmuInstances.end())
+  {
+    logError("CompositeModel::SetSolverMethod: FMU instance \"" + instanceName + "\" doesn't exist in model");
+    return;
+  }
+
+  fmuInstances[instanceName]->SetSolverMethod(method);
 }
