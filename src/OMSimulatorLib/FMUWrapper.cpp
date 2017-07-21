@@ -306,7 +306,7 @@ void FMUWrapper::setReal(const std::string& var, double value)
   fmi2_import_set_real(fmu, &v->getValueReference(), 1, &value);
 }
 
-void FMUWrapper::setRealParameter(const std::string& var, double value)
+bool FMUWrapper::setRealParameter(const std::string& var, double value)
 {
   logTrace();
   if(!fmu)
@@ -314,10 +314,14 @@ void FMUWrapper::setRealParameter(const std::string& var, double value)
 
   Variable* v = getVariable(var);
 
-  if(!v || !v->isParameter() || !v->isTypeReal())
-    logError("FMUWrapper::setRealParameter: FMU doesn't contain parameter real " + var);
+  if (!v || !v->isParameter() || !v->isTypeReal())
+  {
+    logError("FMUWrapper::setRealParameter: FMU '" + instanceName + "' doesn't contain parameter real " + var);
+    return false;
+  }
 
   fmi2_import_set_real(fmu, &v->getValueReference(), 1, &value);
+  return true;
 }
 
 void FMUWrapper::getDependencyGraph_outputs()

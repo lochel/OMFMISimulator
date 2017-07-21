@@ -51,7 +51,7 @@ public:
 
   double getReal(const std::string& var);
   void setReal(const std::string& var, double value);
-  void setRealParameter(const std::string& var, double value);
+  bool setRealParameter(const std::string& var, double value);
 
   void enterInitialization(double startTime);
   void exitInitialization();
