@@ -641,11 +641,31 @@ void FMUWrapper::exitInitialization()
       flag = CVDense(solverData.cvode.mem, n_states);
       if (flag < 0) logFatal("SUNDIALS_ERROR: CVDense() failed with flag = " + toString(flag));
 
-      if (model.getSettings().GetCommunicationInterval())
+      if (model.getSettings().GetStartTime() && model.getSettings().GetStopTime())
       {
-        flag = CVodeSetMaxStep(solverData.cvode.mem, *(model.getSettings().GetCommunicationInterval()));
+        double max_h = (*model.getSettings().GetStopTime() - *model.getSettings().GetStartTime()) / 10.0;
+        logInfo("maximum step size for '" + instanceName + "': " + toString(max_h));
+        flag = CVodeSetMaxStep(solverData.cvode.mem, max_h);
         if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxStep() failed with flag = " + toString(flag));
       }
+
+      // further settings from cpp runtime
+      flag = CVodeSetInitStep(solverData.cvode.mem, 1e-6);        // INITIAL STEPSIZE
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetInitStep() failed with flag = " + toString(flag));
+      flag = CVodeSetMaxOrd(solverData.cvode.mem, 5);             // MAXIMUM ORDER
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxOrd() failed with flag = " + toString(flag));
+      flag = CVodeSetMaxConvFails(solverData.cvode.mem, 100);     // MAXIMUM NUMBER OF NONLINEAR CONVERGENCE FAILURES
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxConvFails() failed with flag = " + toString(flag));
+      flag = CVodeSetStabLimDet(solverData.cvode.mem, TRUE);      // STABILITY DETECTION
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetStabLimDet() failed with flag = " + toString(flag));
+      flag = CVodeSetMinStep(solverData.cvode.mem, 1e-12);        // MINIMUM STEPSIZE
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMinStep() failed with flag = " + toString(flag));
+      flag = CVodeSetMaxNonlinIters(solverData.cvode.mem, 5);     // MAXIMUM NUMBER OF ITERATIONS
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxNonlinIters() failed with flag = " + toString(flag));
+      flag = CVodeSetMaxErrTestFails(solverData.cvode.mem, 100);  // MAXIMUM NUMBER OF ERROR TEST FAILURES
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxErrTestFails() failed with flag = " + toString(flag));
+      flag = CVodeSetMaxNumSteps(solverData.cvode.mem, 1e3);      // MAXIMUM NUMBER OF STEPS
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxNumSteps() failed with flag = " + toString(flag));
     }
     else
       logFatal("Unknown solver method");
