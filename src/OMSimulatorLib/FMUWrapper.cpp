@@ -640,6 +640,12 @@ void FMUWrapper::exitInitialization()
       // Call CVDense to specify the CVDENSE dense linear solver */
       flag = CVDense(solverData.cvode.mem, n_states);
       if (flag < 0) logFatal("SUNDIALS_ERROR: CVDense() failed with flag = " + toString(flag));
+
+      if (model.getSettings().GetCommunicationInterval())
+      {
+        flag = CVodeSetMaxStep(solverData.cvode.mem, *(model.getSettings().GetCommunicationInterval()));
+        if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxStep() failed with flag = " + toString(flag));
+      }
     }
     else
       logFatal("Unknown solver method");
@@ -670,6 +676,26 @@ void FMUWrapper::terminate()
     }
     else if (CVODE == solverMethod)
     {
+      long int nst, nfe, nsetups, nni, ncfn, netf;
+      int flag;
+
+      flag = CVodeGetNumSteps(solverData.cvode.mem, &nst);
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeGetNumSteps() failed with flag = " + toString(flag));
+      flag = CVodeGetNumRhsEvals(solverData.cvode.mem, &nfe);
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeGetNumRhsEvals() failed with flag = " + toString(flag));
+      flag = CVodeGetNumLinSolvSetups(solverData.cvode.mem, &nsetups);
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeGetNumLinSolvSetups() failed with flag = " + toString(flag));
+      flag = CVodeGetNumErrTestFails(solverData.cvode.mem, &netf);
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeGetNumErrTestFails() failed with flag = " + toString(flag));
+      flag = CVodeGetNumNonlinSolvIters(solverData.cvode.mem, &nni);
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeGetNumNonlinSolvIters() failed with flag = " + toString(flag));
+      flag = CVodeGetNumNonlinSolvConvFails(solverData.cvode.mem, &ncfn);
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeGetNumNonlinSolvConvFails() failed with flag = " + toString(flag));
+
+      logInfo("Final Statistics for '" + instanceName + "':");
+      logInfo("NumSteps = " + toString(nst) + " NumRhsEvals  = " + toString(nfe) + " NumLinSolvSetups = " + toString(nsetups));
+      logInfo("NumNonlinSolvIters = " + toString(nni) + " NumNonlinSolvConvFails = " + toString(ncfn) + " NumErrTestFails = " + toString(netf));
+
       N_VDestroy_Serial(solverData.cvode.y);
       N_VDestroy_Serial(solverData.cvode.abstol);
       CVodeFree(&(solverData.cvode.mem));
