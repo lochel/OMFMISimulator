@@ -207,6 +207,11 @@ void CompositeModel::exportXML(const char* filename)
     pugi::xml_node submodel = submodels.append_child("SubModel");
     submodel.append_attribute("Name") = getinstance.c_str();
     submodel.append_attribute("ModelFile") = getfmu.c_str();
+    if (it->second->isFMUKindME())
+    {
+      std::string getsolver= it->second->GetSolverMethodString();
+      submodel.append_attribute("solver") = getsolver.c_str();
+    }
   }
   /* add connection informations */
   const std::vector< std::pair<int, int> >& connectionsOutputs = outputsGraph.getSortedConnections();
@@ -267,6 +272,7 @@ void CompositeModel::importXML(const char* filename)
    {
      std::string instancename;
      std::string filename;
+     std::string solvername;
      for (pugi::xml_attribute_iterator ait = it->attributes_begin(); ait != it->attributes_end(); ++ait)
       {
         std::string value =ait->name();
@@ -278,9 +284,17 @@ void CompositeModel::importXML(const char* filename)
         {
           filename = ait->value();
         }
+        if(value =="solver")
+        {
+          solvername = ait->value();
+        }
       }
       //std::cout << "Fmus List:" << " " << "instancename =" << instancename << " " << "filepath =" << filename << std::endl;
       instantiateFMU(filename,instancename);
+      if(solvername!="")
+      {
+        fmuInstances[instancename]->SetSolverMethod(solvername);
+      }
       /* read and set the parameter from the node instances*/
       for (pugi::xml_node modelparam = it->first_child(); modelparam; modelparam = modelparam.next_sibling())
        {
