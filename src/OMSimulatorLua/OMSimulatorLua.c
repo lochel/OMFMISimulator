@@ -4,7 +4,7 @@
 
 #include <OMSimulator.h>
 
-#define REGISTER_LUA_CALL(name) lua_register(L, #name, name)
+#define REGISTER_LUA_CALL(name) lua_register(L, #name, OMSimulatorLua_##name)
 
 #ifdef _WIN32
   #define DLLEXPORT __declspec(dllexport)
@@ -14,18 +14,18 @@
 
 void push_pointer(lua_State *L, void *p)
 {
-  void **bp = lua_newuserdata(L, sizeof(p));
+  void **bp = (void**)lua_newuserdata(L, sizeof(p));
   *bp = p;
 }
 
 void* topointer(lua_State *L, int index)
 {
-  void **bp = lua_touserdata(L, index);
+  void **bp = (void**)lua_touserdata(L, index);
   return *bp;
 }
 
 //void* oms_newModel();
-static int newModel(lua_State *L)
+static int OMSimulatorLua_newModel(lua_State *L)
 {
   if (lua_gettop(L) != 0)
     return luaL_error(L, "expecting no arguments");
@@ -36,7 +36,7 @@ static int newModel(lua_State *L)
 }
 
 //void* oms_loadModel(const char* filename);
-static int loadModel(lua_State *L)
+static int OMSimulatorLua_loadModel(lua_State *L)
 {
   if (lua_gettop(L) != 1)
     return luaL_error(L, "expecting exactly 1 argument");
@@ -49,7 +49,7 @@ static int loadModel(lua_State *L)
 }
 
 //void oms_unload(void* model);
-static int unload(lua_State *L)
+static int OMSimulatorLua_unload(lua_State *L)
 {
   if (lua_gettop(L) != 1)
     return luaL_error(L, "expecting exactly 1 argument");
@@ -61,7 +61,7 @@ static int unload(lua_State *L)
 }
 
 //void oms_instantiateFMU(void* model, const char* filename, const char* instanceName);
-static int instantiateFMU(lua_State *L)
+static int OMSimulatorLua_instantiateFMU(lua_State *L)
 {
   if (lua_gettop(L) != 3)
     return luaL_error(L, "expecting exactly 3 arguments");
@@ -77,7 +77,7 @@ static int instantiateFMU(lua_State *L)
 }
 
 //void oms_setReal(void* model, const char* var, double value);
-static int setReal(lua_State *L)
+static int OMSimulatorLua_setReal(lua_State *L)
 {
   if (lua_gettop(L) != 3)
     return luaL_error(L, "expecting exactly 3 arguments");
@@ -97,7 +97,7 @@ static int setReal(lua_State *L)
 // TODO: setString
 
 //double oms_getReal(void* model, const char* var);
-static int getReal(lua_State *L)
+static int OMSimulatorLua_getReal(lua_State *L)
 {
   if (lua_gettop(L) != 2)
     return luaL_error(L, "expecting exactly 2 arguments");
@@ -116,7 +116,7 @@ static int getReal(lua_State *L)
 // TODO: getString
 
 //void oms_addConnection(void* model, const char* from, const char* to);
-static int addConnection(lua_State *L)
+static int OMSimulatorLua_addConnection(lua_State *L)
 {
   if (lua_gettop(L) != 3)
     return luaL_error(L, "expecting exactly 3 arguments");
@@ -132,7 +132,7 @@ static int addConnection(lua_State *L)
 }
 
 //oms_status_t oms_simulate(void* model);
-static int simulate(lua_State *L)
+static int OMSimulatorLua_simulate(lua_State *L)
 {
   if (lua_gettop(L) != 1)
     return luaL_error(L, "expecting exactly 1 argument");
@@ -145,7 +145,7 @@ static int simulate(lua_State *L)
 }
 
 //oms_status_t oms_doSteps(const void* model, const int numberOfSteps);
-static int doSteps(lua_State *L)
+static int OMSimulatorLua_doSteps(lua_State *L)
 {
   if (lua_gettop(L) != 2)
     return luaL_error(L, "expecting exactly 2 argument");
@@ -160,7 +160,7 @@ static int doSteps(lua_State *L)
 }
 
 //oms_status_t oms_stepUntil(const void* model, const double timeValue);
-static int stepUntil(lua_State *L)
+static int OMSimulatorLua_stepUntil(lua_State *L)
 {
   if (lua_gettop(L) != 2)
     return luaL_error(L, "expecting exactly 2 argument");
@@ -175,7 +175,7 @@ static int stepUntil(lua_State *L)
 }
 
 //void oms_describe(void* model);
-static int describe(lua_State *L)
+static int OMSimulatorLua_describe(lua_State *L)
 {
   if (lua_gettop(L) != 1)
     return luaL_error(L, "expecting exactly 1 argument");
@@ -187,7 +187,7 @@ static int describe(lua_State *L)
 }
 
 //void oms_exportXML(void* model, const char* filename);
-static int exportXML(lua_State *L)
+static int OMSimulatorLua_exportXML(lua_State *L)
 {
   if (lua_gettop(L) != 2)
     return luaL_error(L, "expecting exactly 2 argument");
@@ -201,7 +201,7 @@ static int exportXML(lua_State *L)
 }
 
 //void oms_importXML(void* model, const char* filename);
-static int importXML(lua_State *L)
+static int OMSimulatorLua_importXML(lua_State *L)
 {
   if (lua_gettop(L) != 2)
     return luaL_error(L, "expecting exactly 2 argument");
@@ -215,7 +215,7 @@ static int importXML(lua_State *L)
 }
 
 //void oms_exportDependencyGraph(void* model, const char* prefix);
-static int exportDependencyGraph(lua_State *L)
+static int OMSimulatorLua_exportDependencyGraph(lua_State *L)
 {
   if (lua_gettop(L) != 2)
     return luaL_error(L, "expecting exactly 2 argument");
@@ -229,7 +229,7 @@ static int exportDependencyGraph(lua_State *L)
 }
 
 //oms_status_t oms_initialize(void* model);
-static int initialize(lua_State *L)
+static int OMSimulatorLua_initialize(lua_State *L)
 {
   if (lua_gettop(L) != 1)
     return luaL_error(L, "expecting exactly 1 argument");
@@ -241,7 +241,7 @@ static int initialize(lua_State *L)
 }
 
 //oms_status_t oms_terminate(void* model);
-static int terminate(lua_State *L)
+static int OMSimulatorLua_terminate(lua_State *L)
 {
   if (lua_gettop(L) != 1)
     return luaL_error(L, "expecting exactly 1 argument");
@@ -253,7 +253,7 @@ static int terminate(lua_State *L)
 }
 
 //oms_status_t oms_reset(void* model);
-static int reset(lua_State *L)
+static int OMSimulatorLua_reset(lua_State *L)
 {
   if (lua_gettop(L) != 1)
     return luaL_error(L, "expecting exactly 1 argument");
@@ -265,7 +265,7 @@ static int reset(lua_State *L)
 }
 
 //oms_status_t oms_getCurrentTime(const void* model, double* time);
-static int getCurrentTime(lua_State *L)
+static int OMSimulatorLua_getCurrentTime(lua_State *L)
 {
   if (lua_gettop(L) != 1)
     return luaL_error(L, "expecting exactly 1 argument");
@@ -280,7 +280,7 @@ static int getCurrentTime(lua_State *L)
 }
 
 //void oms_setTempDirectory(const char* filename);
-static int setTempDirectory(lua_State *L)
+static int OMSimulatorLua_setTempDirectory(lua_State *L)
 {
   if (lua_gettop(L) != 1)
     return luaL_error(L, "expecting exactly 1 argument");
@@ -292,7 +292,7 @@ static int setTempDirectory(lua_State *L)
 }
 
 //void oms_setStartTime(void* model, double startTime);
-static int setStartTime(lua_State *L)
+static int OMSimulatorLua_setStartTime(lua_State *L)
 {
   if (lua_gettop(L) != 2)
     return luaL_error(L, "expecting exactly 2 argument");
@@ -306,7 +306,7 @@ static int setStartTime(lua_State *L)
 }
 
 //void oms_setStopTime(void* model, double stopTime);
-static int setStopTime(lua_State *L)
+static int OMSimulatorLua_setStopTime(lua_State *L)
 {
   if (lua_gettop(L) != 2)
     return luaL_error(L, "expecting exactly 2 argument");
@@ -320,7 +320,7 @@ static int setStopTime(lua_State *L)
 }
 
 //void oms_setTolerance(void* model, double tolerance);
-static int setTolerance(lua_State *L)
+static int OMSimulatorLua_setTolerance(lua_State *L)
 {
   if (lua_gettop(L) != 2)
     return luaL_error(L, "expecting exactly 2 argument");
@@ -334,7 +334,7 @@ static int setTolerance(lua_State *L)
 }
 
 //void oms_setCommunicationInterval(void* model, double communicationInterval);
-static int setCommunicationInterval(lua_State *L)
+static int OMSimulatorLua_setCommunicationInterval(lua_State *L)
 {
   if (lua_gettop(L) != 2)
     return luaL_error(L, "expecting exactly 2 argument");
@@ -348,7 +348,7 @@ static int setCommunicationInterval(lua_State *L)
 }
 
 //void oms_setResultFile(void* model, const char* filename);
-static int setResultFile(lua_State *L)
+static int OMSimulatorLua_setResultFile(lua_State *L)
 {
   if (lua_gettop(L) != 2)
     return luaL_error(L, "expecting exactly 2 argument");
@@ -362,7 +362,7 @@ static int setResultFile(lua_State *L)
 }
 
 //void oms_setSolverMethod(void* model, const char* instanceName, const char* method);
-static int setSolverMethod(lua_State *L)
+static int OMSimulatorLua_setSolverMethod(lua_State *L)
 {
   if (lua_gettop(L) != 3)
     return luaL_error(L, "expecting exactly 3 argument");
@@ -378,7 +378,7 @@ static int setSolverMethod(lua_State *L)
 }
 
 //void oms_logToStdStream(bool useStdStream);
-static int logToStdStream(lua_State *L)
+static int OMSimulatorLua_logToStdStream(lua_State *L)
 {
   if (lua_gettop(L) != 1)
     return luaL_error(L, "expecting exactly 1 argument");
@@ -390,7 +390,7 @@ static int logToStdStream(lua_State *L)
 }
 
 //const char* oms_getVersion();
-static int getVersion(lua_State *L)
+static int OMSimulatorLua_getVersion(lua_State *L)
 {
   if (lua_gettop(L) != 0)
     return luaL_error(L, "expecting no arguments");

@@ -36,6 +36,11 @@
 
 #include <OMSimulator.h>
 
+extern "C"
+{
+  #include <OMSimulatorLua.c>
+}
+
 using namespace std;
 
 int main(int argc, char *argv[])
@@ -76,6 +81,29 @@ int main(int argc, char *argv[])
   }
   else if (type == "xml")
     pModel = oms_loadModel(filename.c_str());
+  else if (type == "lua")
+  {
+    lua_State *L;
+
+    L = luaL_newstate();
+    luaL_openlibs(L);
+    luaopen_OMSimulatorLua(L);
+
+    if (luaL_loadfile(L, filename.c_str()))
+    {
+      cout << "FATAL ERROR: luaL_loadfile() failed: " << lua_tostring(L, -1) << endl;
+      return 1;
+    }
+
+    if (lua_pcall(L, 0, 0, 0))
+    {
+      cout << "FATAL ERROR: lua_pcall() failed: " << lua_tostring(L, -1) << endl;
+      return 1;
+    }
+
+    lua_close(L);
+    return 0;
+  }
   else
   {
     cout << "Not able to process file '" << filename.c_str() << "'" << endl;
