@@ -21,14 +21,14 @@ ENDIF(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
 # Configuring for boost "FindBoost.cmake"
 IF (WIN32)
   set(BOOST_ROOT "C:/local/boost_1_63_0")
+  # BTH FIXME I would prefer to link against static, but Ubuntu 14.04 ships static boost libraries which are compiled without -fPIC and thus cannot be linked into the OMSimulator shared library. Is it Possible to use static versions for linking against executables, but shared versions for linking against shared libraries?
+  set(Boost_USE_STATIC_LIBS ON)
+  set(Boost_USE_STATIC_RUNTIME OFF)
 ENDIF()
-# BTH FIXME I would prefer to link against static, but Ubuntu 14.04 ships static boost libraries which are compiled without -fPIC and thus cannot be linked into the OMSimulator shared library. Is it Possible to use static versions for linking against executables, but shared versions for linking against shared libraries?
-# set(Boost_USE_STATIC_LIBS ON)
 # BTH There is more what can be set. What do we want?
 #set(Boost_USE_MULTITHREADED ON)
-#set(Boost_USE_STATIC_RUNTIME OFF)
 # Boost v1.54 is the boost shipped with my Ubuntu 14.04, lower versions may work, too.
-find_package(Boost 1.54.0 COMPONENTS system filesystem REQUIRED)
+find_package(Boost 1.54.0 COMPONENTS system filesystem program_options REQUIRED)
 IF (Boost_FOUND)
   message("-- Boost settings")
   message("--   Include path: ${Boost_INCLUDE_DIRS}")

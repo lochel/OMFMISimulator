@@ -29,93 +29,70 @@
  *
  */
 
-#include <OMSimulator.h>
+#include "Options.h"
 
 #include <iostream>
 #include <stdlib.h>
-using namespace std;
 
-void printUsage()
-{
-  cout << "Usage: OMSimulator [OPTIONS] filename" << endl;
-  cout << "OPTIONS" << endl;
-  cout << "  --describe             Displays brief summary of given FMU" << endl;
-  cout << "  --help                 Displays the help text" << endl;
-  cout << "  --resultFile=<string>  Specifies the name of the output result file" << endl;
-  cout << "  --startTime=<double>   Specifies the start time" << endl;
-  cout << "  --stopTime=<double>    Specifies the stop time" << endl;
-  cout << "  --tempDir=<string>     Specifies the working directory" << endl;
-  cout << "  --tolerance=<double>   Specifies the relative tolerance" << endl;
-  cout << "  --version              Displays version information" << endl;
-}
+#include <OMSimulator.h>
+
+using namespace std;
 
 int main(int argc, char *argv[])
 {
-  void* pModel = oms_newModel();
-  bool describe = false;
-  string filename("");
+  ProgramOptions options;
+  void* pModel = NULL;
 
-  for(int i=1; i<argc; i++)
-  {
-    string arg(argv[i]);
-    if(0 == arg.compare("--describe"))
-      describe = true;
-    else if(0 == arg.compare("--help"))
-    {
-      printUsage();
-      oms_unload(pModel);
-      return 0;
-    }
-    else if(0 == arg.compare(0, 13, "--resultFile="))
-    {
-      oms_setResultFile(pModel, arg.substr(13).c_str());
-    }
-    else if(0 == arg.compare(0, 12, "--startTime="))
-    {
-      double startTime = atof(arg.substr(12).c_str());
-      oms_setStartTime(pModel, startTime);
-    }
-    else if(0 == arg.compare(0, 11, "--stopTime="))
-    {
-      double stopTime = atof(arg.substr(11).c_str());
-      oms_setStopTime(pModel, stopTime);
-    }
-    else if(0 == arg.compare(0, 10, "--tempDir="))
-    {
-      oms_setTempDirectory(arg.substr(10).c_str());
-    }
-    else if(0 == arg.compare(0, 12, "--tolerance="))
-    {
-      double tolerance = atof(arg.substr(12).c_str());
-      oms_setTolerance(pModel, tolerance);
-    }
-    else if(0 == arg.compare("--version"))
-    {
-      cout << oms_getVersion() << endl;
-      oms_unload(pModel);
-      return 0;
-    }
-    else if(filename.empty())
-      filename = arg;
-    else
-    {
-      cout << "Not able to process argument: " << arg.c_str() << endl;
-      cout << "Use OMSimulator --help for more information." << endl;
-      oms_unload(pModel);
-      return 0;
-    }
-  }
+  if (!options.load_flags(argc, argv))
+    return 1;
 
-  if(filename.empty())
+  if (options.help)
+    return 0;
+
+  if (options.version)
   {
-    cout << "Use OMSimulator --help for more information." << endl;
-    oms_unload(pModel);
+    cout << oms_getVersion() << endl;
     return 0;
   }
 
-  oms_instantiateFMU(pModel, filename.c_str(), "fmu");
+  std::string filename = options.filename;
+  std::string type = "";
+  if (filename.length() > 4)
+    type = filename.substr(filename.length() - 3);
+  else
+  {
+    cout << "Not able to process file '" << filename.c_str() << "'" << endl;
+    cout << "Use OMSimulator --help for more information." << endl;
+    return 1;
+  }
 
-  if(describe)
+  if (options.tempDir != "")
+    oms_setTempDirectory(options.tempDir.c_str());
+
+  if (type == "fmu")
+  {
+    pModel = oms_newModel();
+    oms_instantiateFMU(pModel, filename.c_str(), "fmu");
+  }
+  else if (type == "xml")
+    pModel = oms_loadModel(filename.c_str());
+  else
+  {
+    cout << "Not able to process file '" << filename.c_str() << "'" << endl;
+    cout << "Use OMSimulator --help for more information." << endl;
+    return 1;
+  }
+
+  if (options.resultFile != "")
+    oms_setResultFile(pModel, options.resultFile.c_str());
+  if (options.useStartTime)
+    oms_setStartTime(pModel, options.startTime);
+  if (options.useStopTime)
+    oms_setStopTime(pModel, options.stopTime);
+  if (options.useTolerance)
+    oms_setTolerance(pModel, options.tolerance);
+
+  if (options.describe)
   {
     // OMSimulator --describe example.fmu
     oms_describe(pModel);
