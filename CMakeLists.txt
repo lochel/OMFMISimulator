@@ -60,6 +60,8 @@ ELSE()
 ENDIF()
 find_package(CVODELibrary REQUIRED)
 
+set(PUGIXML_INCLUDEDIR ${PROJECT_SOURCE_DIR}/3rdParty/PugiXml)
+
 ##########################
 # Add project modules
 add_subdirectory(src/OMSimulatorLib)

@@ -10,6 +10,7 @@ list(APPEND OMSIMULATORLIB_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${FMILibrary_INCLUDEDIR})
 include_directories(${CVODELibrary_INCLUDEDIR})
+include_directories(${PUGIXML_INCLUDEDIR})
 
 link_directories(${Boost_LIBRARY_DIRS})
 link_directories(${FMILibrary_LIBRARYDIR})

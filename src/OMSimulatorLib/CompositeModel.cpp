@@ -35,8 +35,10 @@
 #include "Settings.h"
 #include "Types.h"
 #include "Util.h"
+
 #include <fmilib.h>
 #include <JM/jm_portability.h>
+
 #include <iostream>
 #include <vector>
 #include <string>
@@ -46,9 +48,11 @@
 #include <cstdlib>
 #include <stdlib.h>
 #include <deque>
+
 #include <boost/filesystem.hpp>
+
 #define PUGIXML_HEADER_ONLY
-#include "../../3rdParty/PugiXml/pugixml.hpp"
+#include <pugixml.hpp>
 
 CompositeModel::CompositeModel()
   : fmuInstances()
