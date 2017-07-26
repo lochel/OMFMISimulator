@@ -386,7 +386,7 @@ void FMUWrapper::getDependencyGraph_outputs()
     }
     else
     {
-      for (int j=startIndex[i]; j<startIndex[i+1]; j++)
+      for (size_t j=startIndex[i]; j<startIndex[i+1]; j++)
       {
         logDebug("FMUWrapper::getDependencyGraph: [" + instanceName + ": " + fmuPath + "] output " + allVariables[allOutputs[i]-1].getName() + " depends on " + allVariables[dependency[j]-1].getName());
         outputsGraph.addEdge(allVariables[dependency[j]-1], allVariables[allOutputs[i]-1]);
@@ -436,7 +436,7 @@ void FMUWrapper::getDependencyGraph_initialUnknowns()
     }
     else
     {
-      for (int j=startIndex[i]; j<startIndex[i+1]; j++)
+      for (size_t j=startIndex[i]; j<startIndex[i+1]; j++)
       {
         logDebug("FMUWrapper::getDependencyGraph_initialUnknowns: [" + instanceName + ": " + fmuPath + "] initial unknown " + allVariables[initialUnknowns[i]-1].getName() + " depends on " + allVariables[dependency[j]-1].getName());
         initialUnknownsGraph.addEdge(allVariables[dependency[j]-1], allVariables[initialUnknowns[i]-1]);
@@ -447,7 +447,7 @@ void FMUWrapper::getDependencyGraph_initialUnknowns()
 
 Variable* FMUWrapper::getVariable(const std::string& name)
 {
-  for (int i=0; i<allVariables.size(); i++)
+  for (size_t i=0; i<allVariables.size(); i++)
     if (name == allVariables[i].getName())
       return &allVariables[i];
   return NULL;
@@ -455,7 +455,7 @@ Variable* FMUWrapper::getVariable(const std::string& name)
 
 Variable* FMUWrapper::getVariable(const fmi2_value_reference_t& state_vr)
 {
-  for (int i=0; i<allVariables.size(); i++)
+  for (size_t i=0; i<allVariables.size(); i++)
     if (state_vr == allVariables[i].getValueReference())
       return &allVariables[i];
   return NULL;
@@ -465,7 +465,7 @@ std::string FMUWrapper::getFMUKind()
 {
   if(fmi2_fmu_kind_me == fmuKind) return "FMI 2.0 ME";
   if(fmi2_fmu_kind_cs == fmuKind) return "FMI 2.0 CS";
-  else "Unsupported FMU kind";
+  return "Unsupported FMU kind";
 }
 
 bool FMUWrapper::isFMUKindME()
@@ -608,12 +608,12 @@ void FMUWrapper::exitInitialization()
     }
     else if (CVODE == solverMethod)
     {
-      solverData.cvode.y = N_VNew_Serial(n_states);
+      solverData.cvode.y = N_VNew_Serial(static_cast<long>(n_states));
       if (!solverData.cvode.y) logFatal("SUNDIALS_ERROR: N_VNew_Serial() failed - returned NULL pointer");
       for(size_t i=0; i<n_states; ++i)
         NV_Ith_S(solverData.cvode.y, i) = states[i];
 
-      solverData.cvode.abstol = N_VNew_Serial(n_states);
+      solverData.cvode.abstol = N_VNew_Serial(static_cast<long>(n_states));
       if (!solverData.cvode.abstol) logFatal("SUNDIALS_ERROR: N_VNew_Serial() failed - returned NULL pointer");
       for(size_t i=0; i<n_states; ++i)
         NV_Ith_S(solverData.cvode.abstol, i) = 0.01*relativeTolerance*states_nominal[i];
@@ -638,7 +638,7 @@ void FMUWrapper::exitInitialization()
       if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSVtolerances() failed with flag = " + toString(flag));
 
       // Call CVDense to specify the CVDENSE dense linear solver */
-      flag = CVDense(solverData.cvode.mem, n_states);
+      flag = CVDense(solverData.cvode.mem, static_cast<long>(n_states));
       if (flag < 0) logFatal("SUNDIALS_ERROR: CVDense() failed with flag = " + toString(flag));
 
       if (model.getSettings().GetStartTime() && model.getSettings().GetStopTime())
@@ -664,7 +664,7 @@ void FMUWrapper::exitInitialization()
       if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxNonlinIters() failed with flag = " + toString(flag));
       flag = CVodeSetMaxErrTestFails(solverData.cvode.mem, 100);  // MAXIMUM NUMBER OF ERROR TEST FAILURES
       if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxErrTestFails() failed with flag = " + toString(flag));
-      flag = CVodeSetMaxNumSteps(solverData.cvode.mem, 1e3);      // MAXIMUM NUMBER OF STEPS
+      flag = CVodeSetMaxNumSteps(solverData.cvode.mem, 1000);     // MAXIMUM NUMBER OF STEPS
       if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxNumSteps() failed with flag = " + toString(flag));
     }
     else

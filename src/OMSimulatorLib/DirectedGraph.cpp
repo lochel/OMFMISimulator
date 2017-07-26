@@ -59,7 +59,7 @@ int DirectedGraph::addVariable(const Variable& var)
   nodes.push_back(var);
   std::vector<int> row;
   G.push_back(row);
-  return nodes.size()-1;
+  return static_cast<int>(nodes.size())-1;
 }
 
 void DirectedGraph::addEdge(const Variable& var1, const Variable& var2)
@@ -189,7 +189,7 @@ std::deque< std::vector<int> > DirectedGraph::getSCCs()
 {
   //std::cout << "Tarjan's strongly connected components algorithm" << std::endl;
 
-  int numVertices = nodes.size();
+  size_t numVertices = nodes.size();
   int *d = new int[numVertices];
   std::fill(d, d+numVertices, -1);
   int *low = new int[numVertices];
@@ -197,7 +197,6 @@ std::deque< std::vector<int> > DirectedGraph::getSCCs()
   bool *stacked = new bool[numVertices];
   std::stack<int> S;
   int index = 0;
-  int current_scc;
   std::deque< std::vector<int> > components;
 
   for (int v=0; v<numVertices; ++v)

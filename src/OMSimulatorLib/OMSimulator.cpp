@@ -312,7 +312,7 @@ void oms_setSolverMethod(void* model, const char* instanceName, const char* meth
 
 void oms_logToStdStream(int useStdStream)
 {
-  Log::getInstance().DumpToStdStream(useStdStream);
+  Log::getInstance().DumpToStdStream(useStdStream != 0);
 }
 
 const char* oms_getVersion()
