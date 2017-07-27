@@ -4,7 +4,11 @@ OpenModelica FMI &amp; TLM based simulator
 ## Dependencies
 - [Boost](http://www.boost.org/)
 - [cmake](http://www.cmake.org)
-- [FMILibrary](http://www.jmodelica.org/FMILibrary)
+- [3rdParty subproject](https://github.com/OpenModelica/OMFMISimulator-3rdParty)
+  - FMILibrary
+  - Lua
+  - PugiXML
+  - SUNDIALS CVODE
 
 ## Compilation
 
