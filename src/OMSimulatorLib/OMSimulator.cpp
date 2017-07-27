@@ -41,39 +41,39 @@ void* oms_newModel()
 {
   logTrace();
   CompositeModel* pModel = new CompositeModel();
-  return (void*) pModel;
+  return (void*)pModel;
 }
 
 void* oms_loadModel(const char* filename)
 {
   logTrace();
   CompositeModel* pModel = new CompositeModel(filename);
-  return (void*) pModel;
+  return (void*)pModel;
 }
 
 void oms_unload(void* model)
 {
   logTrace();
-  if(!model)
+  if (!model)
   {
     logError("oms_unload: invalid pointer");
     return;
   }
 
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   delete pModel;
 }
 
 void oms_instantiateFMU(void* model, const char* filename, const char* instanceName)
 {
   logTrace();
-  if(!model)
+  if (!model)
   {
     logError("oms_instantiateFMU: invalid pointer");
     return;
   }
 
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   pModel->instantiateFMU(filename, instanceName);
 }
 
@@ -106,117 +106,117 @@ double oms_getReal(void *model, const char *var)
 void oms_addConnection(void* model, const char* from, const char* to)
 {
   logTrace();
-  if(!model)
+  if (!model)
   {
     logError("oms_addConnection: invalid pointer");
     return;
   }
 
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   pModel->addConnection(from, to);
 }
 
 oms_status_t oms_simulate(void* model)
 {
   logTrace();
-  if(!model)
+  if (!model)
   {
     logError("oms_simulate: invalid pointer");
     return oms_status_error;
   }
 
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   return pModel->simulate();
 }
 
 oms_status_t oms_doSteps(const void* model, const int numberOfSteps)
 {
   logTrace();
-  if(!model)
+  if (!model)
   {
     logError("oms_doSteps: invalid pointer");
     return oms_status_error;
   }
 
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   return pModel->doSteps(numberOfSteps);
 }
 
 oms_status_t oms_stepUntil(const void* model, const double timeValue)
 {
   logTrace();
-  if(!model)
+  if (!model)
   {
     logError("oms_stepUntil: invalid pointer");
     return oms_status_error;
   }
 
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   return pModel->stepUntil(timeValue);
 }
 
 void oms_describe(void* model)
 {
   logTrace();
-  if(!model)
+  if (!model)
   {
     logError("oms_describe: invalid pointer");
     return;
   }
 
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   pModel->describe();
 }
 
 void oms_exportXML(void* model, const char* filename)
 {
   logTrace();
-  if(!model)
+  if (!model)
   {
     logError("oms_exportXML: invalid pointer");
     return;
   }
 
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   pModel->exportXML(filename);
 }
 
 void oms_importXML(void* model, const char* filename)
 {
   logTrace();
-  if(!model)
+  if (!model)
   {
     logError("oms_importXML: invalid pointer");
     return;
   }
 
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   pModel->importXML(filename);
 }
 
 void oms_exportDependencyGraph(void* model, const char* filename)
 {
   logTrace();
-  if(!model)
+  if (!model)
   {
     logError("oms_exportDependencyGraph: invalid pointer");
     return;
   }
 
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   pModel->exportDependencyGraph(filename);
 }
 
 oms_status_t oms_initialize(void* model)
 {
   logTrace();
-  if(!model)
+  if (!model)
   {
     logError("oms_initialize: invalid pointer");
     return oms_status_error;
   }
 
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   pModel->initialize();
   return oms_status_ok;
 }
@@ -224,13 +224,13 @@ oms_status_t oms_initialize(void* model)
 oms_status_t oms_terminate(void* model)
 {
   logTrace();
-  if(!model)
+  if (!model)
   {
     logError("oms_terminate: invalid pointer");
     return oms_status_error;
   }
 
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   pModel->terminate();
   return oms_status_ok;
 }
@@ -238,13 +238,13 @@ oms_status_t oms_terminate(void* model)
 oms_status_t oms_reset(void* model)
 {
   logTrace();
-  if(!model)
+  if (!model)
   {
     logError("oms_reset: invalid pointer");
     return oms_status_error;
   }
 
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   pModel->reset();
   return oms_status_ok;
 }
@@ -252,13 +252,13 @@ oms_status_t oms_reset(void* model)
 oms_status_t oms_getCurrentTime(const void* model, double* time)
 {
   logTrace();
-  if(!model)
+  if (!model)
   {
     logError("oms_getCurrentTime: invalid pointer");
     return oms_status_error;
   }
 
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   return pModel->getCurrentTime(time);
 }
 
@@ -271,42 +271,42 @@ void oms_setTempDirectory(const char* filename)
 void oms_setStartTime(void* model, double startTime)
 {
   logTrace();
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   pModel->getSettings().SetStartTime(startTime);
 }
 
 void oms_setStopTime(void* model, double stopTime)
 {
   logTrace();
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   pModel->getSettings().SetStopTime(stopTime);
 }
 
 void oms_setTolerance(void* model, double tolerance)
 {
   logTrace();
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   pModel->getSettings().SetTolerance(tolerance);
 }
 
 void oms_setCommunicationInterval(void* model, double CommunicationInterval)
 {
   logTrace();
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   pModel->getSettings().SetCommunicationInterval(CommunicationInterval);
 }
 
 void oms_setResultFile(void* model, const char* filename)
 {
   logTrace();
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   pModel->getSettings().SetResultFile(filename);
 }
 
 void oms_setSolverMethod(void* model, const char* instanceName, const char* method)
 {
   logTrace();
-  CompositeModel* pModel = (CompositeModel*) model;
+  CompositeModel* pModel = (CompositeModel*)model;
   pModel->SetSolverMethod(instanceName, method);
 }
 

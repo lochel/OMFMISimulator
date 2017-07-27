@@ -59,7 +59,7 @@ int DirectedGraph::addVariable(const Variable& var)
   nodes.push_back(var);
   std::vector<int> row;
   G.push_back(row);
-  return static_cast<int>(nodes.size())-1;
+  return static_cast<int>(nodes.size()) - 1;
 }
 
 void DirectedGraph::addEdge(const Variable& var1, const Variable& var2)
@@ -67,21 +67,21 @@ void DirectedGraph::addEdge(const Variable& var1, const Variable& var2)
   int index1 = -1;
   int index2 = -1;
 
-  for(int i=0; i<nodes.size(); ++i)
+  for (int i = 0; i < nodes.size(); ++i)
   {
-    if(var1 == nodes[i])
+    if (var1 == nodes[i])
       index1 = i;
 
-    if(var2 == nodes[i])
+    if (var2 == nodes[i])
       index2 = i;
 
-    if(index1 != -1 && index2 != -1)
+    if (index1 != -1 && index2 != -1)
       break;
   }
 
-  if(-1 == index1)
+  if (-1 == index1)
     index1 = addVariable(var1);
-  if(-1 == index2)
+  if (-1 == index2)
     index2 = addVariable(var2);
 
   edges.push_back(std::pair<int, int>(index1, index2));
@@ -105,7 +105,7 @@ void DirectedGraph::dotExport(const std::string& filename)
   std::ofstream dotFile(filename.c_str());
   dotFile << "digraph G" << std::endl;
   dotFile << "{" << std::endl;
-  for (int i=0; i<nodes.size(); i++)
+  for (int i = 0; i < nodes.size(); i++)
   {
     dotFile << "  " << i << " [label=\"" << nodes[i].getFMUInstance() << "." << nodes[i].getName() << "\", ";
     if (nodes[i].isInput())
@@ -116,10 +116,10 @@ void DirectedGraph::dotExport(const std::string& filename)
   }
   dotFile << std::endl;
 
-  for(int i=0; i<edges.size(); i++)
+  for (int i = 0; i < edges.size(); i++)
   {
     dotFile << "  " << edges[i].first << " -> " << edges[i].second;
-    if(nodes[edges[i].first].isOutput() && nodes[edges[i].second].isInput())
+    if (nodes[edges[i].first].isOutput() && nodes[edges[i].second].isInput())
       dotFile << " [color=\"red\"];" << std::endl;
     else
       dotFile << std::endl;
@@ -130,10 +130,10 @@ void DirectedGraph::dotExport(const std::string& filename)
 
 void DirectedGraph::includeGraph(const DirectedGraph& graph)
 {
-  for(int i=0; i<graph.nodes.size(); i++)
+  for (int i = 0; i < graph.nodes.size(); i++)
     addVariable(graph.nodes[i]);
 
-  for(int i=0; i<graph.edges.size(); i++)
+  for (int i = 0; i < graph.edges.size(); i++)
     addEdge(graph.nodes[graph.edges[i].first], graph.nodes[graph.edges[i].second]);
 }
 
@@ -148,7 +148,7 @@ void strongconnect(int v, std::vector< std::vector<int> > G, int& index, int *d,
 
   // Consider successors of v
   std::vector<int> successors = G[v];
-  for (int i=0; i<successors.size(); ++i)
+  for (int i = 0; i < successors.size(); ++i)
   {
     int w = successors[i];
     if (d[w] == -1)
@@ -191,7 +191,7 @@ std::deque< std::vector<int> > DirectedGraph::getSCCs()
 
   size_t numVertices = nodes.size();
   int *d = new int[numVertices];
-  std::fill(d, d+numVertices, -1);
+  std::fill(d, d + numVertices, -1);
   int *low = new int[numVertices];
   int *scc = new int[numVertices];
   bool *stacked = new bool[numVertices];
@@ -199,7 +199,7 @@ std::deque< std::vector<int> > DirectedGraph::getSCCs()
   int index = 0;
   std::deque< std::vector<int> > components;
 
-  for (int v=0; v<numVertices; ++v)
+  for (int v = 0; v < numVertices; ++v)
   {
     if (d[v] == -1)
       strongconnect(v, G, index, d, low, S, stacked, components);
@@ -236,23 +236,23 @@ void DirectedGraph::calculateSortedConnections()
   std::deque< std::vector<int> > components = getSCCs();
   sortedConnections.clear();
 
-  for (int i=0; i<components.size(); ++i)
+  for (int i = 0; i < components.size(); ++i)
   {
     if (components[i].size() > 1)
     {
       logWarning("Unhandled alg. loop (size " + toString(components[i].size()) + ")");
-      for (int j=0; j<components[i].size(); ++j)
+      for (int j = 0; j < components[i].size(); ++j)
       {
         int v = components[i][j];
         logInfo("  - " + nodes[v].getFMUInstance() + "." + nodes[v].getName());
       }
     }
-    for (int j=0; j<components[i].size(); ++j)
+    for (int j = 0; j < components[i].size(); ++j)
     {
       int v = components[i][j];
       if (nodes[v].isOutput())
       {
-        for (int k=0; k<G[v].size(); ++k)
+        for (int k = 0; k < G[v].size(); ++k)
         {
           int w = G[v][k];
           if (nodes[w].isInput())

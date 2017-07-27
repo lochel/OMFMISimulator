@@ -45,7 +45,7 @@ std::string TimeStr()
   struct tm* timeinfo;
   char buffer[64];
 
-  time (&rawtime);
+  time(&rawtime);
   timeinfo = localtime(&rawtime);
   strftime(buffer, 64, "%a %b %d %T %Y", timeinfo);
   return std::string(buffer);
@@ -64,7 +64,7 @@ Log::~Log()
   Info("Logging completed properly");
   logFile.close();
   cout << "Logging information has been saved to \"omsllog.txt\"" << endl;
-  if(numWarnings + numErrors > 0)
+  if (numWarnings + numErrors > 0)
   {
     cout << "  " << numWarnings << " warnings" << endl;
     cout << "  " << numErrors << " errors" << endl;

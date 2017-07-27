@@ -57,7 +57,7 @@ Settings::~Settings()
 
 void Settings::SetStartTime(double startTime)
 {
-  if(!this->startTime)
+  if (!this->startTime)
     this->startTime = new double;
   *(this->startTime) = startTime;
 }
@@ -69,13 +69,13 @@ double* Settings::GetStartTime()
 
 void Settings::ClearStartTime()
 {
-  if(startTime)
+  if (startTime)
     delete startTime;
 }
 
 void Settings::SetStopTime(double stopTime)
 {
-  if(!this->stopTime)
+  if (!this->stopTime)
     this->stopTime = new double;
   *(this->stopTime) = stopTime;
 }
@@ -87,13 +87,13 @@ double* Settings::GetStopTime()
 
 void Settings::ClearStopTime()
 {
-  if(stopTime)
+  if (stopTime)
     delete stopTime;
 }
 
 void Settings::SetTolerance(double tolerance)
 {
-  if(!this->tolerance)
+  if (!this->tolerance)
     this->tolerance = new double;
   *(this->tolerance) = tolerance;
 }
@@ -105,13 +105,13 @@ double* Settings::GetTolerance()
 
 void Settings::ClearTolerance()
 {
-  if(tolerance)
+  if (tolerance)
     delete tolerance;
 }
 
 void Settings::SetCommunicationInterval(double communicationInterval)
 {
-  if(!this->communicationInterval)
+  if (!this->communicationInterval)
     this->communicationInterval = new double;
   *(this->communicationInterval) = communicationInterval;
 }
@@ -123,14 +123,14 @@ double* Settings::GetCommunicationInterval()
 
 void Settings::ClearCommunicationInterval()
 {
-  if(communicationInterval)
+  if (communicationInterval)
     delete communicationInterval;
 }
 
 void Settings::SetResultFile(const char* resultFile)
 {
   ClearResultFile();
-  this->resultFile = new char[std::strlen(resultFile)+1];
+  this->resultFile = new char[std::strlen(resultFile) + 1];
   std::strcpy(this->resultFile, resultFile);
 }
 
@@ -141,6 +141,6 @@ const char* Settings::GetResultFile()
 
 void Settings::ClearResultFile()
 {
-  if(resultFile)
+  if (resultFile)
     delete[] resultFile;
 }

@@ -50,7 +50,7 @@ Resultfile::Resultfile(std::string filename, fmi2_import_t* fmu)
 
   fmi2_import_variable_list_t *list = fmi2_import_get_variable_list(fmu, 0);
   size_t nVar = fmi2_import_get_variable_list_size(list);
-  for(size_t i=0; i<nVar; ++i)
+  for (size_t i = 0; i < nVar; ++i)
   {
     fmi2_import_variable_t* var = fmi2_import_get_variable(list, i);
     std::string name = fmi2_import_get_variable_name(var);
@@ -72,26 +72,26 @@ void Resultfile::emit(double time)
 
   fmi2_import_variable_list_t *list = fmi2_import_get_variable_list(fmu, 0);
   size_t nVar = fmi2_import_get_variable_list_size(list);
-  for(size_t i=0; i<nVar; ++i)
+  for (size_t i = 0; i < nVar; ++i)
   {
     fmi2_import_variable_t* var = fmi2_import_get_variable(list, i);
-    std::string value= "???";
+    std::string value = "???";
 
-    if(fmi2_base_type_real == fmi2_import_get_variable_base_type(var))
+    if (fmi2_base_type_real == fmi2_import_get_variable_base_type(var))
     {
       double real_value;
       fmi2_value_reference_t vr = fmi2_import_get_variable_vr(var);
       fmi2_import_get_real(fmu, &vr, 1, &real_value);
       value = toString(real_value);
     }
-    else if(fmi2_base_type_int == fmi2_import_get_variable_base_type(var))
+    else if (fmi2_base_type_int == fmi2_import_get_variable_base_type(var))
     {
       int int_value;
       fmi2_value_reference_t vr = fmi2_import_get_variable_vr(var);
       fmi2_import_get_integer(fmu, &vr, 1, &int_value);
       value = toString(int_value);
     }
-    else if(fmi2_base_type_bool == fmi2_import_get_variable_base_type(var))
+    else if (fmi2_base_type_bool == fmi2_import_get_variable_base_type(var))
     {
       int bool_value;
       fmi2_value_reference_t vr = fmi2_import_get_variable_vr(var);
