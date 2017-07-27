@@ -41,8 +41,6 @@ extern "C"
   #include <OMSimulatorLua.c>
 }
 
-using namespace std;
-
 int main(int argc, char *argv[])
 {
   ProgramOptions options;
@@ -55,7 +53,7 @@ int main(int argc, char *argv[])
 
   if (options.version)
   {
-    cout << oms_getVersion() << endl;
+    std::cout << oms_getVersion() << std::endl;
     return 0;
   }
 
@@ -65,8 +63,8 @@ int main(int argc, char *argv[])
     type = filename.substr(filename.length() - 3);
   else
   {
-    cout << "Not able to process file '" << filename.c_str() << "'" << endl;
-    cout << "Use OMSimulator --help for more information." << endl;
+    std::cout << "Not able to process file '" << filename.c_str() << "'" << std::endl;
+    std::cout << "Use OMSimulator --help for more information." << std::endl;
     return 1;
   }
 
@@ -127,13 +125,13 @@ int main(int argc, char *argv[])
 
     if (luaL_loadfile(L, filename.c_str()))
     {
-      cout << "FATAL ERROR: luaL_loadfile() failed: " << lua_tostring(L, -1) << endl;
+      std::cout << "FATAL ERROR: luaL_loadfile() failed: " << lua_tostring(L, -1) << std::endl;
       return 1;
     }
 
     if (lua_pcall(L, 0, 0, 0))
     {
-      cout << "FATAL ERROR: lua_pcall() failed: " << lua_tostring(L, -1) << endl;
+      std::cout << "FATAL ERROR: lua_pcall() failed: " << lua_tostring(L, -1) << std::endl;
       return 1;
     }
 
@@ -141,8 +139,8 @@ int main(int argc, char *argv[])
   }
   else
   {
-    cout << "Not able to process file '" << filename.c_str() << "'" << endl;
-    cout << "Use OMSimulator --help for more information." << endl;
+    std::cout << "Not able to process file '" << filename.c_str() << "'" << std::endl;
+    std::cout << "Use OMSimulator --help for more information." << std::endl;
     return 1;
   }
 
