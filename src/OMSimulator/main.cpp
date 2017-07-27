@@ -46,7 +46,6 @@ using namespace std;
 int main(int argc, char *argv[])
 {
   ProgramOptions options;
-  void* pModel = NULL;
 
   if (!options.load_flags(argc, argv))
     return 1;
@@ -74,18 +73,55 @@ int main(int argc, char *argv[])
   if (options.tempDir != "")
     oms_setTempDirectory(options.tempDir.c_str());
 
-  if (type == "fmu")
+  if (type == "fmu" || type == "xml")
   {
-    pModel = oms_newModel();
-    oms_instantiateFMU(pModel, filename.c_str(), "fmu");
+    void* pModel = NULL;
+    if (type == "fmu")
+    {
+      pModel = oms_newModel();
+      oms_instantiateFMU(pModel, filename.c_str(), "fmu");
+    }
+    else
+      pModel = oms_loadModel(filename.c_str());
+
+    if (options.resultFile != "")
+      oms_setResultFile(pModel, options.resultFile.c_str());
+    if (options.useStartTime)
+      oms_setStartTime(pModel, options.startTime);
+    if (options.useStopTime)
+      oms_setStopTime(pModel, options.stopTime);
+    if (options.useTolerance)
+      oms_setTolerance(pModel, options.tolerance);
+
+    if (options.describe)
+    {
+      // OMSimulator --describe example.xml
+      oms_describe(pModel);
+    }
+    else
+    {
+      // OMSimulator example.xml
+      oms_initialize(pModel);
+      oms_simulate(pModel);
+      oms_terminate(pModel);
+    }
+
+    oms_unload(pModel);
   }
-  else if (type == "xml")
-    pModel = oms_loadModel(filename.c_str());
   else if (type == "lua")
   {
-    lua_State *L;
+    if (options.resultFile != "")
+      std::cout << "Ignoring option '--resultFile'" << std::endl;
+    if (options.useStartTime)
+      std::cout << "Ignoring option '--startTime'" << std::endl;
+    if (options.useStopTime)
+      std::cout << "Ignoring option '--stopTime'" << std::endl;
+    if (options.useTolerance)
+      std::cout << "Ignoring option '--tolerance'" << std::endl;
+    if (options.describe)
+      std::cout << "Ignoring option '--describe'" << std::endl;
 
-    L = luaL_newstate();
+    lua_State *L = luaL_newstate();
     luaL_openlibs(L);
     luaopen_OMSimulatorLua(L);
 
@@ -102,7 +138,6 @@ int main(int argc, char *argv[])
     }
 
     lua_close(L);
-    return 0;
   }
   else
   {
@@ -111,28 +146,5 @@ int main(int argc, char *argv[])
     return 1;
   }
 
-  if (options.resultFile != "")
-    oms_setResultFile(pModel, options.resultFile.c_str());
-  if (options.useStartTime)
-    oms_setStartTime(pModel, options.startTime);
-  if (options.useStopTime)
-    oms_setStopTime(pModel, options.stopTime);
-  if (options.useTolerance)
-    oms_setTolerance(pModel, options.tolerance);
-
-  if (options.describe)
-  {
-    // OMSimulator --describe example.fmu
-    oms_describe(pModel);
-  }
-  else
-  {
-    // OMSimulator example.fmu
-    oms_initialize(pModel);
-    oms_simulate(pModel);
-    oms_terminate(pModel);
-  }
-
-  oms_unload(pModel);
   return 0;
 }
