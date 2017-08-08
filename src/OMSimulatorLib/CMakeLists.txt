@@ -18,14 +18,15 @@ link_directories(${CVODELibrary_LIBRARYDIR})
 
 # Shared library version
 add_library(OMSimulatorLib_shared SHARED ${OMSIMULATORLIB_SOURCES})
-SET_TARGET_PROPERTIES(OMSimulatorLib_shared PROPERTIES OUTPUT_NAME OMSimulatorLib)
+set_target_properties(OMSimulatorLib_shared PROPERTIES OUTPUT_NAME OMSimulatorLib)
 target_link_libraries(OMSimulatorLib_shared fmilib_shared sundials_cvode sundials_nvecserial ${Boost_LIBRARIES})
 install(TARGETS OMSimulatorLib_shared DESTINATION lib)
 
 # Static library version
 add_library(OMSimulatorLib STATIC ${OMSIMULATORLIB_SOURCES})
-SET_TARGET_PROPERTIES(OMSimulatorLib PROPERTIES OUTPUT_NAME OMSimulatorLib)
+set_target_properties(OMSimulatorLib PROPERTIES OUTPUT_NAME OMSimulatorLib)
 # set_property(TARGET OMSimulatorLib PROPERTY CXX_STANDARD 11)
+set_target_properties(OMSimulatorLib PROPERTIES POSITION_INDEPENDENT_CODE ON)
 install(TARGETS OMSimulatorLib DESTINATION lib)
 
 install(FILES OMSimulator.h DESTINATION include)
