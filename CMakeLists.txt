@@ -65,6 +65,29 @@ find_package(CVODELibrary REQUIRED)
 
 set(PUGIXML_INCLUDEDIR ${PROJECT_SOURCE_DIR}/3rdParty/PugiXml)
 
+option(OMFIT "Enable the OMFIT module for parameter estimation support." OFF)
+
+IF (OMFIT)
+  message("OMFit enabled: Configure for building module and associated tests")
+  # Hack to download and build ceres-solver at _configure_ time
+  configure_file(config.cmake/DownloadCeres.txt.in ${PROJECT_SOURCE_DIR}/3rdParty/ceres-download/CMakeLists.txt)
+  execute_process(COMMAND "${CMAKE_COMMAND}" -G "${CMAKE_GENERATOR}" .
+  WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/3rdParty/ceres-download" )
+  execute_process(COMMAND "${CMAKE_COMMAND}" --build .
+    WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/3rdParty/ceres-download" )
+  # Alternatively, one could do a fancy "copy" of the sources directly into the 3rdParty repo
+  # (https://developer.atlassian.com/blog/2015/05/the-power-of-git-subtree/):
+  # $ cd 3rdParty
+  # $ git subtree add --prefix ceres-solver https://github.com/ceres-solver/ceres-solver.git master --squash
+  # or instead of master someting like tags/1.12.0 ...
+
+  find_package(Ceres REQUIRED)
+  add_subdirectory(src/OMFitLib)
+  add_subdirectory(src/OMFitLua)
+  enable_testing()
+  add_subdirectory(testsuite/OMFitLib)
+ENDIF()
+
 ##########################
 # Add project modules
 add_subdirectory(src/OMSimulatorLib)

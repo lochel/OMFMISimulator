@@ -1,0 +1,26 @@
+# This file is part of a hack to download and build ceres-solver during
+# cmake configuration time, instead of build time
+# See https://crascit.com/2015/07/25/cmake-gtest/
+cmake_minimum_required(VERSION 2.8)
+
+project(DownloadCeres NONE)
+
+
+# https://cmake.org/cmake/help/v2.8.8/cmake.html#module%3AExternalProject
+# http://www.kitware.com/media/html/BuildingExternalProjectsWithCMake2.8.html
+include(ExternalProject)
+ExternalProject_Add(EPCERES
+PREFIX ${PROJECT_SOURCE_DIR}/3rdParty/ceres-solver
+#--Download step--------------
+GIT_REPOSITORY https://github.com/ceres-solver/ceres-solver.git
+GIT_TAG 541968497a0cfb34673c17b3f63a1ef183be7de0
+#--Update/Patch step----------
+UPDATE_COMMAND ""
+#--Configure step-------------
+# SOURCE_DIR ${PROJECT_SOURCE_DIR}/3rdParty/ceres-solver
+CMAKE_ARGS -DEXPORT_BUILD_DIR=ON
+#--Build step-----------------
+#--Install step---------------
+# INSTALL_DIR ${CMAKE_CURRENT_BINARY_DIR}/install
+INSTALL_COMMAND ""
+)
