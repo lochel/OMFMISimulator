@@ -1,6 +1,6 @@
 project(OMFitLib)
 
-set(CMAKE_INSTALL_RPATH "$ORIGIN") # BTH needed?
+set(CMAKE_INSTALL_RPATH "$ORIGIN")
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # if (BUILD_SHARED_LIBS) # BTH needed?

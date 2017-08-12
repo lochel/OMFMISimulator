@@ -7,6 +7,8 @@ git_describe(GIT_VERSION_STRING --tags --abbrev=7 --match=v*.*)
 
 #set(CMAKE_VERBOSE_MAKEFILE on)
 #set(CMAKE_BUILD_TYPE DEBUG)
+#add_definitions(-DOMS_DEBUG_LOGGING) # activate debug logging
+#add_definitions(-DBTH_DEACTIVATE_INITIAL_UNKNOWNS) # workaround needed for running Modelica interface based tests. Search for definition string in src/OMSimulatorLib/FMUWrapper.cpp
 
 # Don't allow in-source build
 IF("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
@@ -93,6 +95,7 @@ ENDIF()
 add_subdirectory(src/OMSimulatorLib)
 add_subdirectory(src/OMSimulator)
 add_subdirectory(src/OMSimulatorLua)
+add_subdirectory(src/OMSimulatorModelica)
 
 ##########################
 # TODO Add tests
