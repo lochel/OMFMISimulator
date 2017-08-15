@@ -172,6 +172,8 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
     logDebug("FMU ME");
   else if (fmi2_fmu_kind_cs == fmuKind)
     logDebug("FMU CS");
+  else if (fmi2_fmu_kind_me_and_cs == fmuKind)
+    logDebug("FMU ME & CS");
   else
     logError("Unsupported FMU kind: " + std::string(fmi2_fmu_kind_to_string(fmuKind)));
 
@@ -197,7 +199,7 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
     jmstatus = fmi2_import_instantiate(fmu, instanceName, fmi2_model_exchange, NULL, fmi2_false);
     if (jm_status_error == jmstatus) logFatal("fmi2_import_instantiate failed");
   }
-  else if (fmi2_fmu_kind_cs == fmuKind)
+  else if (fmi2_fmu_kind_cs == fmuKind || fmi2_fmu_kind_me_and_cs == fmuKind)
   {
     jm_status_enu_t jmstatus;
 
@@ -472,6 +474,7 @@ std::string FMUWrapper::getFMUKind()
 {
   if (fmi2_fmu_kind_me == fmuKind) return "FMI 2.0 ME";
   if (fmi2_fmu_kind_cs == fmuKind) return "FMI 2.0 CS";
+  if (fmi2_fmu_kind_me_and_cs == fmuKind) return "FMI 2.0 ME & CS";
   return "Unsupported FMU kind";
 }
 
@@ -527,7 +530,7 @@ void FMUWrapper::enterInitialization(double startTime)
     fmistatus = fmi2_import_enter_initialization_mode(fmu);
     if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_enter_initialization_mode failed");
   }
-  else if (fmi2_fmu_kind_cs == fmuKind)
+  else if (fmi2_fmu_kind_cs == fmuKind || fmi2_fmu_kind_me_and_cs == fmuKind)
   {
     fmistatus = fmi2_import_setup_experiment(fmu, toleranceControlled, relativeTolerance, tcur, StopTimeDefined, tend);
     if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_setup_experiment failed");
@@ -680,7 +683,7 @@ void FMUWrapper::exitInitialization()
     else
       logFatal("Unknown solver method");
   }
-  else if (fmi2_fmu_kind_cs == fmuKind)
+  else if (fmi2_fmu_kind_cs == fmuKind || fmi2_fmu_kind_me_and_cs == fmuKind)
   {
     fmistatus = fmi2_import_exit_initialization_mode(fmu);
     if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_exit_initialization_mode failed");
@@ -894,7 +897,7 @@ void FMUWrapper::doStep(double stopTime)
       omsResultFile->emit(tcur);
     }
   }
-  else if (fmi2_fmu_kind_cs == fmuKind)
+  else if (fmi2_fmu_kind_cs == fmuKind || fmi2_fmu_kind_me_and_cs == fmuKind)
   {
     while (tcur < stopTime)
     {
