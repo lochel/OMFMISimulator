@@ -588,13 +588,16 @@ void FMUWrapper::exitInitialization()
     event_indicators = (double*)calloc(n_event_indicators, sizeof(double));
     event_indicators_prev = (double*)calloc(n_event_indicators, sizeof(double));
 
-    // get states and state derivatives
-    fmistatus = fmi2_import_get_continuous_states(fmu, states, n_states);
-    if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_continuous_states failed");
-    fmistatus = fmi2_import_get_derivatives(fmu, states_der, n_states);
-    if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_derivatives failed");
-    fmistatus = fmi2_import_get_nominals_of_continuous_states(fmu, states_nominal, n_states);
-    if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_nominals_of_continuous_states failed");
+    if (n_states > 0)
+    {
+      // get states and state derivatives
+      fmistatus = fmi2_import_get_continuous_states(fmu, states, n_states);
+      if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_continuous_states failed");
+      fmistatus = fmi2_import_get_derivatives(fmu, states_der, n_states);
+      if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_derivatives failed");
+      fmistatus = fmi2_import_get_nominals_of_continuous_states(fmu, states_nominal, n_states);
+      if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_nominals_of_continuous_states failed");
+    }
     fmistatus = fmi2_import_get_event_indicators(fmu, event_indicators, n_event_indicators);
     if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_event_indicators failed");
 
@@ -817,10 +820,13 @@ void FMUWrapper::doStep(double stopTime)
 
         fmistatus = fmi2_import_enter_continuous_time_mode(fmu);
         if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_enter_continuous_time_mode failed");
-        fmistatus = fmi2_import_get_continuous_states(fmu, states, n_states);
-        if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_continuous_states failed");
-        fmistatus = fmi2_import_get_derivatives(fmu, states_der, n_states);
-        if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_derivatives failed");
+        if (n_states > 0)
+        {
+          fmistatus = fmi2_import_get_continuous_states(fmu, states, n_states);
+          if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_continuous_states failed");
+          fmistatus = fmi2_import_get_derivatives(fmu, states_der, n_states);
+          if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_derivatives failed");
+        }
         fmistatus = fmi2_import_get_event_indicators(fmu, event_indicators, n_event_indicators);
         if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_event_indicators failed");
         omsResultFile->emit(tcur);
@@ -871,12 +877,15 @@ void FMUWrapper::doStep(double stopTime)
       else
         logFatal("Unknown solver method");
 
-      // set states
-      fmistatus = fmi2_import_set_continuous_states(fmu, states, n_states);
-      if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_set_continuous_states failed");
-      // get state derivatives
-      fmistatus = fmi2_import_get_derivatives(fmu, states_der, n_states);
-      if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_derivatives failed");
+      if (NO_SOLVER != solverMethod)
+      {
+        // set states
+        fmistatus = fmi2_import_set_continuous_states(fmu, states, n_states);
+        if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_set_continuous_states failed");
+        // get state derivatives
+        fmistatus = fmi2_import_get_derivatives(fmu, states_der, n_states);
+        if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_derivatives failed");
+      }
 
       // step is complete
       fmistatus = fmi2_import_completed_integrator_step(fmu, fmi2_true, &callEventUpdate, &terminateSimulation);
