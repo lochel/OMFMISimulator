@@ -159,6 +159,17 @@ void CompositeModel::addConnection(const std::string& from, const std::string& t
   Variable *var1 = fmuInstances[fmuInstance1]->getVariable(fmuVar1);
   Variable *var2 = fmuInstances[fmuInstance2]->getVariable(fmuVar2);
 
+  if (!var1)
+  {
+    logError("CompositeModel::addConnection: output \"" + fmuInstance1 + "." + fmuVar1 + "\" doesn't exist");
+    return;
+  }
+  if (!var2)
+  {
+    logError("CompositeModel::addConnection: input \"" + fmuInstance2 + "." + fmuVar2 + "\" doesn't exist");
+    return;
+  }
+
   outputsGraph.addEdge(*var1, *var2);
   initialUnknownsGraph.addEdge(*var1, *var2);
 }
