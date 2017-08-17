@@ -59,8 +59,10 @@ void GlobalSettings::SetTempDirectory(const std::string& newTempDir)
 {
   if (!boost::filesystem::is_directory(newTempDir))
   {
-    logError("set working directory to \"" + std::string(newTempDir) + "\" failed");
-    return;
+    if (!boost::filesystem::create_directory(newTempDir))
+      logFatal("set working directory to \"" + std::string(newTempDir) + "\" failed");
+    else
+      logInfo("new temp directory has been created: \"" + std::string(newTempDir) + "\"");
   }
 
   boost::filesystem::path path(newTempDir.c_str());
