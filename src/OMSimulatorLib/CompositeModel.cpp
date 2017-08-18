@@ -403,10 +403,12 @@ void CompositeModel::describe()
     for (int j=0; j<allVariables.size(); j++)
       if (allVariables[j].isOutput())
         std::cout << "    - output " << allVariables[j].getName() << std::endl;
-  }
 
-  //std::cout << "\n# Parameters" << std::endl;
-  //std::cout << "TODO" << std::endl;
+    std::cout << "  - parameters:" << std::endl;
+    for (int j=0; j<allVariables.size(); j++)
+      if (allVariables[j].isParameter())
+        std::cout << "    - parameter " << allVariables[j].getName() << std::endl;
+  }
 
   std::cout << "\n# Simulation settings" << std::endl;
   std::cout << "  - start time: " << (settings.GetStartTime() ? toString(*(settings.GetStartTime())) : "<undefined>") << std::endl;
