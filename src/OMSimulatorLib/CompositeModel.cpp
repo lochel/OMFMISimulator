@@ -394,15 +394,15 @@ void CompositeModel::describe()
     std::cout << "  - tool: " << it->second->getGenerationTool() << std::endl;
 
     std::cout << "  - input interface:" << std::endl;
-    DirectedGraph graph = it->second->getOutputsGraph();
-    for (int j=0; j<graph.nodes.size(); j++)
-      if (graph.nodes[j].isInput())
-        std::cout << "    - input " << graph.nodes[j].getName() << std::endl;
+    std::vector<Variable>& allVariables = it->second->getAllVariables();
+    for (int j=0; j<allVariables.size(); j++)
+      if (allVariables[j].isInput())
+        std::cout << "    - input " << allVariables[j].getName() << std::endl;
 
     std::cout << "  - output interface:" << std::endl;
-    for (int j=0; j<graph.nodes.size(); j++)
-      if (graph.nodes[j].isOutput())
-        std::cout << "    - output " << graph.nodes[j].getName() << std::endl;
+    for (int j=0; j<allVariables.size(); j++)
+      if (allVariables[j].isOutput())
+        std::cout << "    - output " << allVariables[j].getName() << std::endl;
   }
 
   //std::cout << "\n# Parameters" << std::endl;

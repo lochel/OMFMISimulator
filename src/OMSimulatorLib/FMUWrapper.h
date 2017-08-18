@@ -77,6 +77,8 @@ public:
   void SetSolverMethod(const std::string& solverMethod);
   std::string GetSolverMethodString();
 
+  std::vector<Variable>& getAllVariables() { return allVariables; }
+
 private:
   enum Solver_t { NO_SOLVER, EXPLICIT_EULER, CVODE };
 
@@ -100,8 +102,6 @@ private:
 
 private:
   void do_event_iteration();
-  void simulate_cs(const std::string& resultFileName);
-  void simulate_me(const std::string& resultFileName);
   void getDependencyGraph_outputs();
   void getDependencyGraph_initialUnknowns();
 
