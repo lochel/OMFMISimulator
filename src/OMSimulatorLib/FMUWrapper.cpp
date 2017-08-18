@@ -329,18 +329,22 @@ double FMUWrapper::getReal(const std::string& var)
   return value;
 }
 
-void FMUWrapper::setReal(const std::string& var, double value)
+bool FMUWrapper::setRealInput(const std::string& var, double value)
 {
   logTrace();
   if (!fmu)
-    logFatal("FMUWrapper::setReal failed");
+    logFatal("FMUWrapper::setRealInput failed");
 
   Variable* v = getVariable(var);
 
-  if (!v || v->isParameter())
-    logFatal("FMUWrapper::setReal failed");
+  if (!v || !v->isInput() || !v->isTypeReal())
+  {
+    logError("FMUWrapper::setRealInput: FMU '" + instanceName + "' doesn't contain input real " + var);
+    return false;
+  }
 
   fmi2_import_set_real(fmu, &v->getValueReference(), 1, &value);
+  return true;
 }
 
 bool FMUWrapper::setRealParameter(const std::string& var, double value)

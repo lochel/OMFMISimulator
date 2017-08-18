@@ -73,7 +73,7 @@ void oms_unload(void* model);
 void oms_instantiateFMU(void* model, const char* filename, const char* instanceName);
 
 /**
- * \brief Set real parameter value.
+ * \brief Set parameter and input values of type real.
  *
  * @param model Model as opaque pointer.
  * @param var

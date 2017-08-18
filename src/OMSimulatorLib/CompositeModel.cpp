@@ -91,7 +91,6 @@ void CompositeModel::setReal(const std::string& var, double value)
   std::string fmuInstance;
   std::string fmuVar;
 
-  // TODO: Improve this
   std::getline(var_, fmuInstance, '.');
   std::getline(var_, fmuVar);
 
@@ -100,12 +99,20 @@ void CompositeModel::setReal(const std::string& var, double value)
     logError("CompositeModel::setReal: FMU instance \"" + fmuInstance + "\" doesn't exist in model");
     return;
   }
-  bool val=fmuInstances[fmuInstance]->setRealParameter(fmuVar, value);
-  /*store the list of Modified parameter values */
-  if (val)
+
+  Variable *v = fmuInstances[fmuInstance]->getVariable(fmuVar);
+  if (v && v->isParameter())
   {
-    ParameterList[var]=value;
+    bool success = fmuInstances[fmuInstance]->setRealParameter(fmuVar, value);
+
+    // store the list of modified parameter values
+    if (success)
+      ParameterList[var] = value;
   }
+  else if (v && v->isInput())
+    fmuInstances[fmuInstance]->setRealInput(fmuVar, value);
+  else
+    logError("CompositeModel::setReal failed");
 }
 
 double CompositeModel::getReal(const std::string& var)
@@ -464,7 +471,7 @@ void CompositeModel::updateInputs(DirectedGraph& graph)
     std::string& inputFMU = graph.nodes[input].getFMUInstance();
     std::string& inputVar = graph.nodes[input].getName();
     double value = fmuInstances[outputFMU]->getReal(outputVar);
-    fmuInstances[inputFMU]->setReal(inputVar, value);
+    fmuInstances[inputFMU]->setRealInput(inputVar, value);
     //std::cout << inputFMU << "." << inputVar << " = " << outputFMU << "." << outputVar << std::endl;
   }
 }
