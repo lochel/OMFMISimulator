@@ -1,7 +1,5 @@
 project(OMSimulatorLua C)
 
-#find_package(Lua REQUIRED)
-
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
 
 include_directories(${LUALibrary_INCLUDEDIR} ../OMSimulatorLib)
