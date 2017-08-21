@@ -223,7 +223,7 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
   for (size_t i = 0; i < varListSize; ++i)
   {
     fmi2_import_variable_t* var = fmi2_import_get_variable(varList, i);
-    Variable v(var, instanceName);
+    Variable v(var, this);
     allVariables.push_back(v);
   }
   fmi2_import_free_variable_list(varList);

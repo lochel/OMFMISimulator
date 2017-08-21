@@ -36,10 +36,12 @@
 #include <string>
 #include <vector>
 
+class FMUWrapper;
+
 class Variable
 {
 public:
-  Variable(fmi2_import_variable_t *var, std::string fmuInstance);
+  Variable(fmi2_import_variable_t *var, FMUWrapper* fmuInstance);
   ~Variable();
 
   void markAsState() {is_state = true;}
@@ -63,7 +65,8 @@ public:
                               || (isState() && (isApprox() || isCalculated()));}
 
   std::string& getName() {return name;}
-  std::string& getFMUInstance() {return fmuInstance;}
+  std::string& getFMUInstanceName() {return fmuInstanceName;}
+  FMUWrapper* getFMUInstance();
   fmi2_value_reference_t& getValueReference() {return vr;}
   fmi2_base_type_enu_t& getBaseType() {return baseType;}
 
@@ -71,7 +74,8 @@ public:
 
 protected:
   std::string name;
-  std::string fmuInstance;
+  std::string fmuInstanceName;
+  FMUWrapper* fmuInstance;
   fmi2_value_reference_t vr;
   fmi2_causality_enu_t causality;
   fmi2_initial_enu_t initialProperty;

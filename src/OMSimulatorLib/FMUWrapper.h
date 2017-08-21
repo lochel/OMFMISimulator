@@ -68,7 +68,7 @@ public:
   Variable* getVariable(const fmi2_value_reference_t& state_vr);
 
   std::string& getFMUPath() {return fmuPath;}
-  std::string getFMUInstanceName() {return instanceName;}
+  std::string& getFMUInstanceName() {return instanceName;}
   std::string getFMUKind();
   bool isFMUKindME();
   std::string getGUID();

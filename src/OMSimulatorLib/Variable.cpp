@@ -32,6 +32,7 @@
 #include "Variable.h"
 #include "Logging.h"
 #include "Settings.h"
+#include "FMUWrapper.h"
 
 #include <fmilib.h>
 #include <JM/jm_portability.h>
@@ -39,11 +40,12 @@
 #include <iostream>
 #include <string>
 
-Variable::Variable(fmi2_import_variable_t *var, std::string fmuInstance)
+Variable::Variable(fmi2_import_variable_t *var, FMUWrapper* fmuInstance)
   : fmuInstance(fmuInstance), is_state(false)
 {
   // extract the attributes
   name = fmi2_import_get_variable_name(var);
+  fmuInstanceName = fmuInstance->getFMUInstanceName();
   vr = fmi2_import_get_variable_vr(var);
   causality = fmi2_import_get_causality(var);
   initialProperty = fmi2_import_get_initial(var);
@@ -54,10 +56,15 @@ Variable::~Variable()
 {
 }
 
+FMUWrapper* Variable::getFMUInstance()
+{
+  return fmuInstance;
+}
+
 bool operator==(const Variable& v1, const Variable& v2)
 {
   return v1.name == v2.name &&
-    v1.fmuInstance == v2.fmuInstance &&
+    v1.fmuInstanceName == v2.fmuInstanceName &&
     v1.vr == v2.vr;
 }
 bool operator!=(const Variable& v1, const Variable& v2)

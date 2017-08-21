@@ -242,9 +242,9 @@ void CompositeModel::exportXML(const char* filename)
     pugi::xml_node connection = connections.append_child("Connection");
     int output = connectionsOutputs[i].first;
     int input = connectionsOutputs[i].second;
-    std::string outputFMU = outputsGraph.nodes[output].getFMUInstance();
+    std::string outputFMU = outputsGraph.nodes[output].getFMUInstanceName();
     std::string outputVar = outputsGraph.nodes[output].getName();
-    std::string inputFMU = outputsGraph.nodes[input].getFMUInstance();
+    std::string inputFMU = outputsGraph.nodes[input].getFMUInstanceName();
     std::string inputVar = outputsGraph.nodes[input].getName();
     //std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
     std::string fromfmu=outputFMU + '.' + outputVar;
@@ -433,9 +433,9 @@ void CompositeModel::describe()
   {
     int output = connectionsInitialUnknowns[i].first;
     int input = connectionsInitialUnknowns[i].second;
-    std::string outputFMU = initialUnknownsGraph.nodes[output].getFMUInstance();
+    std::string outputFMU = initialUnknownsGraph.nodes[output].getFMUInstanceName();
     std::string outputVar = initialUnknownsGraph.nodes[output].getName();
-    std::string inputFMU = initialUnknownsGraph.nodes[input].getFMUInstance();
+    std::string inputFMU = initialUnknownsGraph.nodes[input].getFMUInstanceName();
     std::string inputVar = initialUnknownsGraph.nodes[input].getName();
     std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
   }
@@ -447,9 +447,9 @@ void CompositeModel::describe()
   {
     int output = connectionsOutputs[i].first;
     int input = connectionsOutputs[i].second;
-    std::string outputFMU = outputsGraph.nodes[output].getFMUInstance();
+    std::string outputFMU = outputsGraph.nodes[output].getFMUInstanceName();
     std::string outputVar = outputsGraph.nodes[output].getName();
-    std::string inputFMU = outputsGraph.nodes[input].getFMUInstance();
+    std::string inputFMU = outputsGraph.nodes[input].getFMUInstanceName();
     std::string inputVar = outputsGraph.nodes[input].getName();
     std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
   }
@@ -466,9 +466,9 @@ void CompositeModel::updateInputs(DirectedGraph& graph)
   {
     int output = sortedConnections[i].first;
     int input = sortedConnections[i].second;
-    std::string& outputFMU = graph.nodes[output].getFMUInstance();
+    std::string& outputFMU = graph.nodes[output].getFMUInstanceName();
     std::string& outputVar = graph.nodes[output].getName();
-    std::string& inputFMU = graph.nodes[input].getFMUInstance();
+    std::string& inputFMU = graph.nodes[input].getFMUInstanceName();
     std::string& inputVar = graph.nodes[input].getName();
     double value = fmuInstances[outputFMU]->getReal(outputVar);
     fmuInstances[inputFMU]->setRealInput(inputVar, value);
