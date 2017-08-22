@@ -63,7 +63,7 @@ Log::~Log()
 {
   Info("Logging completed properly");
   logFile.close();
-  cout << "Logging information has been saved to \"omsllog.txt\"" << endl;
+  //cout << "Logging information has been saved to \"omsllog.txt\"" << endl;
   if (numWarnings + numErrors > 0)
   {
     cout << "  " << numWarnings << " warnings" << endl;

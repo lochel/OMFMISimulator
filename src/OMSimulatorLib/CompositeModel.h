@@ -36,6 +36,7 @@
 #include "DirectedGraph.h"
 #include "Settings.h"
 #include "Types.h"
+#include "Clock.h"
 
 #include <fmilib.h>
 #include <string>
@@ -84,6 +85,7 @@ private:
   double tcur;
   oms_modelState_t modelState;
   double communicationInterval;
+  Clock clock;
 };
 
 #endif

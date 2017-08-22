@@ -35,6 +35,7 @@
 #include "Settings.h"
 #include "Types.h"
 #include "Util.h"
+#include "Clock.h"
 
 #include <fmilib.h>
 #include <JM/jm_portability.h>
@@ -549,6 +550,8 @@ void CompositeModel::initialize()
 {
   logTrace();
 
+  clock.resetAndTic();
+
   if (oms_modelState_instantiated != modelState)
   {
     logFatal("CompositeModel::initialize: Model is already in simulation mode.");
@@ -587,6 +590,9 @@ void CompositeModel::terminate()
     it->second->terminate();
 
   modelState = oms_modelState_instantiated;
+
+  clock.toc();
+  logInfo("Simulation finished in " + toString(clock.getElapsedCPUTime()) + "s [cpu clock] (" + toString(clock.getElapsedWallTime()) + "s [wall clock])");
 }
 
 void CompositeModel::reset()
