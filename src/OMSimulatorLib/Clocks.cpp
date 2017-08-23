@@ -84,6 +84,7 @@ std::string Clocks::getStats()
 
   stats += "Initialization: " + toString(instance.clocks[INITIALIZATION_CLOCK].getElapsedCPUTime()) + "s [cpu clock] (" + toString(instance.clocks[INITIALIZATION_CLOCK].getElapsedWallTime()) + "s [wall clock])";
   stats += "\nSimulation: " + toString(instance.clocks[SIMULATION_CLOCK].getElapsedCPUTime()) + "s [cpu clock] (" + toString(instance.clocks[SIMULATION_CLOCK].getElapsedWallTime()) + "s [wall clock])";
+  stats += "\nResult file: " + toString(instance.clocks[RESULTFILE_CLOCK].getElapsedCPUTime()) + "s [cpu clock] (" + toString(instance.clocks[RESULTFILE_CLOCK].getElapsedWallTime()) + "s [wall clock])";
 
   return stats;
 }

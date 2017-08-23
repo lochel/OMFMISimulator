@@ -32,6 +32,7 @@
 #include "Resultfile.h"
 #include "Logging.h"
 #include "Util.h"
+#include "Clocks.h"
 
 #include <fmilib.h>
 
@@ -56,6 +57,7 @@ void replaceAll(std::string& str, const std::string& from, const std::string& to
 
 Resultfile::Resultfile(std::string filename, fmi2_import_t* fmu)
 {
+  Clocks::tic(RESULTFILE_CLOCK);
   this->fmu = fmu;
   resultFile.open(filename.c_str());
   logDebug("Result file: " + filename);
@@ -73,16 +75,20 @@ Resultfile::Resultfile(std::string filename, fmi2_import_t* fmu)
   }
 
   resultFile << std::endl;
+  Clocks::toc(RESULTFILE_CLOCK);
 }
 
 Resultfile::~Resultfile()
 {
+  Clocks::tic(RESULTFILE_CLOCK);
   resultFile.close();
   logDebug("Result file closed");
+  Clocks::toc(RESULTFILE_CLOCK);
 }
 
 void Resultfile::emit(double time)
 {
+  Clocks::tic(RESULTFILE_CLOCK);
   resultFile << time;
 
   fmi2_import_variable_list_t *list = fmi2_import_get_variable_list(fmu, 0);
@@ -121,4 +127,5 @@ void Resultfile::emit(double time)
   }
 
   resultFile << std::endl;
+  Clocks::toc(RESULTFILE_CLOCK);
 }

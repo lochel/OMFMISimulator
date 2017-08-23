@@ -517,11 +517,11 @@ void FMUWrapper::enterInitialization(double startTime)
   double* pTolerance = model.getSettings().GetTolerance();
   relativeTolerance = pTolerance ? *pTolerance : fmi2_import_get_default_experiment_tolerance(fmu);
   tcur = startTime;
-  fmi2_boolean_t toleranceControlled = fmi2_true;
-  fmi2_boolean_t StopTimeDefined = fmi2_true;
+  const fmi2_boolean_t toleranceControlled = fmi2_true;
+  const fmi2_boolean_t StopTimeDefined = fmi2_false;
 
   double* pStopTime = model.getSettings().GetStopTime();
-  fmi2_real_t tend = pStopTime ? *pStopTime : fmi2_import_get_default_experiment_stop(fmu);
+  const fmi2_real_t tend = pStopTime ? *pStopTime : fmi2_import_get_default_experiment_stop(fmu);
 
   logDebug("start time: " + toString(tcur));
   logDebug("relative tolerance: " + toString(relativeTolerance));
@@ -784,7 +784,7 @@ void FMUWrapper::reset()
 void FMUWrapper::doStep(double stopTime)
 {
   fmi2_status_t fmistatus;
-  fmi2_real_t hdef = model.getSettings().GetCommunicationInterval() ? *(model.getSettings().GetCommunicationInterval()) : 1e-2;
+  const fmi2_real_t hdef = model.getSettings().GetCommunicationInterval() ? *(model.getSettings().GetCommunicationInterval()) : 1e-2;
 
   if (fmi2_fmu_kind_me == fmuKind)
   {
