@@ -284,98 +284,101 @@ void CompositeModel::importXML(const char* filename)
   pugi::xml_parse_result result = doc.load_file(filename);
   if (!result)
   {
-    logError("CompositeModel::importXML : \"" + std::string(filename) + "\" the file is not loaded");
+    logFatal("CompositeModel::importXML: \"" + std::string(filename) + "\" the file is not loaded");
   }
+
   pugi::xml_node root = doc.document_element();
   pugi::xml_node submodel = root.child("SubModels");
   pugi::xml_node connection = root.child("Connections");
   pugi::xml_node SimulationParams = root.child("SimulationParams");
-  /* instantiate FMus after reading from xml */
+
+  // instantiate FMUs after reading from xml
   for (pugi::xml_node_iterator it = submodel.begin(); it != submodel.end(); ++it)
-   {
-     std::string instancename;
-     std::string filename;
-     std::string solvername;
-     for (pugi::xml_attribute_iterator ait = it->attributes_begin(); ait != it->attributes_end(); ++ait)
+  {
+    std::string instancename;
+    std::string filename;
+    std::string solvername;
+    for (pugi::xml_attribute_iterator ait = it->attributes_begin(); ait != it->attributes_end(); ++ait)
+    {
+      std::string value =ait->name();
+      if (value == "Name")
       {
-        std::string value =ait->name();
-        if(value =="Name")
-        {
-          instancename = ait->value();
-        }
-        if(value =="ModelFile")
-        {
-          filename = ait->value();
-        }
-        if(value =="solver")
-        {
-          solvername = ait->value();
-        }
+        instancename = ait->value();
       }
-      //std::cout << "Fmus List:" << " " << "instancename =" << instancename << " " << "filepath =" << filename << std::endl;
-      instantiateFMU(filename,instancename);
-      if(solvername!="")
+      if (value == "ModelFile")
       {
-        fmuInstances[instancename]->SetSolverMethod(solvername);
+        filename = ait->value();
       }
-      /* read and set the parameter from the node instances*/
-      for (pugi::xml_node modelparam = it->first_child(); modelparam; modelparam = modelparam.next_sibling())
-       {
-       std::string name = modelparam.attribute("Name").as_string();
-       double varvalue = modelparam.attribute("Value").as_double();
-       std::string varname=instancename+"."+name;
-       //std::cout << "find value" << modelparam.name() << instancename << " " << varname << "=" <<varvalue << std::endl;
-       setReal(varname,varvalue);
-      }
-   }
-   /* add connections to FMus after reading from xml */
-   for (pugi::xml_node_iterator it = connection.begin(); it != connection.end(); ++it)
-   {
-     std::string fromconnection;
-     std::string toconnection;
-     for (pugi::xml_attribute_iterator ait = it->attributes_begin(); ait != it->attributes_end(); ++ait)
+      if (value == "solver")
       {
-        std::string value =ait->name();
-        if(value =="From")
-        {
-          fromconnection = ait->value();
-        }
-        if(value =="To")
-        {
-          toconnection = ait->value();
-        }
+        solvername = ait->value();
       }
-      //std::cout << "Connections List:" << fromconnection << "->" << toconnection << std::endl;
-      addConnection(fromconnection,toconnection);
-   }
-   /* read the simulation settings and set*/
+    }
+
+    instantiateFMU(filename, instancename);
+    if (solvername != "")
+    {
+      fmuInstances[instancename]->SetSolverMethod(solvername);
+    }
+
+    // read and set the parameter from the node instances
+    for (pugi::xml_node modelparam = it->first_child(); modelparam; modelparam = modelparam.next_sibling())
+    {
+      std::string name = modelparam.attribute("Name").as_string();
+      double varvalue = modelparam.attribute("Value").as_double();
+      std::string varname = instancename + "." + name;
+      setReal(varname, varvalue);
+    }
+  }
+
+  // add connections to FMus after reading from xml
+  for (pugi::xml_node_iterator it = connection.begin(); it != connection.end(); ++it)
+  {
+    std::string fromconnection;
+    std::string toconnection;
+    for (pugi::xml_attribute_iterator ait = it->attributes_begin(); ait != it->attributes_end(); ++ait)
+    {
+      std::string value =ait->name();
+      if (value == "From")
+      {
+        fromconnection = ait->value();
+      }
+      if (value == "To")
+      {
+        toconnection = ait->value();
+      }
+    }
+    addConnection(fromconnection, toconnection);
+  }
+
+  // read the simulation settings and set
   for (pugi::xml_attribute attr = SimulationParams.first_attribute(); attr; attr = attr.next_attribute())
   {
     std::string value =attr.name();
-    if (value=="StartTime")
+    if (value == "StartTime")
     {
-      if (toString(attr.value())!="")
+      if (toString(attr.value()) != "")
       {
         settings.SetStartTime(std::strtod(attr.value(), NULL));
       }
     }
-    if (value=="StopTime")
+    if (value == "StopTime")
     {
-      if (toString(attr.value())!="")
+      if (toString(attr.value()) != "")
       {
         settings.SetStopTime(std::strtod(attr.value(), NULL));
       }
     }
-    if (value=="tolerance")
+    if (value == "tolerance")
     {
-      if (toString(attr.value())!="")
+      if (toString(attr.value()) != "")
       {
         settings.SetTolerance(std::strtod(attr.value(), NULL));
       }
     }
-    if (value=="communicationInterval")
+    if (value == "communicationInterval")
     {
-      if (toString(attr.value())!="")
+      if (toString(attr.value()) != "")
       {
         settings.SetCommunicationInterval(std::strtod(attr.value(), NULL));
       }
