@@ -35,7 +35,7 @@
 #include "Settings.h"
 #include "Types.h"
 #include "Util.h"
-#include "Clock.h"
+#include "Clocks.h"
 
 #include <fmilib.h>
 #include <JM/jm_portability.h>
@@ -553,7 +553,8 @@ void CompositeModel::initialize()
 {
   logTrace();
 
-  clock.resetAndTic();
+  Clocks::resetAll();
+  Clocks::tic(INITIALIZATION_CLOCK);
 
   if (oms_modelState_instantiated != modelState)
   {
@@ -575,6 +576,9 @@ void CompositeModel::initialize()
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
     it->second->exitInitialization();
   modelState = oms_modelState_simulation;
+
+  Clocks::toc(INITIALIZATION_CLOCK);
+  Clocks::tic(SIMULATION_CLOCK);
 }
 
 void CompositeModel::terminate()
@@ -594,8 +598,8 @@ void CompositeModel::terminate()
 
   modelState = oms_modelState_instantiated;
 
-  clock.toc();
-  logInfo("Simulation finished in " + toString(clock.getElapsedCPUTime()) + "s [cpu clock] (" + toString(clock.getElapsedWallTime()) + "s [wall clock])");
+  Clocks::toc(SIMULATION_CLOCK);
+  logInfo("Simulation finished.\n" + Clocks::getStats());
 }
 
 void CompositeModel::reset()
