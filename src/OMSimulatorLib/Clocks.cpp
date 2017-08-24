@@ -32,17 +32,23 @@
 #include "Clocks.h"
 #include "Clock.h"
 #include "Util.h"
+#include "Logging.h"
 
 #include <string>
 
 Clocks::Clocks()
 {
-  for (int i = 0; i<MAX_CLOCK_INDEX; ++i)
-    clocks[i].reset();
+  for (int i = 0; i<CLOCK_MAX_INDEX; ++i)
+   clocks[i].reset();
+
+  activeClocks.push(CLOCK_IDLE);
+  clocks[CLOCK_IDLE].tic();
 }
 
 Clocks::~Clocks()
 {
+  if (!(activeClocks.size() == 1 && activeClocks.top() == CLOCK_IDLE))
+    logWarning("Time measurement is corrupted.");
 }
 
 Clocks& Clocks::getInstance()
@@ -52,29 +58,32 @@ Clocks& Clocks::getInstance()
   return instance;
 }
 
-void Clocks::tic(Index_t index)
+void Clocks::tic(ClockIndex_t index)
 {
   Clocks& instance = getInstance();
+  ClockIndex_t activeClock = instance.activeClocks.top();
+
+  if (activeClock == index)
+    return;
+
+  instance.clocks[activeClock].toc();
   instance.clocks[index].tic();
+  instance.activeClocks.push(index);
 }
 
-void Clocks::toc(Index_t index)
+void Clocks::toc(ClockIndex_t index)
 {
   Clocks& instance = getInstance();
+  ClockIndex_t activeClock = instance.activeClocks.top();
+
+  if (activeClock != index)
+    logWarning("Time measurement is corrupted.");
+
+  instance.activeClocks.pop();
+  activeClock = instance.activeClocks.top();
+
   instance.clocks[index].toc();
-}
-
-void Clocks::reset(Index_t index)
-{
-  Clocks& instance = getInstance();
-  instance.clocks[index].reset();
-}
-
-void Clocks::resetAll()
-{
-  Clocks& instance = getInstance();
-  for (int i=0; i<MAX_CLOCK_INDEX; ++i)
-    instance.clocks[i].reset();
+  instance.clocks[activeClock].tic();
 }
 
 std::string Clocks::getStats()
@@ -82,9 +91,19 @@ std::string Clocks::getStats()
   Clocks& instance = getInstance();
   std::string stats = "";
 
-  stats += "Initialization: " + toString(instance.clocks[INITIALIZATION_CLOCK].getElapsedCPUTime()) + "s [cpu clock] (" + toString(instance.clocks[INITIALIZATION_CLOCK].getElapsedWallTime()) + "s [wall clock])";
-  stats += "\nSimulation: " + toString(instance.clocks[SIMULATION_CLOCK].getElapsedCPUTime()) + "s [cpu clock] (" + toString(instance.clocks[SIMULATION_CLOCK].getElapsedWallTime()) + "s [wall clock])";
-  stats += "\nResult file: " + toString(instance.clocks[RESULTFILE_CLOCK].getElapsedCPUTime()) + "s [cpu clock] (" + toString(instance.clocks[RESULTFILE_CLOCK].getElapsedWallTime()) + "s [wall clock])";
+  double cpuTime = 0.0;
+  double wallTime = 0.0;
+  for (int i = 0; i<CLOCK_MAX_INDEX; ++i)
+  {
+    cpuTime += instance.clocks[i].getElapsedCPUTime();
+    wallTime += instance.clocks[i].getElapsedWallTime();
+  }
+
+  stats += "Total: " + toString(cpuTime) + "s [cpu clock] (" + toString(wallTime) + "s [wall clock])";
+  stats += "\nInitialization: " + toString(instance.clocks[CLOCK_INITIALIZATION].getElapsedCPUTime()/cpuTime*100.0) + "% - " + toString(instance.clocks[CLOCK_INITIALIZATION].getElapsedCPUTime()) + "s [cpu clock] (" + toString(instance.clocks[CLOCK_INITIALIZATION].getElapsedWallTime()) + "s [wall clock])";
+  stats += "\nSimulation: " + toString(instance.clocks[CLOCK_SIMULATION].getElapsedCPUTime()/cpuTime*100.0) + "% - " + toString(instance.clocks[CLOCK_SIMULATION].getElapsedCPUTime()) + "s [cpu clock] (" + toString(instance.clocks[CLOCK_SIMULATION].getElapsedWallTime()) + "s [wall clock])";
+  stats += "\nResult file: " + toString(instance.clocks[CLOCK_RESULTFILE].getElapsedCPUTime()/cpuTime*100.0) + "% - " + toString(instance.clocks[CLOCK_RESULTFILE].getElapsedCPUTime()) + "s [cpu clock] (" + toString(instance.clocks[CLOCK_RESULTFILE].getElapsedWallTime()) + "s [wall clock])";
+  stats += "\nIdle: " + toString(instance.clocks[CLOCK_IDLE].getElapsedCPUTime()/cpuTime*100.0) + "% - " + toString(instance.clocks[CLOCK_IDLE].getElapsedCPUTime()) + "s [cpu clock] (" + toString(instance.clocks[CLOCK_IDLE].getElapsedWallTime()) + "s [wall clock])";
 
   return stats;
 }

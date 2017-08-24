@@ -35,27 +35,27 @@
 #include "Clock.h"
 
 #include <string>
+#include <stack>
 
-enum Index_t
+enum ClockIndex_t
 {
-  INITIALIZATION_CLOCK = 0,
-  SIMULATION_CLOCK,
-  RESULTFILE_CLOCK,
-  MAX_CLOCK_INDEX
+  CLOCK_IDLE = 0,
+  CLOCK_INITIALIZATION,
+  CLOCK_SIMULATION,
+  CLOCK_RESULTFILE,
+  CLOCK_MAX_INDEX
 };
 
 class Clocks
 {
 public:
-  static void tic(Index_t clock);
-  static void toc(Index_t clock);
-  static void resetAndTic(Index_t clock) {reset(clock); tic(clock);}
-  static void reset(Index_t clock);
-  static void resetAll();
+  static void tic(ClockIndex_t clock);
+  static void toc(ClockIndex_t clock);
   static std::string getStats();
 
 private:
-  Clock clocks[MAX_CLOCK_INDEX];
+  Clock clocks[CLOCK_MAX_INDEX];
+  std::stack<ClockIndex_t> activeClocks;
 
 private:
   Clocks();

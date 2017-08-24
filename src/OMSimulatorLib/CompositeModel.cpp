@@ -553,8 +553,7 @@ void CompositeModel::initialize()
 {
   logTrace();
 
-  Clocks::resetAll();
-  Clocks::tic(INITIALIZATION_CLOCK);
+  Clocks::tic(CLOCK_INITIALIZATION);
 
   if (oms_modelState_instantiated != modelState)
   {
@@ -577,8 +576,8 @@ void CompositeModel::initialize()
     it->second->exitInitialization();
   modelState = oms_modelState_simulation;
 
-  Clocks::toc(INITIALIZATION_CLOCK);
-  Clocks::tic(SIMULATION_CLOCK);
+  Clocks::toc(CLOCK_INITIALIZATION);
+  Clocks::tic(CLOCK_SIMULATION);
 }
 
 void CompositeModel::terminate()
@@ -598,7 +597,7 @@ void CompositeModel::terminate()
 
   modelState = oms_modelState_instantiated;
 
-  Clocks::toc(SIMULATION_CLOCK);
+  Clocks::toc(CLOCK_SIMULATION);
   logInfo("Simulation finished.\n" + Clocks::getStats());
 }
 
