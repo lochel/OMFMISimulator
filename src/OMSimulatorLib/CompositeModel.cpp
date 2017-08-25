@@ -80,9 +80,11 @@ CompositeModel::~CompositeModel()
 void CompositeModel::instantiateFMU(const std::string& filename, const std::string& instanceName)
 {
   logTrace();
+  globalClocks.tic(GLOBALCLOCK_INSTANTIATION);
   fmuInstances[instanceName] = new FMUWrapper(*this, filename, instanceName);
   outputsGraph.includeGraph(fmuInstances[instanceName]->getOutputsGraph());
   initialUnknownsGraph.includeGraph(fmuInstances[instanceName]->getInitialUnknownsGraph());
+  globalClocks.toc(GLOBALCLOCK_INSTANTIATION);
 }
 
 void CompositeModel::setReal(const std::string& var, double value)
@@ -602,11 +604,10 @@ void CompositeModel::terminate()
 
   double cpuStats[GLOBALCLOCK_MAX_INDEX+1];
   globalClocks.getStats(cpuStats, NULL);
-
   logInfo("time measurement for composite model");
-  logInfo("  Total: " + toString(cpuStats[GLOBALCLOCK_MAX_INDEX]) + "s");
+  logInfo("  total: " + toString(cpuStats[GLOBALCLOCK_MAX_INDEX]) + "s");
   for (int i=0; i<GLOBALCLOCK_MAX_INDEX; ++i)
-    logInfo("  " + toString(GlobalClockNames[i]) + ": " + toString(cpuStats[i]) + "s");
+    logInfo("  " + toString(GlobalClockNames[i]) + ": " + toString(cpuStats[i]) + "s [" + toString(cpuStats[i]/cpuStats[GLOBALCLOCK_MAX_INDEX]*100.0) + "%]");
 }
 
 void CompositeModel::reset()
