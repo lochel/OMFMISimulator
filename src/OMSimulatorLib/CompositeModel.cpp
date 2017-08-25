@@ -553,7 +553,7 @@ void CompositeModel::initialize()
 {
   logTrace();
 
-  Clocks::tic(CLOCK_INITIALIZATION);
+  globalClocks.tic(GLOBALCLOCK_INITIALIZATION);
 
   if (oms_modelState_instantiated != modelState)
   {
@@ -576,8 +576,8 @@ void CompositeModel::initialize()
     it->second->exitInitialization();
   modelState = oms_modelState_simulation;
 
-  Clocks::toc(CLOCK_INITIALIZATION);
-  Clocks::tic(CLOCK_SIMULATION);
+  globalClocks.toc(GLOBALCLOCK_INITIALIZATION);
+  globalClocks.tic(GLOBALCLOCK_SIMULATION);
 }
 
 void CompositeModel::terminate()
@@ -597,8 +597,16 @@ void CompositeModel::terminate()
 
   modelState = oms_modelState_instantiated;
 
-  Clocks::toc(CLOCK_SIMULATION);
-  logInfo("Simulation finished.\n" + Clocks::getStats());
+  globalClocks.toc(GLOBALCLOCK_SIMULATION);
+  logInfo("Simulation finished.");
+
+  double cpuStats[GLOBALCLOCK_MAX_INDEX+1];
+  globalClocks.getStats(cpuStats, NULL);
+
+  logInfo("time measurement for composite model");
+  logInfo("  Total: " + toString(cpuStats[GLOBALCLOCK_MAX_INDEX]) + "s");
+  for (int i=0; i<GLOBALCLOCK_MAX_INDEX; ++i)
+    logInfo("  " + toString(GlobalClockNames[i]) + ": " + toString(cpuStats[i]) + "s");
 }
 
 void CompositeModel::reset()

@@ -37,35 +37,37 @@
 #include <string>
 #include <stack>
 
-enum ClockIndex_t
+enum GlobalClockIndex_t
 {
-  CLOCK_IDLE = 0,
-  CLOCK_INITIALIZATION,
-  CLOCK_SIMULATION,
-  CLOCK_RESULTFILE,
-  CLOCK_MAX_INDEX
+  GLOBALCLOCK_IDLE = 0,
+  GLOBALCLOCK_INITIALIZATION,
+  GLOBALCLOCK_SIMULATION,
+  GLOBALCLOCK_RESULTFILE,
+  GLOBALCLOCK_MAX_INDEX
 };
 
 class Clocks
 {
 public:
-  static void tic(ClockIndex_t clock);
-  static void toc(ClockIndex_t clock);
-  static std::string getStats();
-
-private:
-  Clock clocks[CLOCK_MAX_INDEX];
-  std::stack<ClockIndex_t> activeClocks;
-
-private:
-  Clocks();
+  Clocks(int numSubClocks);
   ~Clocks();
 
-  static Clocks& getInstance();
+  void tic(int clock);
+  void toc(int clock);
+  void getStats(double* cpuStats, double* wallStats);
 
+private:
+  int numSubClocks;
+  Clock *clocks;
+  std::stack<int> activeClocks;
+
+private:
   // Stop the compiler generating methods of copy the object
   Clocks(Clocks const& copy);            // Not Implemented
   Clocks& operator=(Clocks const& copy); // Not Implemented
 };
+
+extern Clocks globalClocks;
+extern const char* GlobalClockNames[GLOBALCLOCK_MAX_INDEX];
 
 #endif

@@ -57,7 +57,7 @@ void replaceAll(std::string& str, const std::string& from, const std::string& to
 
 Resultfile::Resultfile(std::string filename, fmi2_import_t* fmu)
 {
-  Clocks::tic(CLOCK_RESULTFILE);
+  globalClocks.tic(GLOBALCLOCK_RESULTFILE);
   this->fmu = fmu;
   resultFile.open(filename.c_str());
   logDebug("Result file: " + filename);
@@ -75,20 +75,20 @@ Resultfile::Resultfile(std::string filename, fmi2_import_t* fmu)
   }
 
   resultFile << std::endl;
-  Clocks::toc(CLOCK_RESULTFILE);
+  globalClocks.toc(GLOBALCLOCK_RESULTFILE);
 }
 
 Resultfile::~Resultfile()
 {
-  Clocks::tic(CLOCK_RESULTFILE);
+  globalClocks.tic(GLOBALCLOCK_RESULTFILE);
   resultFile.close();
   logDebug("Result file closed");
-  Clocks::toc(CLOCK_RESULTFILE);
+  globalClocks.toc(GLOBALCLOCK_RESULTFILE);
 }
 
 void Resultfile::emit(double time)
 {
-  Clocks::tic(CLOCK_RESULTFILE);
+  globalClocks.tic(GLOBALCLOCK_RESULTFILE);
   resultFile << time;
 
   fmi2_import_variable_list_t *list = fmi2_import_get_variable_list(fmu, 0);
@@ -127,5 +127,5 @@ void Resultfile::emit(double time)
   }
 
   resultFile << std::endl;
-  Clocks::toc(CLOCK_RESULTFILE);
+  globalClocks.toc(GLOBALCLOCK_RESULTFILE);
 }

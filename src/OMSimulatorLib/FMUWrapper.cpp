@@ -38,6 +38,7 @@
 #include "GlobalSettings.h"
 #include "CompositeModel.h"
 #include "Util.h"
+#include "Clocks.h"
 
 #include <fmilib.h>
 #include <JM/jm_portability.h>
@@ -54,6 +55,24 @@
 #include "cvode/cvode_dense.h"       /* prototype for CVDense */
 #include "sundials/sundials_dense.h" /* definitions DlsMat DENSE_ELEM */
 #include "sundials/sundials_types.h" /* definition of type realtype */
+
+enum ClockIndex_t
+{
+  CLOCK_IDLE = 0,
+  CLOCK_INITIALIZATION,
+  CLOCK_DO_STEP,
+  CLOCK_RESULTFILE,
+  CLOCK_INSTANTIATION,
+  CLOCK_MAX_INDEX
+};
+
+const char* ClockNames[CLOCK_MAX_INDEX] = {
+  /* CLOCK_IDLE */           "idle",
+  /* CLOCK_INITIALIZATION */ "initialization",
+  /* CLOCK_DO_STEP */        "do-step",
+  /* CLOCK_RESULTFILE */     "result file",
+  /* CLOCK_INSTANTIATION */  "instantiation"
+};
 
 void fmiLogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message)
 {
@@ -128,9 +147,10 @@ int cvode_rhs(realtype t, N_Vector y, N_Vector ydot, void *user_data)
 }
 
 FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string instanceName)
-  : model(model), fmuPath(fmuPath), instanceName(instanceName), solverMethod(EXPLICIT_EULER)
+  : model(model), fmuPath(fmuPath), instanceName(instanceName), solverMethod(EXPLICIT_EULER), clocks(CLOCK_MAX_INDEX)
 {
   logTrace();
+  clocks.tic(CLOCK_INSTANTIATION);
 
   if (!boost::filesystem::exists(fmuPath))
     logFatal("Specified file name does not exist: \"" + fmuPath + "\"");
@@ -296,11 +316,14 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
   */
   getDependencyGraph_initialUnknowns();
   #endif // BTH_DEACTIVATE_INITIAL_UNKNOWNS
+
+  clocks.toc(CLOCK_INSTANTIATION);
 }
 
 FMUWrapper::~FMUWrapper()
 {
   logTrace();
+
   fmi2_import_free_instance(fmu);
   fmi2_import_destroy_dllfmu(fmu);
   fmi2_import_free(fmu);
@@ -310,6 +333,13 @@ FMUWrapper::~FMUWrapper()
     fmi_import_rmdir(&callbacks, tempDir.c_str());
     logDebug("removed working directory: \"" + tempDir + "\"");
   }
+
+  double cpuStats[CLOCK_MAX_INDEX+1];
+  clocks.getStats(cpuStats, NULL);
+
+  logInfo("time measurement for FMU instance '" + instanceName + "'");
+  for (int i=1; i<CLOCK_MAX_INDEX; ++i)
+    logInfo("  " + toString(ClockNames[i]) + ": " + toString(cpuStats[i]) + "s");
 }
 
 double FMUWrapper::getReal(const std::string& var)
@@ -512,6 +542,7 @@ void FMUWrapper::do_event_iteration()
 
 void FMUWrapper::enterInitialization(double startTime)
 {
+  clocks.tic(CLOCK_INITIALIZATION);
   fmi2_status_t fmistatus;
 
   double* pTolerance = model.getSettings().GetTolerance();
@@ -546,6 +577,13 @@ void FMUWrapper::enterInitialization(double startTime)
     logFatal("Unsupported FMU kind");
 }
 
+void FMUWrapper::emit(double time)
+{
+  clocks.tic(CLOCK_RESULTFILE);
+  omsResultFile->emit(time);
+  clocks.toc(CLOCK_RESULTFILE);
+}
+
 void FMUWrapper::exitInitialization()
 {
   fmi2_status_t fmistatus;
@@ -576,7 +614,7 @@ void FMUWrapper::exitInitialization()
     // fmi2_import_exit_initialization_mode leaves FMU in event mode
     do_event_iteration();
     fmi2_import_enter_continuous_time_mode(fmu);
-    omsResultFile->emit(tcur);
+    emit(tcur);
 
     callEventUpdate = fmi2_false;
 
@@ -693,10 +731,12 @@ void FMUWrapper::exitInitialization()
     if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_exit_initialization_mode failed");
 
     omsResultFile = new Resultfile(finalResultFile, fmu);
-    omsResultFile->emit(tcur);
+    emit(tcur);
   }
   else
     logFatal("Unsupported FMU kind");
+
+  clocks.toc(CLOCK_INITIALIZATION);
 }
 
 void FMUWrapper::terminate()
@@ -783,6 +823,7 @@ void FMUWrapper::reset()
 
 void FMUWrapper::doStep(double stopTime)
 {
+  clocks.tic(CLOCK_DO_STEP);
   fmi2_status_t fmistatus;
   const fmi2_real_t hdef = model.getSettings().GetCommunicationInterval() ? *(model.getSettings().GetCommunicationInterval()) : 1e-2;
 
@@ -836,7 +877,7 @@ void FMUWrapper::doStep(double stopTime)
         }
         fmistatus = fmi2_import_get_event_indicators(fmu, event_indicators, n_event_indicators);
         if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_get_event_indicators failed");
-        omsResultFile->emit(tcur);
+        emit(tcur);
 
         if (CVODE == solverMethod)
         {
@@ -898,7 +939,7 @@ void FMUWrapper::doStep(double stopTime)
       fmistatus = fmi2_import_completed_integrator_step(fmu, fmi2_true, &callEventUpdate, &terminateSimulation);
       if (fmi2_status_ok != fmistatus) logFatal("fmi2_import_completed_integrator_step failed");
 
-      omsResultFile->emit(tcur);
+      emit(tcur);
     }
   }
   else if (fmi2_fmu_kind_cs == fmuKind || fmi2_fmu_kind_me_and_cs == fmuKind)
@@ -907,9 +948,11 @@ void FMUWrapper::doStep(double stopTime)
     {
       fmistatus = fmi2_import_do_step(fmu, tcur, hdef, fmi2_true);
       tcur += hdef;
-      omsResultFile->emit(tcur);
+      emit(tcur);
     }
   }
+
+  clocks.toc(CLOCK_DO_STEP);
 }
 
 void FMUWrapper::SetSolverMethod(const std::string& solverMethod)

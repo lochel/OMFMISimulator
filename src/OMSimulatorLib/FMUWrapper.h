@@ -35,6 +35,7 @@
 #include "Variable.h"
 #include "DirectedGraph.h"
 #include "Resultfile.h"
+#include "Clocks.h"
 
 #include <fmilib.h>
 #include <string>
@@ -104,11 +105,13 @@ private:
   void do_event_iteration();
   void getDependencyGraph_outputs();
   void getDependencyGraph_initialUnknowns();
+  void emit(double time);
 
   friend int cvode_rhs(realtype t, N_Vector y, N_Vector ydot, void *user_data);
 
 private:
   CompositeModel& model;
+  Clocks clocks;
 
   std::string fmuPath;
   std::string tempDir;

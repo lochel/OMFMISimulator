@@ -36,74 +36,78 @@
 
 #include <string>
 
-Clocks::Clocks()
+Clocks globalClocks(GLOBALCLOCK_MAX_INDEX);
+
+const char* GlobalClockNames[GLOBALCLOCK_MAX_INDEX] = {
+  /* GLOBALCLOCK_IDLE */           "idle",
+  /* GLOBALCLOCK_INITIALIZATION */ "initialization",
+  /* GLOBALCLOCK_SIMULATION */     "simulation",
+  /* GLOBALCLOCK_RESULTFILE */     "result file"
+};
+
+Clocks::Clocks(int numSubClocks)
+  : numSubClocks(numSubClocks)
 {
-  for (int i = 0; i<CLOCK_MAX_INDEX; ++i)
+  clocks = new Clock[numSubClocks];
+
+  for (int i = 0; i<numSubClocks; ++i)
    clocks[i].reset();
 
-  activeClocks.push(CLOCK_IDLE);
-  clocks[CLOCK_IDLE].tic();
+  activeClocks.push(0);
+  clocks[0].tic();
 }
 
 Clocks::~Clocks()
 {
-  if (!(activeClocks.size() == 1 && activeClocks.top() == CLOCK_IDLE))
+  if (!(activeClocks.size() == 1 && activeClocks.top() == 0))
     logWarning("Time measurement is corrupted.");
+
+  delete[] clocks;
 }
 
-Clocks& Clocks::getInstance()
+void Clocks::tic(int index)
 {
-  // The only instance
-  static Clocks instance;
-  return instance;
-}
-
-void Clocks::tic(ClockIndex_t index)
-{
-  Clocks& instance = getInstance();
-  ClockIndex_t activeClock = instance.activeClocks.top();
+  int activeClock = activeClocks.top();
 
   if (activeClock == index)
     return;
 
-  instance.clocks[activeClock].toc();
-  instance.clocks[index].tic();
-  instance.activeClocks.push(index);
+  clocks[activeClock].toc();
+  clocks[index].tic();
+  activeClocks.push(index);
 }
 
-void Clocks::toc(ClockIndex_t index)
+void Clocks::toc(int index)
 {
-  Clocks& instance = getInstance();
-  ClockIndex_t activeClock = instance.activeClocks.top();
+  int activeClock = activeClocks.top();
 
   if (activeClock != index)
     logWarning("Time measurement is corrupted.");
 
-  instance.activeClocks.pop();
-  activeClock = instance.activeClocks.top();
+  activeClocks.pop();
+  activeClock = activeClocks.top();
 
-  instance.clocks[index].toc();
-  instance.clocks[activeClock].tic();
+  clocks[index].toc();
+  clocks[activeClock].tic();
 }
 
-std::string Clocks::getStats()
+// cpuStats and wallStats have to be of size numSubClocks+1
+void Clocks::getStats(double* cpuStats, double* wallStats)
 {
-  Clocks& instance = getInstance();
-  std::string stats = "";
+  if (cpuStats) cpuStats[numSubClocks] = 0.0;
+  if (wallStats) wallStats[numSubClocks] = 0.0;
 
-  double cpuTime = 0.0;
-  double wallTime = 0.0;
-  for (int i = 0; i<CLOCK_MAX_INDEX; ++i)
+  for (int i = 0; i<numSubClocks; ++i)
   {
-    cpuTime += instance.clocks[i].getElapsedCPUTime();
-    wallTime += instance.clocks[i].getElapsedWallTime();
+    if (cpuStats)
+    {
+      cpuStats[i] = clocks[i].getElapsedCPUTime();
+      cpuStats[numSubClocks] += cpuStats[i];
+    }
+    if (wallStats)
+    {
+      wallStats[i] = clocks[i].getElapsedWallTime();
+      wallStats[numSubClocks] += cpuStats[i];
+    }
   }
-
-  stats += "Total: " + toString(cpuTime) + "s [cpu clock] (" + toString(wallTime) + "s [wall clock])";
-  stats += "\nInitialization: " + toString(instance.clocks[CLOCK_INITIALIZATION].getElapsedCPUTime()/cpuTime*100.0) + "% - " + toString(instance.clocks[CLOCK_INITIALIZATION].getElapsedCPUTime()) + "s [cpu clock] (" + toString(instance.clocks[CLOCK_INITIALIZATION].getElapsedWallTime()) + "s [wall clock])";
-  stats += "\nSimulation: " + toString(instance.clocks[CLOCK_SIMULATION].getElapsedCPUTime()/cpuTime*100.0) + "% - " + toString(instance.clocks[CLOCK_SIMULATION].getElapsedCPUTime()) + "s [cpu clock] (" + toString(instance.clocks[CLOCK_SIMULATION].getElapsedWallTime()) + "s [wall clock])";
-  stats += "\nResult file: " + toString(instance.clocks[CLOCK_RESULTFILE].getElapsedCPUTime()/cpuTime*100.0) + "% - " + toString(instance.clocks[CLOCK_RESULTFILE].getElapsedCPUTime()) + "s [cpu clock] (" + toString(instance.clocks[CLOCK_RESULTFILE].getElapsedWallTime()) + "s [wall clock])";
-  stats += "\nIdle: " + toString(instance.clocks[CLOCK_IDLE].getElapsedCPUTime()/cpuTime*100.0) + "% - " + toString(instance.clocks[CLOCK_IDLE].getElapsedCPUTime()) + "s [cpu clock] (" + toString(instance.clocks[CLOCK_IDLE].getElapsedWallTime()) + "s [wall clock])";
-
-  return stats;
 }

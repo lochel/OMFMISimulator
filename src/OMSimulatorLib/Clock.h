@@ -43,11 +43,10 @@ public:
 
   void tic();
   void toc();
-  void resetAndTic() {reset(); tic();}
   void reset();
 
-  double getElapsedCPUTime() {return elapsedCPUTime;}
-  double getElapsedWallTime() {return elapsedWallTime;}
+  double& getElapsedCPUTime() {return elapsedCPUTime;}
+  double& getElapsedWallTime() {return elapsedWallTime;}
 
 private:
   bool active;
