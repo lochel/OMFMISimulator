@@ -56,7 +56,7 @@ Variable::~Variable()
 {
 }
 
-FMUWrapper* Variable::getFMUInstance()
+const FMUWrapper* Variable::getFMUInstance() const
 {
   return fmuInstance;
 }

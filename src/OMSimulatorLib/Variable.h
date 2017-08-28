@@ -47,30 +47,30 @@ public:
   void markAsState() {is_state = true;}
 
   // causality attribute
-  bool isParameter(){return fmi2_causality_enu_parameter == causality;}
-  bool isCalculatedParameter(){return fmi2_causality_enu_calculated_parameter == causality;}
-  bool isInput(){return fmi2_causality_enu_input == causality;}
-  bool isOutput(){return fmi2_causality_enu_output == causality;}
-  bool isLocal(){return fmi2_causality_enu_local == causality;}
-  bool& isState(){return is_state;}
-  bool isIndependent(){return fmi2_causality_enu_independent == causality;}
+  bool isParameter() const {return fmi2_causality_enu_parameter == causality;}
+  bool isCalculatedParameter() const {return fmi2_causality_enu_calculated_parameter == causality;}
+  bool isInput() const {return fmi2_causality_enu_input == causality;}
+  bool isOutput() const {return fmi2_causality_enu_output == causality;}
+  bool isLocal() const {return fmi2_causality_enu_local == causality;}
+  bool isState() const {return is_state;}
+  bool isIndependent() const {return fmi2_causality_enu_independent == causality;}
 
   // initial attribute
-  bool isExact(){return fmi2_initial_enu_exact == initialProperty;}
-  bool isApprox(){return fmi2_initial_enu_approx == initialProperty;}
-  bool isCalculated(){return fmi2_initial_enu_calculated == initialProperty;}
+  bool isExact() const {return fmi2_initial_enu_exact == initialProperty;}
+  bool isApprox() const {return fmi2_initial_enu_approx == initialProperty;}
+  bool isCalculated() const {return fmi2_initial_enu_calculated == initialProperty;}
 
-  bool isInitialUnknown(){return (isOutput() && (isApprox() || isCalculated()))
+  bool isInitialUnknown() const {return (isOutput() && (isApprox() || isCalculated()))
                               || (isCalculatedParameter())
                               || (isState() && (isApprox() || isCalculated()));}
 
-  std::string& getName() {return name;}
-  std::string& getFMUInstanceName() {return fmuInstanceName;}
-  FMUWrapper* getFMUInstance();
-  fmi2_value_reference_t& getValueReference() {return vr;}
-  fmi2_base_type_enu_t& getBaseType() {return baseType;}
+  const std::string& getName() const {return name;}
+  const std::string& getFMUInstanceName() const {return fmuInstanceName;}
+  const FMUWrapper* getFMUInstance() const;
+  const fmi2_value_reference_t& getValueReference() const {return vr;}
+  const fmi2_base_type_enu_t& getBaseType() const {return baseType;}
 
-  bool isTypeReal() {return fmi2_base_type_real == baseType;}
+  bool isTypeReal() const {return fmi2_base_type_real == baseType;}
 
 protected:
   std::string name;

@@ -54,7 +54,9 @@ public:
   ~FMUWrapper();
 
   double getReal(const std::string& var);
+  double getReal(const Variable& var);
   bool setRealInput(const std::string& var, double value);
+  bool setRealInput(const Variable& var, double value);
   bool setRealParameter(const std::string& var, double value);
 
   void enterInitialization(double startTime);

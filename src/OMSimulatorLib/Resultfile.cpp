@@ -74,7 +74,7 @@ Resultfile::Resultfile(std::string filename, fmi2_import_t* fmu)
     resultFile << ", " << name;
   }
 
-  resultFile << std::endl;
+  resultFile << "\n";
   globalClocks.toc(GLOBALCLOCK_RESULTFILE);
 }
 
@@ -126,6 +126,6 @@ void Resultfile::emit(double time)
     resultFile << ", " << value;
   }
 
-  resultFile << std::endl;
+  resultFile << "\n";
   globalClocks.toc(GLOBALCLOCK_RESULTFILE);
 }

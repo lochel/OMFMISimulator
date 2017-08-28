@@ -349,12 +349,20 @@ double FMUWrapper::getReal(const std::string& var)
     logFatal("FMUWrapper::getReal failed");
 
   Variable* v = getVariable(var);
-
   if (!v)
     logFatal("FMUWrapper::getReal failed");
 
+  return getReal(*v);
+}
+
+double FMUWrapper::getReal(const Variable& var)
+{
+  logTrace();
+  if (!fmu)
+    logFatal("FMUWrapper::getReal failed");
+
   double value;
-  fmi2_import_get_real(fmu, &v->getValueReference(), 1, &value);
+  fmi2_import_get_real(fmu, &var.getValueReference(), 1, &value);
 
   return value;
 }
@@ -366,14 +374,28 @@ bool FMUWrapper::setRealInput(const std::string& var, double value)
     logFatal("FMUWrapper::setRealInput failed");
 
   Variable* v = getVariable(var);
-
-  if (!v || !v->isInput() || !v->isTypeReal())
+  if (v)
+    return setRealInput(*v, value);
+  else
   {
     logError("FMUWrapper::setRealInput: FMU '" + instanceName + "' doesn't contain input real " + var);
     return false;
   }
+}
 
-  fmi2_import_set_real(fmu, &v->getValueReference(), 1, &value);
+bool FMUWrapper::setRealInput(const Variable& var, double value)
+{
+  logTrace();
+  if (!fmu)
+    logFatal("FMUWrapper::setRealInput failed");
+
+  if (!var.isInput() || !var.isTypeReal())
+  {
+    logError("FMUWrapper::setRealInput: FMU '" + instanceName + "' doesn't contain input real " + var.getName());
+    return false;
+  }
+
+  fmi2_import_set_real(fmu, &var.getValueReference(), 1, &value);
   return true;
 }
 

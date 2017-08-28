@@ -476,12 +476,12 @@ void CompositeModel::updateInputs(DirectedGraph& graph)
   {
     int output = sortedConnections[i].first;
     int input = sortedConnections[i].second;
-    std::string& outputFMU = graph.nodes[output].getFMUInstanceName();
-    std::string& outputVar = graph.nodes[output].getName();
-    std::string& inputFMU = graph.nodes[input].getFMUInstanceName();
-    std::string& inputVar = graph.nodes[input].getName();
-    double value = fmuInstances[outputFMU]->getReal(outputVar);
-    fmuInstances[inputFMU]->setRealInput(inputVar, value);
+    const std::string& outputFMU = graph.nodes[output].getFMUInstanceName();
+    //std::string& outputVar = graph.nodes[output].getName();
+    const std::string& inputFMU = graph.nodes[input].getFMUInstanceName();
+    //std::string& inputVar = graph.nodes[input].getName();
+    double value = fmuInstances[outputFMU]->getReal(graph.nodes[output]);
+    fmuInstances[inputFMU]->setRealInput(graph.nodes[input], value);
     //std::cout << inputFMU << "." << inputVar << " = " << outputFMU << "." << outputVar << std::endl;
   }
 
