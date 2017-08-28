@@ -63,6 +63,8 @@ enum ClockIndex_t
   CLOCK_DO_STEP,
   CLOCK_RESULTFILE,
   CLOCK_INSTANTIATION,
+  CLOCK_EVENTS,
+
   CLOCK_MAX_INDEX
 };
 
@@ -71,7 +73,8 @@ const char* ClockNames[CLOCK_MAX_INDEX] = {
   /* CLOCK_INITIALIZATION */ "initialization",
   /* CLOCK_DO_STEP */        "do-step",
   /* CLOCK_RESULTFILE */     "result file",
-  /* CLOCK_INSTANTIATION */  "instantiation"
+  /* CLOCK_INSTANTIATION */  "instantiation",
+  /* CLOCK_EVENTS */         "events"
 };
 
 void fmiLogger(jm_callbacks* c, jm_string module, jm_log_level_enu_t log_level, jm_string message)
@@ -556,10 +559,14 @@ std::string FMUWrapper::getGenerationTool()
 
 void FMUWrapper::do_event_iteration()
 {
+  clocks.tic(CLOCK_EVENTS);
+
   eventInfo.newDiscreteStatesNeeded = fmi2_true;
   eventInfo.terminateSimulation = fmi2_false;
   while (eventInfo.newDiscreteStatesNeeded && !eventInfo.terminateSimulation)
     fmi2_import_new_discrete_states(fmu, &eventInfo);
+
+  clocks.toc(CLOCK_EVENTS);
 }
 
 void FMUWrapper::enterInitialization(double startTime)
@@ -626,6 +633,7 @@ void FMUWrapper::exitInitialization()
     terminateSimulation = fmi2_false;
     omsResultFile = new Resultfile(finalResultFile, fmu);
 
+    clocks.tic(CLOCK_EVENTS);
     eventInfo.newDiscreteStatesNeeded = fmi2_false;
     eventInfo.terminateSimulation = fmi2_false;
     eventInfo.nominalsOfContinuousStatesChanged = fmi2_false;
@@ -635,6 +643,8 @@ void FMUWrapper::exitInitialization()
 
     // fmi2_import_exit_initialization_mode leaves FMU in event mode
     do_event_iteration();
+    clocks.toc(CLOCK_EVENTS);
+
     fmi2_import_enter_continuous_time_mode(fmu);
     emit(tcur);
 
@@ -881,6 +891,7 @@ void FMUWrapper::doStep(double stopTime)
       }
 
       // handle events
+      clocks.tic(CLOCK_EVENTS);
       if (callEventUpdate || zero_crossing_event || (eventInfo.nextEventTimeDefined && tcur == eventInfo.nextEventTime))
       {
         fmistatus = fmi2_import_enter_event_mode(fmu);
@@ -909,6 +920,7 @@ void FMUWrapper::doStep(double stopTime)
           if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeReInit() failed with flag = " + toString(flag));
         }
       }
+      clocks.toc(CLOCK_EVENTS);
 
       // calculate next time step
       tlast = tcur;

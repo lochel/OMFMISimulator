@@ -619,6 +619,7 @@ void CompositeModel::terminate()
 void CompositeModel::reset()
 {
   logTrace();
+  globalClocks.toc(GLOBALCLOCK_SIMULATION);
 
   std::map<std::string, FMUWrapper*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)

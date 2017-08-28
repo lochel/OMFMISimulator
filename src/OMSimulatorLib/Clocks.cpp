@@ -61,8 +61,8 @@ Clocks::Clocks(int numSubClocks)
 
 Clocks::~Clocks()
 {
-  if (!(activeClocks.size() == 1 && activeClocks.top() == 0))
-    logWarning("Time measurement is corrupted.");
+  if (activeClocks.size() > 1 || activeClocks.top() != 0)
+    logFatal("Time measurement is corrupted.");
 
   delete[] clocks;
 }
@@ -72,7 +72,10 @@ void Clocks::tic(int index)
   int activeClock = activeClocks.top();
 
   if (activeClock == index)
+  {
+    activeClocks.push(index);
     return;
+  }
 
   clocks[activeClock].toc();
   clocks[index].tic();
@@ -84,13 +87,16 @@ void Clocks::toc(int index)
   int activeClock = activeClocks.top();
 
   if (activeClock != index)
-    logWarning("Time measurement is corrupted.");
+    logFatal("Time measurement is corrupted.");
 
   activeClocks.pop();
   activeClock = activeClocks.top();
 
-  clocks[index].toc();
-  clocks[activeClock].tic();
+  if (activeClock != index)
+  {
+    clocks[index].toc();
+    clocks[activeClock].tic();
+  }
 }
 
 // cpuStats and wallStats have to be of size numSubClocks+1
