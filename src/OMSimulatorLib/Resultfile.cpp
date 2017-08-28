@@ -73,8 +73,9 @@ Resultfile::Resultfile(std::string filename, fmi2_import_t* fmu)
     replaceAll(name, ",", "$C");
     resultFile << ", " << name;
   }
+  fmi2_import_free_variable_list(list);
 
-  resultFile << "\n";
+  resultFile << std::endl;
   globalClocks.toc(GLOBALCLOCK_RESULTFILE);
 }
 
@@ -125,7 +126,8 @@ void Resultfile::emit(double time)
 
     resultFile << ", " << value;
   }
+  fmi2_import_free_variable_list(list);
 
-  resultFile << "\n";
+  resultFile << std::endl;
   globalClocks.toc(GLOBALCLOCK_RESULTFILE);
 }
