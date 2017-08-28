@@ -62,7 +62,7 @@ CompositeModel::CompositeModel()
   modelState = oms_modelState_instantiated;
 }
 
-CompositeModel::CompositeModel(const char * descriptionPath)
+CompositeModel::CompositeModel(const char* descriptionPath)
 {
   logTrace();
   importXML(descriptionPath);
@@ -143,28 +143,30 @@ double CompositeModel::getReal(const std::string& var)
 void CompositeModel::addConnection(const std::string& from, const std::string& to)
 {
   logTrace();
+  globalClocks.tic(GLOBALCLOCK_INSTANTIATION);
+
   std::stringstream var1_(from);
   std::stringstream var2_(to);
   std::string fmuInstance1, fmuInstance2;
   std::string fmuVar1, fmuVar2;
 
-  // TODO: Improve this
   std::getline(var1_, fmuInstance1, '.');
   std::getline(var1_, fmuVar1);
 
-  // TODO: Improve this
   std::getline(var2_, fmuInstance2, '.');
   std::getline(var2_, fmuVar2);
 
   if (fmuInstances.find(fmuInstance1) == fmuInstances.end())
   {
     logError("CompositeModel::addConnection: FMU instance \"" + fmuInstance1 + "\" doesn't exist in model");
+    globalClocks.toc(GLOBALCLOCK_INSTANTIATION);
     return;
   }
 
   if (fmuInstances.find(fmuInstance2) == fmuInstances.end())
   {
     logError("CompositeModel::addConnection: FMU instance \"" + fmuInstance2 + "\" doesn't exist in model");
+    globalClocks.toc(GLOBALCLOCK_INSTANTIATION);
     return;
   }
 
@@ -174,16 +176,20 @@ void CompositeModel::addConnection(const std::string& from, const std::string& t
   if (!var1)
   {
     logError("CompositeModel::addConnection: output \"" + fmuInstance1 + "." + fmuVar1 + "\" doesn't exist");
+    globalClocks.toc(GLOBALCLOCK_INSTANTIATION);
     return;
   }
   if (!var2)
   {
     logError("CompositeModel::addConnection: input \"" + fmuInstance2 + "." + fmuVar2 + "\" doesn't exist");
+    globalClocks.toc(GLOBALCLOCK_INSTANTIATION);
     return;
   }
 
   outputsGraph.addEdge(*var1, *var2);
   initialUnknownsGraph.addEdge(*var1, *var2);
+
+  globalClocks.toc(GLOBALCLOCK_INSTANTIATION);
 }
 
 void CompositeModel::exportDependencyGraph(const std::string& prefix)
@@ -196,6 +202,7 @@ void CompositeModel::exportDependencyGraph(const std::string& prefix)
 void CompositeModel::exportXML(const char* filename)
 {
   pugi::xml_document doc;
+
   // Generate XML declaration
   pugi::xml_node declarationNode = doc.append_child(pugi::node_declaration);
   declarationNode.append_attribute("version")    = "1.0";
@@ -204,28 +211,30 @@ void CompositeModel::exportXML(const char* filename)
   pugi::xml_node submodels = model.append_child("SubModels");
   pugi::xml_node connections = model.append_child("Connections");
   pugi::xml_node simulationparams = model.append_child("SimulationParams");
-  /* add simulation settings */
-  std::string startTime=(settings.GetStartTime() ? toString(*(settings.GetStartTime())) : "");
-  std::string stopTime=(settings.GetStopTime() ? toString(*(settings.GetStopTime())) : "");
-  std::string tolerance=(settings.GetTolerance() ? toString(*(settings.GetTolerance())) : "");
-  std::string communicationInterval=(settings.GetCommunicationInterval() ? toString(*(settings.GetCommunicationInterval())) : "");
-  if (startTime!="")
+
+  // add simulation settings
+  std::string startTime = (settings.GetStartTime() ? toString(*(settings.GetStartTime())) : "");
+  std::string stopTime = (settings.GetStopTime() ? toString(*(settings.GetStopTime())) : "");
+  std::string tolerance = (settings.GetTolerance() ? toString(*(settings.GetTolerance())) : "");
+  std::string communicationInterval = (settings.GetCommunicationInterval() ? toString(*(settings.GetCommunicationInterval())) : "");
+  if (startTime != "")
   {
-    simulationparams.append_attribute("StartTime")=startTime.c_str();
+    simulationparams.append_attribute("StartTime") = startTime.c_str();
   }
-  if (stopTime!="")
+  if (stopTime != "")
   {
-    simulationparams.append_attribute("StopTime")=stopTime.c_str();
+    simulationparams.append_attribute("StopTime") = stopTime.c_str();
   }
-  if (tolerance!="")
+  if (tolerance != "")
   {
-    simulationparams.append_attribute("tolerance")=tolerance.c_str();
+    simulationparams.append_attribute("tolerance") = tolerance.c_str();
   }
-  if (communicationInterval!="")
+  if (communicationInterval != "")
   {
-    simulationparams.append_attribute("communicationInterval")=communicationInterval.c_str();
+    simulationparams.append_attribute("communicationInterval") = communicationInterval.c_str();
   }
-  /* add FMus List */
+
+  // add list of FMUs
   std::map<std::string, FMUWrapper*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
   {
@@ -240,7 +249,8 @@ void CompositeModel::exportXML(const char* filename)
       submodel.append_attribute("solver") = getsolver.c_str();
     }
   }
-  /* add connection informations */
+
+  // add connection information
   const std::vector< std::pair<int, int> >& connectionsOutputs = outputsGraph.getSortedConnections();
   for(int i=0; i<connectionsOutputs.size(); i++)
   {
@@ -251,39 +261,40 @@ void CompositeModel::exportXML(const char* filename)
     std::string outputVar = outputsGraph.nodes[output].getName();
     std::string inputFMU = outputsGraph.nodes[input].getFMUInstanceName();
     std::string inputVar = outputsGraph.nodes[input].getName();
-    //std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
-    std::string fromfmu=outputFMU + '.' + outputVar;
-    std::string tofmu=inputFMU + '.' + inputVar;
+    std::string fromfmu = outputFMU + '.' + outputVar;
+    std::string tofmu = inputFMU + '.' + inputVar;
     connection.append_attribute("From") = fromfmu.c_str();
     connection.append_attribute("To") = tofmu.c_str();
   }
-  /* add simulation parameters */
+
+  // add simulation parameters
   std::map<std::string, double>::iterator param;
   for (param=ParameterList.begin(); param!=ParameterList.end(); ++param)
   {
      std::string varname= param->first;
      double varvalue=param->second;
-     //std::string varname ="Source.A.y_dfdfds";
      std::string name;
      std::string value;
      std::stringstream var_(varname);
      std::getline(var_, name, '.');
      std::getline(var_, value);
-     /* find the appropriate node instances and add the ModelParams */
+
+     // find the appropriate node instances and add the ModelParams
      pugi::xml_node param = submodels.find_child_by_attribute("SubModel", "Name", name.c_str());
      pugi::xml_node modelparams = param.append_child("ModelParams");
      modelparams.append_attribute("Name") = value.c_str();
      modelparams.append_attribute("Value") = varvalue;
   }
+
   bool saveSucceeded = doc.save_file(filename);
   if (!saveSucceeded)
-  {
     logError("CompositeModel::exportXML: The file is not saved to XML.");
-  }
 }
 
 void CompositeModel::importXML(const char* filename)
 {
+  globalClocks.tic(GLOBALCLOCK_INSTANTIATION);
+
   pugi::xml_document doc;
   pugi::xml_parse_result result = doc.load_file(filename);
   if (!result)
@@ -388,6 +399,8 @@ void CompositeModel::importXML(const char* filename)
       }
     }
   }
+
+  globalClocks.toc(GLOBALCLOCK_INSTANTIATION);
 }
 
 void CompositeModel::describe()
