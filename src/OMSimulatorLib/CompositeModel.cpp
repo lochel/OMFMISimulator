@@ -81,9 +81,11 @@ void CompositeModel::instantiateFMU(const std::string& filename, const std::stri
 {
   logTrace();
   globalClocks.tic(GLOBALCLOCK_INSTANTIATION);
+
   fmuInstances[instanceName] = new FMUWrapper(*this, filename, instanceName);
   outputsGraph.includeGraph(fmuInstances[instanceName]->getOutputsGraph());
   initialUnknownsGraph.includeGraph(fmuInstances[instanceName]->getInitialUnknownsGraph());
+
   globalClocks.toc(GLOBALCLOCK_INSTANTIATION);
 }
 
@@ -465,6 +467,8 @@ void CompositeModel::describe()
 
 void CompositeModel::updateInputs(DirectedGraph& graph)
 {
+  globalClocks.tic(GLOBALCLOCK_COMMUNICATION);
+
   const std::vector< std::pair<int, int> >& sortedConnections = graph.getSortedConnections();
 
   // input = output
@@ -480,6 +484,8 @@ void CompositeModel::updateInputs(DirectedGraph& graph)
     fmuInstances[inputFMU]->setRealInput(inputVar, value);
     //std::cout << inputFMU << "." << inputVar << " = " << outputFMU << "." << outputVar << std::endl;
   }
+
+  globalClocks.toc(GLOBALCLOCK_COMMUNICATION);
 }
 
 oms_status_t CompositeModel::simulate()
