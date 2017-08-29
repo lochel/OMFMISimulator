@@ -365,7 +365,8 @@ double FMUWrapper::getReal(const Variable& var)
     logFatal("FMUWrapper::getReal failed");
 
   double value;
-  fmi2_import_get_real(fmu, &var.getValueReference(), 1, &value);
+  fmi2_value_reference_t vr = var.getValueReference();
+  fmi2_import_get_real(fmu, &vr, 1, &value);
 
   return value;
 }
@@ -398,7 +399,8 @@ bool FMUWrapper::setRealInput(const Variable& var, double value)
     return false;
   }
 
-  fmi2_import_set_real(fmu, &var.getValueReference(), 1, &value);
+  fmi2_value_reference_t vr = var.getValueReference();
+  fmi2_import_set_real(fmu, &vr, 1, &value);
   return true;
 }
 
@@ -416,7 +418,8 @@ bool FMUWrapper::setRealParameter(const std::string& var, double value)
     return false;
   }
 
-  fmi2_import_set_real(fmu, &v->getValueReference(), 1, &value);
+  fmi2_value_reference_t vr = v->getValueReference();
+  fmi2_import_set_real(fmu, &vr, 1, &value);
   return true;
 }
 

@@ -40,11 +40,11 @@ Clocks globalClocks(GLOBALCLOCK_MAX_INDEX);
 
 const char* GlobalClockNames[GLOBALCLOCK_MAX_INDEX] = {
   /* GLOBALCLOCK_IDLE */           "idle",
+  /* GLOBALCLOCK_INSTANTIATION */  "instantiation",
   /* GLOBALCLOCK_INITIALIZATION */ "initialization",
   /* GLOBALCLOCK_SIMULATION */     "simulation",
-  /* GLOBALCLOCK_RESULTFILE */     "result file",
-  /* GLOBALCLOCK_INSTANTIATION */  "instantiation",
-  /* GLOBALCLOCK_COMMUNICATION */  "communication"
+  /* GLOBALCLOCK_COMMUNICATION */  "communication",
+  /* GLOBALCLOCK_RESULTFILE */     "result file"
 };
 
 Clocks::Clocks(int numSubClocks)
