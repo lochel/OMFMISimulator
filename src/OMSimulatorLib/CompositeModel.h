@@ -39,7 +39,7 @@
 
 #include <fmilib.h>
 #include <string>
-#include <map>
+#include <unordered_map>
 #include <deque>
 
 class CompositeModel
@@ -77,8 +77,8 @@ private:
 
 private:
   Settings settings;
-  std::map<std::string, FMUWrapper*> fmuInstances;
-  std::map<std::string,double> ParameterList;
+  std::unordered_map<std::string, FMUWrapper*> fmuInstances;
+  std::unordered_map<std::string,double> ParameterList;
   DirectedGraph outputsGraph;
   DirectedGraph initialUnknownsGraph;
   double tcur;

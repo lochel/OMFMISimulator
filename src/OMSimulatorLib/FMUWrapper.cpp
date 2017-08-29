@@ -992,7 +992,10 @@ void FMUWrapper::doStep(double stopTime)
 void FMUWrapper::SetSolverMethod(const std::string& solverMethod)
 {
   if (!isFMUKindME())
+  {
     logError("FMUWrapper::SetSolverMethod: Solver method can only be specified for FMU ME");
+    return;
+  }
 
   if (solverMethod == "none")
     this->solverMethod = NO_SOLVER;

@@ -43,7 +43,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <map>
+#include <unordered_map>
 #include <sstream>
 #include <fstream>
 #include <cstdlib>
@@ -72,7 +72,7 @@ CompositeModel::CompositeModel(const char* descriptionPath)
 CompositeModel::~CompositeModel()
 {
   logTrace();
-  std::map<std::string, FMUWrapper*>::iterator it;
+  std::unordered_map<std::string, FMUWrapper*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
     delete it->second;
 }
@@ -234,7 +234,7 @@ void CompositeModel::exportXML(const char* filename)
   }
 
   // add list of FMUs
-  std::map<std::string, FMUWrapper*>::iterator it;
+  std::unordered_map<std::string, FMUWrapper*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
   {
     std::string getfmu= it->second->getFMUPath();
@@ -267,7 +267,7 @@ void CompositeModel::exportXML(const char* filename)
   }
 
   // add simulation parameters
-  std::map<std::string, double>::iterator param;
+  std::unordered_map<std::string, double>::iterator param;
   for (param=ParameterList.begin(); param!=ParameterList.end(); ++param)
   {
      std::string varname= param->first;
@@ -406,7 +406,7 @@ void CompositeModel::describe()
 {
   logTrace();
 
-  std::map<std::string, FMUWrapper*>::iterator it;
+  std::unordered_map<std::string, FMUWrapper*>::iterator it;
 
   std::cout << "# FMU instances" << std::endl;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
@@ -532,7 +532,7 @@ oms_status_t CompositeModel::doSteps(const int numberOfSteps)
     updateInputs(outputsGraph);
 
     // do_step
-    std::map<std::string, FMUWrapper*>::iterator it;
+    std::unordered_map<std::string, FMUWrapper*>::iterator it;
     for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
       it->second->doStep(tcur+communicationInterval);
     tcur += communicationInterval;
@@ -561,7 +561,7 @@ oms_status_t CompositeModel::stepUntil(const double timeValue)
       tcur = timeValue;
 
     // do_step
-    std::map<std::string, FMUWrapper*>::iterator it;
+    std::unordered_map<std::string, FMUWrapper*>::iterator it;
     for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
       it->second->doStep(tcur);
   }
@@ -585,7 +585,7 @@ void CompositeModel::initialize()
 
   // Enter initialization
   modelState = oms_modelState_initialization;
-  std::map<std::string, FMUWrapper*>::iterator it;
+  std::unordered_map<std::string, FMUWrapper*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
     it->second->enterInitialization(tcur);
 
@@ -611,7 +611,7 @@ void CompositeModel::terminate()
     return;
   }
 
-  std::map<std::string, FMUWrapper*>::iterator it;
+  std::unordered_map<std::string, FMUWrapper*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
     it->second->terminate();
 
@@ -633,7 +633,7 @@ void CompositeModel::reset()
   logTrace();
   globalClocks.toc(GLOBALCLOCK_SIMULATION);
 
-  std::map<std::string, FMUWrapper*>::iterator it;
+  std::unordered_map<std::string, FMUWrapper*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
     it->second->reset();
 
