@@ -532,7 +532,7 @@ Variable* FMUWrapper::getVariable(const fmi2_value_reference_t& state_vr)
   return NULL;
 }
 
-std::string FMUWrapper::getFMUKind()
+std::string FMUWrapper::getFMUKind() const
 {
   if (fmi2_fmu_kind_me == fmuKind) return "FMI 2.0 ME";
   if (fmi2_fmu_kind_cs == fmuKind) return "FMI 2.0 CS";
@@ -540,19 +540,19 @@ std::string FMUWrapper::getFMUKind()
   return "Unsupported FMU kind";
 }
 
-bool FMUWrapper::isFMUKindME()
+bool FMUWrapper::isFMUKindME() const
 {
   if (fmi2_fmu_kind_me == fmuKind) return true;
   return false;
 }
 
-std::string FMUWrapper::getGUID()
+std::string FMUWrapper::getGUID() const
 {
   const char* GUID = fmi2_import_get_GUID(fmu);
   return std::string(GUID);
 }
 
-std::string FMUWrapper::getGenerationTool()
+std::string FMUWrapper::getGenerationTool() const
 {
   const char* tool = fmi2_import_get_generation_tool(fmu);
   if (tool)
@@ -1010,7 +1010,7 @@ void FMUWrapper::SetSolverMethod(const std::string& solverMethod)
     logError("Settings::SetSolverMethod: Unknown solver method '" + solverMethod + "'");
 }
 
-std::string FMUWrapper::GetSolverMethodString()
+std::string FMUWrapper::GetSolverMethodString() const
 {
   switch (solverMethod)
   {

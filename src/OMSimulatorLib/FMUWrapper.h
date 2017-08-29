@@ -65,22 +65,22 @@ public:
   void reset();
   void doStep(double stopTime);
 
-  const DirectedGraph& getOutputsGraph() {return outputsGraph;}
-  const DirectedGraph& getInitialUnknownsGraph() {return initialUnknownsGraph;}
+  const DirectedGraph& getOutputsGraph() const {return outputsGraph;}
+  const DirectedGraph& getInitialUnknownsGraph() const {return initialUnknownsGraph;}
   Variable* getVariable(const std::string& varName);
   Variable* getVariable(const fmi2_value_reference_t& state_vr);
 
-  std::string& getFMUPath() {return fmuPath;}
-  std::string& getFMUInstanceName() {return instanceName;}
-  std::string getFMUKind();
-  bool isFMUKindME();
-  std::string getGUID();
-  std::string getGenerationTool();
+  const std::string& getFMUPath() const {return fmuPath;}
+  const std::string& getFMUInstanceName() const {return instanceName;}
+  std::string getFMUKind() const;
+  bool isFMUKindME() const;
+  std::string getGUID() const;
+  std::string getGenerationTool() const;
 
   void SetSolverMethod(const std::string& solverMethod);
-  std::string GetSolverMethodString();
+  std::string GetSolverMethodString() const;
 
-  std::vector<Variable>& getAllVariables() { return allVariables; }
+  std::vector<Variable>& getAllVariables() {return allVariables;}
 
 private:
   enum Solver_t { NO_SOLVER, EXPLICIT_EULER, CVODE };
