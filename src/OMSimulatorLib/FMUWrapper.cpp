@@ -996,7 +996,7 @@ void FMUWrapper::SetSolverMethod(const std::string& solverMethod)
 
   if (solverMethod == "none")
     this->solverMethod = NO_SOLVER;
-  if (solverMethod == "euler")
+  else if (solverMethod == "euler")
     this->solverMethod = EXPLICIT_EULER;
   else if (solverMethod == "cvode")
     this->solverMethod = CVODE;

@@ -127,7 +127,6 @@ double CompositeModel::getReal(const std::string& var)
   std::string fmuInstance;
   std::string fmuVar;
 
-  // TODO: Improve this
   std::getline(var_, fmuInstance, '.');
   std::getline(var_, fmuVar);
 
@@ -203,10 +202,10 @@ void CompositeModel::exportXML(const char* filename)
 {
   pugi::xml_document doc;
 
-  // Generate XML declaration
+  // generate XML declaration
   pugi::xml_node declarationNode = doc.append_child(pugi::node_declaration);
-  declarationNode.append_attribute("version")    = "1.0";
-  declarationNode.append_attribute("encoding")   = "UTF-8";
+  declarationNode.append_attribute("version") = "1.0";
+  declarationNode.append_attribute("encoding") = "UTF-8";
   pugi::xml_node model = doc.append_child("Model");
   pugi::xml_node submodels = model.append_child("SubModels");
   pugi::xml_node connections = model.append_child("Connections");
