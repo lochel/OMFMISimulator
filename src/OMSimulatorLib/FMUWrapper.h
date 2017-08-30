@@ -81,6 +81,8 @@ public:
   std::string GetSolverMethodString() const;
 
   std::vector<Variable>& getAllVariables() {return allVariables;}
+  std::vector<unsigned int>& getAllInputs() {return allInputs;}
+  std::vector<unsigned int>& getAllOutputs() {return allOutputs;}
 
 private:
   enum Solver_t { NO_SOLVER, EXPLICIT_EULER, CVODE };
@@ -107,7 +109,6 @@ private:
   void do_event_iteration();
   void getDependencyGraph_outputs();
   void getDependencyGraph_initialUnknowns();
-  void emit(double time);
 
   friend int cvode_rhs(realtype t, N_Vector y, N_Vector ydot, void *user_data);
 

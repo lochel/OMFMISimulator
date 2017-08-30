@@ -36,6 +36,7 @@
 #include "Types.h"
 #include "Util.h"
 #include "Clocks.h"
+#include "Resultfile.h"
 
 #include <fmilib.h>
 #include <JM/jm_portability.h>
@@ -66,6 +67,9 @@ CompositeModel::CompositeModel(const char* descriptionPath)
 {
   logTrace();
   importXML(descriptionPath);
+  boost::filesystem::path path(descriptionPath);
+  std::string filename = path.stem().string() + ".csv";
+  settings.SetResultFile(filename.c_str());
   modelState = oms_modelState_instantiated;
 }
 
@@ -85,6 +89,7 @@ void CompositeModel::instantiateFMU(const std::string& filename, const std::stri
   fmuInstances[instanceName] = new FMUWrapper(*this, filename, instanceName);
   outputsGraph.includeGraph(fmuInstances[instanceName]->getOutputsGraph());
   initialUnknownsGraph.includeGraph(fmuInstances[instanceName]->getInitialUnknownsGraph());
+  resultFile.addInstance(fmuInstances[instanceName]);
 
   globalClocks.toc(GLOBALCLOCK_INSTANTIATION);
 }
@@ -530,12 +535,15 @@ oms_status_t CompositeModel::doSteps(const int numberOfSteps)
   {
     // input = output
     updateInputs(outputsGraph);
+    resultFile.emit(tcur);
+
 
     // do_step
     std::unordered_map<std::string, FMUWrapper*>::iterator it;
     for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
       it->second->doStep(tcur+communicationInterval);
     tcur += communicationInterval;
+    resultFile.emit(tcur);
   }
 
   return oms_status_ok;
@@ -555,6 +563,7 @@ oms_status_t CompositeModel::stepUntil(const double timeValue)
   {
     // input = output
     updateInputs(outputsGraph);
+    resultFile.emit(tcur);
 
     tcur += communicationInterval;
     if (tcur > timeValue)
@@ -564,6 +573,7 @@ oms_status_t CompositeModel::stepUntil(const double timeValue)
     std::unordered_map<std::string, FMUWrapper*>::iterator it;
     for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
       it->second->doStep(tcur);
+    resultFile.emit(tcur);
   }
 
   return oms_status_ok;
@@ -595,6 +605,9 @@ void CompositeModel::initialize()
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
     it->second->exitInitialization();
   modelState = oms_modelState_simulation;
+
+  if (settings.GetResultFile())
+    resultFile.create(settings.GetResultFile());
 
   globalClocks.toc(GLOBALCLOCK_INITIALIZATION);
   globalClocks.tic(GLOBALCLOCK_SIMULATION);

@@ -70,7 +70,10 @@ double* Settings::GetStartTime()
 void Settings::ClearStartTime()
 {
   if (startTime)
+  {
     delete startTime;
+    startTime = NULL;
+  }
 }
 
 void Settings::SetStopTime(double stopTime)
@@ -88,7 +91,10 @@ double* Settings::GetStopTime()
 void Settings::ClearStopTime()
 {
   if (stopTime)
+  {
     delete stopTime;
+    stopTime = NULL;
+  }
 }
 
 void Settings::SetTolerance(double tolerance)
@@ -106,7 +112,10 @@ double* Settings::GetTolerance()
 void Settings::ClearTolerance()
 {
   if (tolerance)
+  {
     delete tolerance;
+    tolerance = NULL;
+  }
 }
 
 void Settings::SetCommunicationInterval(double communicationInterval)
@@ -124,7 +133,10 @@ double* Settings::GetCommunicationInterval()
 void Settings::ClearCommunicationInterval()
 {
   if (communicationInterval)
+  {
     delete communicationInterval;
+    communicationInterval = NULL;
+  }
 }
 
 void Settings::SetResultFile(const char* resultFile)
@@ -142,5 +154,8 @@ const char* Settings::GetResultFile()
 void Settings::ClearResultFile()
 {
   if (resultFile)
+  {
     delete[] resultFile;
+    resultFile = NULL;
+  }
 }

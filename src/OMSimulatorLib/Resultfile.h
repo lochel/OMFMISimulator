@@ -34,23 +34,31 @@
 
 #include <string>
 #include <fstream>
-#include <fmilib.h>
+#include <vector>
+
+class FMUWrapper;
+class Variable;
 
 class Resultfile
 {
 public:
-  Resultfile(std::string filename, fmi2_import_t* fmu);
+  Resultfile();
   ~Resultfile();
 
+  bool create(const std::string& filename);
+  void close();
+  void addInstance(FMUWrapper* instance);
   void emit(double time);
 
 private:
+  void emitVariable(FMUWrapper* instance, const Variable& var);
+
   // Stop the compiler generating methods of copy the object
   Resultfile(Resultfile const& copy);            // Not Implemented
   Resultfile& operator=(Resultfile const& copy); // Not Implemented
 
   std::ofstream resultFile;
-  fmi2_import_t* fmu;
+  std::vector<FMUWrapper*> instances;
 };
 
 #endif

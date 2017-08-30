@@ -33,6 +33,8 @@
 #include "Logging.h"
 #include "Util.h"
 #include "Clocks.h"
+#include "Variable.h"
+#include "FMUWrapper.h"
 
 #include <fmilib.h>
 
@@ -55,35 +57,90 @@ void replaceAll(std::string& str, const std::string& from, const std::string& to
   }
 }
 
-Resultfile::Resultfile(std::string filename, fmi2_import_t* fmu)
+Resultfile::Resultfile()
 {
-  globalClocks.tic(GLOBALCLOCK_RESULTFILE);
-  this->fmu = fmu;
-  resultFile.open(filename.c_str());
-  logDebug("Result file: " + filename);
-
-  resultFile << "time";
-
-  fmi2_import_variable_list_t *list = fmi2_import_get_variable_list(fmu, 0);
-  size_t nVar = fmi2_import_get_variable_list_size(list);
-  for (size_t i = 0; i < nVar; ++i)
-  {
-    fmi2_import_variable_t* var = fmi2_import_get_variable(list, i);
-    std::string name = fmi2_import_get_variable_name(var);
-    replaceAll(name, ",", "$C");
-    resultFile << ", " << name;
-  }
-  fmi2_import_free_variable_list(list);
-
-  resultFile << std::endl;
-  globalClocks.toc(GLOBALCLOCK_RESULTFILE);
 }
 
 Resultfile::~Resultfile()
 {
+  this->close();
+}
+
+bool Resultfile::create(const std::string& filename)
+{
   globalClocks.tic(GLOBALCLOCK_RESULTFILE);
-  resultFile.close();
-  logDebug("Result file closed");
+
+  resultFile.open(filename.c_str());
+  if (resultFile.is_open())
+    logInfo("Result file: " + filename);
+  else
+  {
+    logWarning("Error opening result file \"" + filename + "\"");
+    globalClocks.toc(GLOBALCLOCK_RESULTFILE);
+    return false;
+  }
+
+  resultFile << "time";
+
+  for (int i=0; i<instances.size(); i++)
+  {
+    std::vector<Variable>& allVariables = instances[i]->getAllVariables();
+    std::vector<unsigned int>& allInputs = instances[i]->getAllInputs();
+    std::vector<unsigned int>& allOutputs = instances[i]->getAllOutputs();
+
+    std::string varName;
+    for (int j=0; j<allInputs.size(); j++)
+    {
+      varName = allVariables[allInputs[j]].getFMUInstanceName() + "." + allVariables[allInputs[j]].getName();
+      replaceAll(varName, ",", "$C");
+      resultFile << ", " << varName;
+    }
+    for (int j=0; j<allOutputs.size(); j++)
+    {
+      varName = allVariables[allOutputs[j]].getFMUInstanceName() + "." + allVariables[allOutputs[j]].getName();
+      replaceAll(varName, ",", "$C");
+      resultFile << ", " << varName;
+    }
+  }
+
+  resultFile << "\n";
+  globalClocks.toc(GLOBALCLOCK_RESULTFILE);
+  return true;
+}
+
+void Resultfile::close()
+{
+  globalClocks.tic(GLOBALCLOCK_RESULTFILE);
+  if (resultFile.is_open())
+  {
+    resultFile.close();
+    logDebug("Result file closed");
+  }
+  globalClocks.toc(GLOBALCLOCK_RESULTFILE);
+}
+
+void Resultfile::addInstance(FMUWrapper* instance)
+{
+  globalClocks.tic(GLOBALCLOCK_RESULTFILE);
+  instances.push_back(instance);
+  globalClocks.toc(GLOBALCLOCK_RESULTFILE);
+}
+
+void Resultfile::emitVariable(FMUWrapper* instance, const Variable& var)
+{
+  globalClocks.tic(GLOBALCLOCK_RESULTFILE);
+
+  switch (var.getBaseType())
+  {
+    case fmi2_base_type_real:
+      resultFile << ", " << instance->getReal(var);
+      break;
+    //case fmi2_base_type_int:
+    //case fmi2_base_type_bool:
+    //case fmi2_base_type_string:
+    default:
+      logFatal("Resultfile::emitVariable: unsupported base type");
+  }
   globalClocks.toc(GLOBALCLOCK_RESULTFILE);
 }
 
@@ -92,42 +149,18 @@ void Resultfile::emit(double time)
   globalClocks.tic(GLOBALCLOCK_RESULTFILE);
   resultFile << time;
 
-  fmi2_import_variable_list_t *list = fmi2_import_get_variable_list(fmu, 0);
-  size_t nVar = fmi2_import_get_variable_list_size(list);
-  for (size_t i = 0; i < nVar; ++i)
+  for (int i=0; i<instances.size(); i++)
   {
-    fmi2_import_variable_t* var = fmi2_import_get_variable(list, i);
-    std::string value = "???";
+    const std::vector<Variable>& allVariables = instances[i]->getAllVariables();
+    const std::vector<unsigned int>& allInputs = instances[i]->getAllInputs();
+    const std::vector<unsigned int>& allOutputs = instances[i]->getAllOutputs();
 
-    if (fmi2_base_type_real == fmi2_import_get_variable_base_type(var))
-    {
-      double real_value;
-      fmi2_value_reference_t vr = fmi2_import_get_variable_vr(var);
-      fmi2_import_get_real(fmu, &vr, 1, &real_value);
-      value = toString(real_value);
-    }
-    else if (fmi2_base_type_int == fmi2_import_get_variable_base_type(var))
-    {
-      int int_value;
-      fmi2_value_reference_t vr = fmi2_import_get_variable_vr(var);
-      fmi2_import_get_integer(fmu, &vr, 1, &int_value);
-      value = toString(int_value);
-    }
-    else if (fmi2_base_type_bool == fmi2_import_get_variable_base_type(var))
-    {
-      int bool_value;
-      fmi2_value_reference_t vr = fmi2_import_get_variable_vr(var);
-      fmi2_import_get_boolean(fmu, &vr, 1, &bool_value);
-      value = bool_value ? "1" : "0";
-    }
-    // TODO: string
-    else
-      logWarning("Resultfile::emit: unsupported base type");
-
-    resultFile << ", " << value;
+    for (int j=0; j<allInputs.size(); j++)
+      emitVariable(instances[i], allVariables[allInputs[j]]);
+    for (int j=0; j<allOutputs.size(); j++)
+      emitVariable(instances[i], allVariables[allOutputs[j]]);
   }
-  fmi2_import_free_variable_list(list);
 
-  resultFile << std::endl;
+  resultFile << "\n";
   globalClocks.toc(GLOBALCLOCK_RESULTFILE);
 }
