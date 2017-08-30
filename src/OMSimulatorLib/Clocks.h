@@ -37,6 +37,16 @@
 #include <string>
 #include <stack>
 
+//#define OMS_USE_CLOCKS
+
+#ifdef OMS_USE_CLOCKS
+  #define OMS_TIC(clocks, index) clocks.tic(index)
+  #define OMS_TOC(clocks, index) clocks.toc(index)
+#else
+  #define OMS_TIC(clocks, index) ((void)0)
+  #define OMS_TOC(clocks, index) ((void)0)
+#endif
+
 enum GlobalClockIndex_t
 {
   GLOBALCLOCK_IDLE = 0,

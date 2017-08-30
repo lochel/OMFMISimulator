@@ -68,7 +68,7 @@ Resultfile::~Resultfile()
 
 bool Resultfile::create(const std::string& filename)
 {
-  globalClocks.tic(GLOBALCLOCK_RESULTFILE);
+  OMS_TIC(globalClocks, GLOBALCLOCK_RESULTFILE);
 
   resultFile.open(filename.c_str());
   if (resultFile.is_open())
@@ -76,7 +76,7 @@ bool Resultfile::create(const std::string& filename)
   else
   {
     logWarning("Error opening result file \"" + filename + "\"");
-    globalClocks.toc(GLOBALCLOCK_RESULTFILE);
+    OMS_TOC(globalClocks, GLOBALCLOCK_RESULTFILE);
     return false;
   }
 
@@ -104,31 +104,31 @@ bool Resultfile::create(const std::string& filename)
   }
 
   resultFile << "\n";
-  globalClocks.toc(GLOBALCLOCK_RESULTFILE);
+  OMS_TOC(globalClocks, GLOBALCLOCK_RESULTFILE);
   return true;
 }
 
 void Resultfile::close()
 {
-  globalClocks.tic(GLOBALCLOCK_RESULTFILE);
+  OMS_TIC(globalClocks, GLOBALCLOCK_RESULTFILE);
   if (resultFile.is_open())
   {
     resultFile.close();
     logDebug("Result file closed");
   }
-  globalClocks.toc(GLOBALCLOCK_RESULTFILE);
+  OMS_TOC(globalClocks, GLOBALCLOCK_RESULTFILE);
 }
 
 void Resultfile::addInstance(FMUWrapper* instance)
 {
-  globalClocks.tic(GLOBALCLOCK_RESULTFILE);
+  OMS_TIC(globalClocks, GLOBALCLOCK_RESULTFILE);
   instances.push_back(instance);
-  globalClocks.toc(GLOBALCLOCK_RESULTFILE);
+  OMS_TOC(globalClocks, GLOBALCLOCK_RESULTFILE);
 }
 
 void Resultfile::emitVariable(FMUWrapper* instance, const Variable& var)
 {
-  globalClocks.tic(GLOBALCLOCK_RESULTFILE);
+  OMS_TIC(globalClocks, GLOBALCLOCK_RESULTFILE);
 
   switch (var.getBaseType())
   {
@@ -141,12 +141,15 @@ void Resultfile::emitVariable(FMUWrapper* instance, const Variable& var)
     default:
       logFatal("Resultfile::emitVariable: unsupported base type");
   }
-  globalClocks.toc(GLOBALCLOCK_RESULTFILE);
+  OMS_TOC(globalClocks, GLOBALCLOCK_RESULTFILE);
 }
 
 void Resultfile::emit(double time)
 {
-  globalClocks.tic(GLOBALCLOCK_RESULTFILE);
+  if (!resultFile.is_open())
+    return;
+
+  OMS_TIC(globalClocks, GLOBALCLOCK_RESULTFILE);
   resultFile << time;
 
   for (int i=0; i<instances.size(); i++)
@@ -162,5 +165,5 @@ void Resultfile::emit(double time)
   }
 
   resultFile << "\n";
-  globalClocks.toc(GLOBALCLOCK_RESULTFILE);
+  OMS_TOC(globalClocks, GLOBALCLOCK_RESULTFILE);
 }

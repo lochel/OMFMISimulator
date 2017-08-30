@@ -84,14 +84,14 @@ CompositeModel::~CompositeModel()
 void CompositeModel::instantiateFMU(const std::string& filename, const std::string& instanceName)
 {
   logTrace();
-  globalClocks.tic(GLOBALCLOCK_INSTANTIATION);
+  OMS_TIC(globalClocks, GLOBALCLOCK_INSTANTIATION);
 
   fmuInstances[instanceName] = new FMUWrapper(*this, filename, instanceName);
   outputsGraph.includeGraph(fmuInstances[instanceName]->getOutputsGraph());
   initialUnknownsGraph.includeGraph(fmuInstances[instanceName]->getInitialUnknownsGraph());
   resultFile.addInstance(fmuInstances[instanceName]);
 
-  globalClocks.toc(GLOBALCLOCK_INSTANTIATION);
+  OMS_TOC(globalClocks, GLOBALCLOCK_INSTANTIATION);
 }
 
 void CompositeModel::setReal(const std::string& var, double value)
@@ -147,7 +147,7 @@ double CompositeModel::getReal(const std::string& var)
 void CompositeModel::addConnection(const std::string& from, const std::string& to)
 {
   logTrace();
-  globalClocks.tic(GLOBALCLOCK_INSTANTIATION);
+  OMS_TIC(globalClocks, GLOBALCLOCK_INSTANTIATION);
 
   std::stringstream var1_(from);
   std::stringstream var2_(to);
@@ -163,14 +163,14 @@ void CompositeModel::addConnection(const std::string& from, const std::string& t
   if (fmuInstances.find(fmuInstance1) == fmuInstances.end())
   {
     logError("CompositeModel::addConnection: FMU instance \"" + fmuInstance1 + "\" doesn't exist in model");
-    globalClocks.toc(GLOBALCLOCK_INSTANTIATION);
+    OMS_TOC(globalClocks, GLOBALCLOCK_INSTANTIATION);
     return;
   }
 
   if (fmuInstances.find(fmuInstance2) == fmuInstances.end())
   {
     logError("CompositeModel::addConnection: FMU instance \"" + fmuInstance2 + "\" doesn't exist in model");
-    globalClocks.toc(GLOBALCLOCK_INSTANTIATION);
+    OMS_TOC(globalClocks, GLOBALCLOCK_INSTANTIATION);
     return;
   }
 
@@ -180,20 +180,20 @@ void CompositeModel::addConnection(const std::string& from, const std::string& t
   if (!var1)
   {
     logError("CompositeModel::addConnection: output \"" + fmuInstance1 + "." + fmuVar1 + "\" doesn't exist");
-    globalClocks.toc(GLOBALCLOCK_INSTANTIATION);
+    OMS_TOC(globalClocks, GLOBALCLOCK_INSTANTIATION);
     return;
   }
   if (!var2)
   {
     logError("CompositeModel::addConnection: input \"" + fmuInstance2 + "." + fmuVar2 + "\" doesn't exist");
-    globalClocks.toc(GLOBALCLOCK_INSTANTIATION);
+    OMS_TOC(globalClocks, GLOBALCLOCK_INSTANTIATION);
     return;
   }
 
   outputsGraph.addEdge(*var1, *var2);
   initialUnknownsGraph.addEdge(*var1, *var2);
 
-  globalClocks.toc(GLOBALCLOCK_INSTANTIATION);
+  OMS_TOC(globalClocks, GLOBALCLOCK_INSTANTIATION);
 }
 
 void CompositeModel::exportDependencyGraph(const std::string& prefix)
@@ -297,7 +297,7 @@ void CompositeModel::exportXML(const char* filename)
 
 void CompositeModel::importXML(const char* filename)
 {
-  globalClocks.tic(GLOBALCLOCK_INSTANTIATION);
+  OMS_TIC(globalClocks, GLOBALCLOCK_INSTANTIATION);
 
   pugi::xml_document doc;
   pugi::xml_parse_result result = doc.load_file(filename);
@@ -404,7 +404,7 @@ void CompositeModel::importXML(const char* filename)
     }
   }
 
-  globalClocks.toc(GLOBALCLOCK_INSTANTIATION);
+  OMS_TOC(globalClocks, GLOBALCLOCK_INSTANTIATION);
 }
 
 void CompositeModel::describe()
@@ -484,7 +484,7 @@ void CompositeModel::describe()
 
 void CompositeModel::updateInputs(DirectedGraph& graph)
 {
-  globalClocks.tic(GLOBALCLOCK_COMMUNICATION);
+  OMS_TIC(globalClocks, GLOBALCLOCK_COMMUNICATION);
 
   const std::vector< std::pair<int, int> >& sortedConnections = graph.getSortedConnections();
 
@@ -502,7 +502,7 @@ void CompositeModel::updateInputs(DirectedGraph& graph)
     //std::cout << inputFMU << "." << inputVar << " = " << outputFMU << "." << outputVar << std::endl;
   }
 
-  globalClocks.toc(GLOBALCLOCK_COMMUNICATION);
+  OMS_TOC(globalClocks, GLOBALCLOCK_COMMUNICATION);
 }
 
 oms_status_t CompositeModel::simulate()
@@ -535,7 +535,7 @@ oms_status_t CompositeModel::doSteps(const int numberOfSteps)
   {
     // input = output
     updateInputs(outputsGraph);
-    resultFile.emit(tcur);
+    //resultFile.emit(tcur);
 
 
     // do_step
@@ -563,7 +563,7 @@ oms_status_t CompositeModel::stepUntil(const double timeValue)
   {
     // input = output
     updateInputs(outputsGraph);
-    resultFile.emit(tcur);
+    //resultFile.emit(tcur);
 
     tcur += communicationInterval;
     if (tcur > timeValue)
@@ -583,7 +583,7 @@ void CompositeModel::initialize()
 {
   logTrace();
 
-  globalClocks.tic(GLOBALCLOCK_INITIALIZATION);
+  OMS_TIC(globalClocks, GLOBALCLOCK_INITIALIZATION);
 
   if (oms_modelState_instantiated != modelState)
   {
@@ -607,10 +607,13 @@ void CompositeModel::initialize()
   modelState = oms_modelState_simulation;
 
   if (settings.GetResultFile())
+  {
     resultFile.create(settings.GetResultFile());
+    resultFile.emit(tcur);
+  }
 
-  globalClocks.toc(GLOBALCLOCK_INITIALIZATION);
-  globalClocks.tic(GLOBALCLOCK_SIMULATION);
+  OMS_TOC(globalClocks, GLOBALCLOCK_INITIALIZATION);
+  OMS_TIC(globalClocks, GLOBALCLOCK_SIMULATION);
 }
 
 void CompositeModel::terminate()
@@ -630,7 +633,7 @@ void CompositeModel::terminate()
 
   modelState = oms_modelState_instantiated;
 
-  globalClocks.toc(GLOBALCLOCK_SIMULATION);
+  OMS_TOC(globalClocks, GLOBALCLOCK_SIMULATION);
   logInfo("Simulation finished.");
 
   double cpuStats[GLOBALCLOCK_MAX_INDEX+1];
@@ -644,7 +647,7 @@ void CompositeModel::terminate()
 void CompositeModel::reset()
 {
   logTrace();
-  globalClocks.toc(GLOBALCLOCK_SIMULATION);
+  OMS_TOC(globalClocks, GLOBALCLOCK_SIMULATION);
 
   std::unordered_map<std::string, FMUWrapper*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)

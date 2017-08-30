@@ -153,7 +153,7 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
   : model(model), fmuPath(fmuPath), instanceName(instanceName), solverMethod(EXPLICIT_EULER), clocks(CLOCK_MAX_INDEX)
 {
   logTrace();
-  clocks.tic(CLOCK_INSTANTIATION);
+  OMS_TIC(clocks, CLOCK_INSTANTIATION);
 
   if (!boost::filesystem::exists(fmuPath))
     logFatal("Specified file name does not exist: \"" + fmuPath + "\"");
@@ -320,7 +320,7 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
   getDependencyGraph_initialUnknowns();
   #endif // BTH_DEACTIVATE_INITIAL_UNKNOWNS
 
-  clocks.toc(CLOCK_INSTANTIATION);
+  OMS_TOC(clocks, CLOCK_INSTANTIATION);
 }
 
 FMUWrapper::~FMUWrapper()
@@ -562,19 +562,19 @@ std::string FMUWrapper::getGenerationTool() const
 
 void FMUWrapper::do_event_iteration()
 {
-  clocks.tic(CLOCK_EVENTS);
+  OMS_TIC(clocks, CLOCK_EVENTS);
 
   eventInfo.newDiscreteStatesNeeded = fmi2_true;
   eventInfo.terminateSimulation = fmi2_false;
   while (eventInfo.newDiscreteStatesNeeded && !eventInfo.terminateSimulation)
     fmi2_import_new_discrete_states(fmu, &eventInfo);
 
-  clocks.toc(CLOCK_EVENTS);
+  OMS_TOC(clocks, CLOCK_EVENTS);
 }
 
 void FMUWrapper::enterInitialization(double startTime)
 {
-  clocks.tic(CLOCK_INITIALIZATION);
+  OMS_TIC(clocks, CLOCK_INITIALIZATION);
   fmi2_status_t fmistatus;
 
   double* pTolerance = model.getSettings().GetTolerance();
@@ -620,7 +620,7 @@ void FMUWrapper::exitInitialization()
 
     terminateSimulation = fmi2_false;
 
-    clocks.tic(CLOCK_EVENTS);
+    OMS_TIC(clocks, CLOCK_EVENTS);
     eventInfo.newDiscreteStatesNeeded = fmi2_false;
     eventInfo.terminateSimulation = fmi2_false;
     eventInfo.nominalsOfContinuousStatesChanged = fmi2_false;
@@ -630,7 +630,7 @@ void FMUWrapper::exitInitialization()
 
     // fmi2_import_exit_initialization_mode leaves FMU in event mode
     do_event_iteration();
-    clocks.toc(CLOCK_EVENTS);
+    OMS_TOC(clocks, CLOCK_EVENTS);
 
     fmi2_import_enter_continuous_time_mode(fmu);
 
@@ -751,7 +751,7 @@ void FMUWrapper::exitInitialization()
   else
     logFatal("Unsupported FMU kind");
 
-  clocks.toc(CLOCK_INITIALIZATION);
+  OMS_TOC(clocks, CLOCK_INITIALIZATION);
 }
 
 void FMUWrapper::terminate()
@@ -836,7 +836,7 @@ void FMUWrapper::reset()
 
 void FMUWrapper::doStep(double stopTime)
 {
-  clocks.tic(CLOCK_DO_STEP);
+  OMS_TIC(clocks, CLOCK_DO_STEP);
   fmi2_status_t fmistatus;
   const fmi2_real_t hdef = model.getSettings().GetCommunicationInterval() ? *(model.getSettings().GetCommunicationInterval()) : 1e-2;
 
@@ -872,7 +872,7 @@ void FMUWrapper::doStep(double stopTime)
       }
 
       // handle events
-      clocks.tic(CLOCK_EVENTS);
+      OMS_TIC(clocks, CLOCK_EVENTS);
       if (callEventUpdate || zero_crossing_event || (eventInfo.nextEventTimeDefined && tcur == eventInfo.nextEventTime))
       {
         fmistatus = fmi2_import_enter_event_mode(fmu);
@@ -900,7 +900,7 @@ void FMUWrapper::doStep(double stopTime)
           if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeReInit() failed with flag = " + toString(flag));
         }
       }
-      clocks.toc(CLOCK_EVENTS);
+      OMS_TOC(clocks, CLOCK_EVENTS);
 
       // calculate next time step
       tlast = tcur;
@@ -963,7 +963,7 @@ void FMUWrapper::doStep(double stopTime)
     }
   }
 
-  clocks.toc(CLOCK_DO_STEP);
+  OMS_TOC(clocks, CLOCK_DO_STEP);
 }
 
 void FMUWrapper::SetSolverMethod(const std::string& solverMethod)
