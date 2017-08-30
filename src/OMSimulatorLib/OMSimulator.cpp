@@ -37,6 +37,10 @@
 #include "Version.h"
 #include "Types.h"
 
+#include <string>
+
+#include <boost/filesystem.hpp>
+
 void* oms_newModel()
 {
   logTrace();
@@ -266,6 +270,18 @@ void oms_setTempDirectory(const char* filename)
 {
   logTrace();
   GlobalSettings::getInstance().SetTempDirectory(filename);
+}
+
+void oms_setWorkingDirectory(const char* path)
+{
+  logTrace();
+
+  if (!boost::filesystem::is_directory(path))
+  {
+    logFatal("oms_setWorkingDirectory: set working directory to \"" + std::string(path) + "\" failed");
+  }
+
+  boost::filesystem::current_path(path);
 }
 
 void oms_setStartTime(void* model, double startTime)

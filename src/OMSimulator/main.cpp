@@ -68,6 +68,9 @@ int main(int argc, char *argv[])
     return 1;
   }
 
+  if (options.workingDir != "")
+    oms_setWorkingDirectory(options.workingDir.c_str());
+
   if (options.tempDir != "")
     oms_setTempDirectory(options.tempDir.c_str());
 

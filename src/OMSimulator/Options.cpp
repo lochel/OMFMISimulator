@@ -43,6 +43,7 @@ ProgramOptions::ProgramOptions()
 
   resultFile = "";
   tempDir = "";
+  workingDir = "";
   startTime = 0.0;
   useStartTime = false;
   stopTime = 1.0;
@@ -64,9 +65,10 @@ bool ProgramOptions::load_flags(int argc, char** argv)
   ("resultFile,r", boost::program_options::value<std::string>(&resultFile), "Specifies the name of the output result file")
   ("startTime,s", boost::program_options::value<double>(&startTime), "Specifies the start time.")
   ("stopTime,t", boost::program_options::value<double>(&stopTime), "Specifies the stop time.")
-  ("tempDir", boost::program_options::value<std::string>(&tempDir), "Specifies the working directory.")
+  ("tempDir", boost::program_options::value<std::string>(&tempDir), "Specifies the temp directory.")
   ("tolerance", boost::program_options::value<double>(&tolerance), "Specifies the relative tolerance.")
-  ("version,v", "Displays version information.");
+  ("version,v", "Displays version information.")
+  ("workingDir", boost::program_options::value<std::string>(&workingDir), "Specifies the working directory.");
 
   hidden_options.add_options()
   ("file", boost::program_options::value<std::string>(&filename)->required(), "model");
@@ -98,7 +100,7 @@ bool ProgramOptions::load_flags(int argc, char** argv)
     boost::program_options::store(clp.run(), vm);
     boost::program_options::notify(vm);
   }
-  catch (boost::program_options::required_option& e)
+  catch (const boost::program_options::required_option& e)
   {
     /** if help is asked don't print error about missing required input files */
     if (vm.count("help"))
@@ -121,7 +123,7 @@ bool ProgramOptions::load_flags(int argc, char** argv)
     return false;
   }
 
-  catch (boost::program_options::error& e)
+  catch (const boost::program_options::error& e)
   {
     std::cout << e.what() << std::endl;
     printUsage(visible_options);

@@ -291,6 +291,18 @@ static int OMSimulatorLua_setTempDirectory(lua_State *L)
   return 0;
 }
 
+//void oms_setWorkingDirectory(const char* path);
+static int OMSimulatorLua_setWorkingDirectory(lua_State *L)
+{
+  if (lua_gettop(L) != 1)
+    return luaL_error(L, "expecting exactly 1 argument");
+  luaL_checktype(L, 1, LUA_TSTRING);
+
+  const char* path = lua_tostring(L, 1);
+  oms_setWorkingDirectory(path);
+  return 0;
+}
+
 //void oms_setStartTime(void* model, double startTime);
 static int OMSimulatorLua_setStartTime(lua_State *L)
 {
@@ -423,6 +435,7 @@ DLLEXPORT int luaopen_OMSimulatorLua(lua_State *L)
   REGISTER_LUA_CALL(setTolerance);
   REGISTER_LUA_CALL(setCommunicationInterval);
   REGISTER_LUA_CALL(setTempDirectory);
+  REGISTER_LUA_CALL(setWorkingDirectory);
   REGISTER_LUA_CALL(setResultFile);
   REGISTER_LUA_CALL(setSolverMethod);
   REGISTER_LUA_CALL(logToStdStream);

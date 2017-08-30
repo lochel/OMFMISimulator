@@ -171,6 +171,7 @@ oms_status_t oms_getCurrentTime(const void* model, double* time);
 
 /* Global settings */
 void oms_setTempDirectory(const char* filename);
+void oms_setWorkingDirectory(const char* path);
 
 /* Local settings */
 void oms_setStartTime(void* model, double startTime);

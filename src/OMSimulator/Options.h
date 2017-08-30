@@ -59,6 +59,7 @@ public:
   std::string filename;
   std::string resultFile;
   std::string tempDir;
+  std::string workingDir;
 };
 
 #endif
