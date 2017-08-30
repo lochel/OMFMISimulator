@@ -170,9 +170,9 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
 #endif
   callbacks.context = 0;
 
-  //set working directory
+  // set temp directory
   tempDir = fmi_import_mk_temp_dir(&callbacks, GlobalSettings::getInstance().GetTempDirectory().c_str(), "temp_");
-  logDebug("set working directory to \"" + tempDir + "\"");
+  logInfo("Using \"" + tempDir + "\" as temp directory for " + instanceName);
 
   context = fmi_import_allocate_context(&callbacks);
 
