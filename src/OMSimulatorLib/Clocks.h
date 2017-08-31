@@ -37,7 +37,7 @@
 #include <string>
 #include <stack>
 
-//#define OMS_USE_CLOCKS
+#define OMS_USE_CLOCKS
 
 #ifdef OMS_USE_CLOCKS
   #define OMS_TIC(clocks, index) clocks.tic(index)

@@ -38,8 +38,9 @@
 
 #include <fmilib.h>
 
-#include <iostream>
 #include <fstream>
+#include <iostream>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string>
 
@@ -59,6 +60,12 @@ void replaceAll(std::string& str, const std::string& from, const std::string& to
 
 Resultfile::Resultfile()
 {
+#ifdef USE_C_FILE
+  resultFile = NULL;
+  logInfo("USING C FILE");
+#else
+  logInfo("USING C++ FILE");
+#endif
 }
 
 Resultfile::~Resultfile()
@@ -70,6 +77,17 @@ bool Resultfile::create(const std::string& filename)
 {
   OMS_TIC(globalClocks, GLOBALCLOCK_RESULTFILE);
 
+#ifdef USE_C_FILE
+  resultFile = fopen(filename.c_str(), "w");
+  if (resultFile)
+    logInfo("Result file: " + filename);
+  else
+  {
+    logWarning("Error opening result file \"" + filename + "\"");
+    OMS_TOC(globalClocks, GLOBALCLOCK_RESULTFILE);
+    return false;
+  }
+#else
   resultFile.open(filename.c_str());
   if (resultFile.is_open())
     logInfo("Result file: " + filename);
@@ -79,8 +97,13 @@ bool Resultfile::create(const std::string& filename)
     OMS_TOC(globalClocks, GLOBALCLOCK_RESULTFILE);
     return false;
   }
+#endif
 
+#ifdef USE_C_FILE
+  fprintf(resultFile, "time");
+#else
   resultFile << "time";
+#endif
 
   for (int i=0; i<instances.size(); i++)
   {
@@ -93,17 +116,30 @@ bool Resultfile::create(const std::string& filename)
     {
       varName = allVariables[allInputs[j]].getFMUInstanceName() + "." + allVariables[allInputs[j]].getName();
       replaceAll(varName, ",", "$C");
+#ifdef USE_C_FILE
+      fprintf(resultFile, ", %s", varName.c_str());
+#else
       resultFile << ", " << varName;
+#endif
     }
     for (int j=0; j<allOutputs.size(); j++)
     {
       varName = allVariables[allOutputs[j]].getFMUInstanceName() + "." + allVariables[allOutputs[j]].getName();
       replaceAll(varName, ",", "$C");
+
+#ifdef USE_C_FILE
+      fprintf(resultFile, ", %s", varName.c_str());
+#else
       resultFile << ", " << varName;
+#endif
     }
   }
 
+#ifdef USE_C_FILE
+  fprintf(resultFile, "\n");
+#else
   resultFile << "\n";
+#endif
   OMS_TOC(globalClocks, GLOBALCLOCK_RESULTFILE);
   return true;
 }
@@ -111,11 +147,21 @@ bool Resultfile::create(const std::string& filename)
 void Resultfile::close()
 {
   OMS_TIC(globalClocks, GLOBALCLOCK_RESULTFILE);
+
+#ifdef USE_C_FILE
+  if (resultFile)
+  {
+    fclose(resultFile);
+    resultFile = NULL;
+    logDebug("Result file closed");
+  }
+#else
   if (resultFile.is_open())
   {
     resultFile.close();
     logDebug("Result file closed");
   }
+#endif
   OMS_TOC(globalClocks, GLOBALCLOCK_RESULTFILE);
 }
 
@@ -133,7 +179,12 @@ void Resultfile::emitVariable(FMUWrapper* instance, const Variable& var)
   switch (var.getBaseType())
   {
     case fmi2_base_type_real:
+
+#ifdef USE_C_FILE
+      fprintf(resultFile, ", %g", instance->getReal(var));
+#else
       resultFile << ", " << instance->getReal(var);
+#endif
       break;
     //case fmi2_base_type_int:
     //case fmi2_base_type_bool:
@@ -146,11 +197,20 @@ void Resultfile::emitVariable(FMUWrapper* instance, const Variable& var)
 
 void Resultfile::emit(double time)
 {
+#ifdef USE_C_FILE
+  if (!resultFile)
+    return;
+#else
   if (!resultFile.is_open())
     return;
+#endif
 
   OMS_TIC(globalClocks, GLOBALCLOCK_RESULTFILE);
+#ifdef USE_C_FILE
+  fprintf(resultFile, "%g", time);
+#else
   resultFile << time;
+#endif
 
   for (int i=0; i<instances.size(); i++)
   {
@@ -164,6 +224,10 @@ void Resultfile::emit(double time)
       emitVariable(instances[i], allVariables[allOutputs[j]]);
   }
 
+#ifdef USE_C_FILE
+  fprintf(resultFile, "\n");
+#else
   resultFile << "\n";
+#endif
   OMS_TOC(globalClocks, GLOBALCLOCK_RESULTFILE);
 }

@@ -32,12 +32,15 @@
 #ifndef _OMS_RESULTFILE_H_
 #define _OMS_RESULTFILE_H_
 
-#include <string>
 #include <fstream>
+#include <stdio.h>
+#include <string>
 #include <vector>
 
 class FMUWrapper;
 class Variable;
+
+#define USE_C_FILE
 
 class Resultfile
 {
@@ -57,8 +60,13 @@ private:
   Resultfile(Resultfile const& copy);            // Not Implemented
   Resultfile& operator=(Resultfile const& copy); // Not Implemented
 
-  std::ofstream resultFile;
   std::vector<FMUWrapper*> instances;
+
+#ifdef USE_C_FILE
+  FILE *resultFile;
+#else
+  std::ofstream resultFile;
+#endif
 };
 
 #endif
