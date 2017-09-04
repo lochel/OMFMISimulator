@@ -33,12 +33,12 @@
 #include "Variable.h"
 #include "DirectedGraph.h"
 #include "Logging.h"
-#include "Resultfile.h"
 #include "Settings.h"
 #include "GlobalSettings.h"
 #include "CompositeModel.h"
 #include "Util.h"
 #include "Clocks.h"
+#include "ResultFile.h"
 
 #include <fmilib.h>
 #include <JM/jm_portability.h>
@@ -47,6 +47,7 @@
 #include <string>
 #include <map>
 #include <stdlib.h>
+#include <unordered_map>
 
 #include <boost/filesystem.hpp>
 
@@ -284,7 +285,7 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
     if (allVariables[i].isOutput())
       allOutputs.push_back(i);
     if (allVariables[i].isParameter())
-      allParameters.push_back(i + 1);
+      allParameters.push_back(i);
 
     switch (allVariables[i].getBaseType())
     {
@@ -998,4 +999,71 @@ std::string FMUWrapper::GetSolverMethodString() const
     logError("FMUWrapper::GetSolverMethodString: Unknown solver method " + toString(solverMethod));
     return std::string("unknown");
   }
+}
+
+void FMUWrapper::registerSignalsForResultFile(ResultFile *resultFile)
+{
+  OMS_TIC(globalClocks, GLOBALCLOCK_RESULTFILE);
+
+  for(int i=0; i<allInputs.size(); ++i)
+  {
+    unsigned int index = allInputs[i];
+    Variable& var = allVariables[index];
+    std::string name = var.getFMUInstanceName() + "." + var.getName();
+    const std::string& description = var.getDescription();
+    if (fmi2_base_type_real == var.getBaseType())
+    {
+      unsigned int ID = resultFile->addSignal(name, description, SignalType_REAL);
+      resultFileMapping[ID] = index;
+    }
+  }
+
+  for(int i=0; i<allOutputs.size(); ++i)
+  {
+    unsigned int index = allOutputs[i];
+    Variable& var = allVariables[index];
+    std::string name = var.getFMUInstanceName() + "." + var.getName();
+    const std::string& description = var.getDescription();
+    if (fmi2_base_type_real == var.getBaseType())
+    {
+      unsigned int ID = resultFile->addSignal(name, description, SignalType_REAL);
+      resultFileMapping[ID] = index;
+    }
+  }
+
+  for(int i=0; i<allParameters.size(); ++i)
+  {
+    unsigned int index = allParameters[i];
+    Variable& var = allVariables[index];
+    std::string name = var.getFMUInstanceName() + "." + var.getName();
+    const std::string& description = var.getDescription();
+    SignalValue_t value;
+    if (fmi2_base_type_real == var.getBaseType())
+    {
+      value.realValue = getReal(var);
+      resultFile->addParameter(name, description, SignalType_REAL, value);
+    }
+  }
+
+  OMS_TOC(globalClocks, GLOBALCLOCK_RESULTFILE);
+}
+
+void FMUWrapper::updateSignalsForResultFile(ResultFile *resultFile)
+{
+  OMS_TIC(globalClocks, GLOBALCLOCK_RESULTFILE);
+
+  for (auto it=resultFileMapping.begin(); it != resultFileMapping.end(); it++)
+  {
+    unsigned int ID = it->first;
+    unsigned int index = it->second;
+    Variable& var = allVariables[index];
+    SignalValue_t value;
+    if (fmi2_base_type_real == var.getBaseType())
+    {
+      value.realValue = getReal(var);
+      resultFile->updateSignal(ID, value);
+    }
+  }
+
+  OMS_TOC(globalClocks, GLOBALCLOCK_RESULTFILE);
 }

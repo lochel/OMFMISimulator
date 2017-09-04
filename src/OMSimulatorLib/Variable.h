@@ -69,11 +69,13 @@ public:
   const FMUWrapper* getFMUInstance() const;
   fmi2_value_reference_t getValueReference() const {return vr;}
   fmi2_base_type_enu_t getBaseType() const {return baseType;}
+  const std::string& getDescription() const {return description;}
 
   bool isTypeReal() const {return fmi2_base_type_real == baseType;}
 
 protected:
   std::string name;
+  std::string description;
   std::string fmuInstanceName;
   FMUWrapper* fmuInstance;
   fmi2_value_reference_t vr;

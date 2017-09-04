@@ -33,6 +33,7 @@
 #include "Logging.h"
 #include "Settings.h"
 #include "FMUWrapper.h"
+#include "Util.h"
 
 #include <fmilib.h>
 #include <JM/jm_portability.h>
@@ -45,6 +46,8 @@ Variable::Variable(fmi2_import_variable_t *var, FMUWrapper* fmuInstance)
 {
   // extract the attributes
   name = fmi2_import_get_variable_name(var);
+  description = fmi2_import_get_variable_description(var) ? fmi2_import_get_variable_description(var) : "";
+  trim(description);
   fmuInstanceName = fmuInstance->getFMUInstanceName();
   vr = fmi2_import_get_variable_vr(var);
   causality = fmi2_import_get_causality(var);

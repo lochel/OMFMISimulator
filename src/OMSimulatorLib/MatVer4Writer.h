@@ -29,43 +29,19 @@
  *
  */
 
-#ifndef _OMS_UTIL_H_
-#define _OMS_UTIL_H_
+#ifndef _OMS_MATVER4WRITER_H_
+#define _OMS_MATVER4WRITER_H_
 
-#include <string>
-#include <sstream>
-#include <algorithm>
-#include <cctype>
-#include <locale>
+#include <stdio.h>
 
-template<typename T>
-std::string toString(const T& value)
+enum MatVer4Type_t
 {
-  std::ostringstream oss;
-  oss << value;
-  return oss.str();
-}
+  MatVer4Type_DOUBLE = 0,
+  MatVer4Type_INT32 = 20,
+  MatVer4Type_CHAR = 51
+};
 
-// trim from start (in place)
-// https://stackoverflow.com/a/217605/7534030
-static inline void ltrim(std::string &s)
-{
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) { return !std::isspace(ch); }));
-}
-
-// trim from end (in place)
-// https://stackoverflow.com/a/217605/7534030
-static inline void rtrim(std::string &s)
-{
-  s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) { return !std::isspace(ch); }).base(), s.end());
-}
-
-// trim from both ends (in place)
-// https://stackoverflow.com/a/217605/7534030
-static inline void trim(std::string &s)
-{
-  ltrim(s);
-  rtrim(s);
-}
+int writeMatVer4Matrix(FILE* file, const char* name, int rows, int cols, const void* matrixData, MatVer4Type_t type);
+int appendMatVer4Matrix(FILE* file, long position, const char* name, int rows, int cols, const void* matrixData, MatVer4Type_t type);
 
 #endif

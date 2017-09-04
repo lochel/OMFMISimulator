@@ -36,7 +36,9 @@
 #include "Types.h"
 #include "Util.h"
 #include "Clocks.h"
-#include "Resultfile.h"
+#include "ResultFile.h"
+#include "CSVResultFile.h"
+#include "MATResultFile.h"
 
 #include <fmilib.h>
 #include <JM/jm_portability.h>
@@ -57,20 +59,22 @@
 #include <pugixml.hpp>
 
 CompositeModel::CompositeModel()
-  : fmuInstances()
+  : fmuInstances(),
+    resultFile(NULL)
 {
   logTrace();
   modelState = oms_modelState_instantiated;
 }
 
 CompositeModel::CompositeModel(const char* descriptionPath)
+  : CompositeModel()
 {
   logTrace();
   importXML(descriptionPath);
+
   boost::filesystem::path path(descriptionPath);
-  std::string filename = path.stem().string() + ".csv";
+  std::string filename = path.stem().string() + "_res.mat";
   settings.SetResultFile(filename.c_str());
-  modelState = oms_modelState_instantiated;
 }
 
 CompositeModel::~CompositeModel()
@@ -89,7 +93,6 @@ void CompositeModel::instantiateFMU(const std::string& filename, const std::stri
   fmuInstances[instanceName] = new FMUWrapper(*this, filename, instanceName);
   outputsGraph.includeGraph(fmuInstances[instanceName]->getOutputsGraph());
   initialUnknownsGraph.includeGraph(fmuInstances[instanceName]->getInitialUnknownsGraph());
-  resultFile.addInstance(fmuInstances[instanceName]);
 
   OMS_TOC(globalClocks, GLOBALCLOCK_INSTANTIATION);
 }
@@ -521,6 +524,22 @@ oms_status_t CompositeModel::simulate()
   return stepUntil(tend);
 }
 
+void CompositeModel::emit()
+{
+  if (!resultFile)
+    return;
+
+  OMS_TIC(globalClocks, GLOBALCLOCK_RESULTFILE);
+
+  // update all signals
+  for (auto it=fmuInstances.begin(); it != fmuInstances.end(); it++)
+    it->second->updateSignalsForResultFile(resultFile);
+
+  resultFile->emit(tcur);
+
+  OMS_TOC(globalClocks, GLOBALCLOCK_RESULTFILE);
+}
+
 oms_status_t CompositeModel::doSteps(const int numberOfSteps)
 {
   logTrace();
@@ -538,11 +557,11 @@ oms_status_t CompositeModel::doSteps(const int numberOfSteps)
     for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
       it->second->doStep(tcur+communicationInterval);
     tcur += communicationInterval;
-    //resultFile.emit(tcur);
+    //emit();
 
     // input = output
     updateInputs(outputsGraph);
-    resultFile.emit(tcur);
+    emit();
   }
 
   return oms_status_ok;
@@ -568,11 +587,11 @@ oms_status_t CompositeModel::stepUntil(const double timeValue)
     std::unordered_map<std::string, FMUWrapper*>::iterator it;
     for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
       it->second->doStep(tcur);
-    //resultFile.emit(tcur);
+    //emit();
 
     // input = output
     updateInputs(outputsGraph);
-    resultFile.emit(tcur);
+    emit();
   }
 
   return oms_status_ok;
@@ -605,10 +624,36 @@ void CompositeModel::initialize()
     it->second->exitInitialization();
   modelState = oms_modelState_simulation;
 
+  if (resultFile)
+  {
+    delete resultFile;
+    resultFile = NULL;
+  }
   if (settings.GetResultFile())
   {
-    resultFile.create(settings.GetResultFile());
-    resultFile.emit(tcur);
+    OMS_TIC(globalClocks, GLOBALCLOCK_RESULTFILE);
+    std::string extension = boost::filesystem::extension(settings.GetResultFile());
+
+    if (".csv" == extension)
+      resultFile = new CSVResultFile(1);
+    else if (".mat" == extension)
+      resultFile = new MATResultFile(1024);
+    else
+      logWarning("Unknown result file type: " + extension);
+
+    if (resultFile)
+    {
+      logInfo("Result file: " + toString(settings.GetResultFile()));
+
+      // add all signals
+      for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
+        it->second->registerSignalsForResultFile(resultFile);
+
+      // create result file
+      resultFile->create(settings.GetResultFile(), tcur, settings.GetStopTime() ? *settings.GetStopTime() : 1.0);
+      emit();
+    }
+    OMS_TOC(globalClocks, GLOBALCLOCK_RESULTFILE);
   }
 
   OMS_TOC(globalClocks, GLOBALCLOCK_INITIALIZATION);
@@ -629,6 +674,13 @@ void CompositeModel::terminate()
   std::unordered_map<std::string, FMUWrapper*>::iterator it;
   for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
     it->second->terminate();
+
+  if (resultFile)
+  {
+    resultFile->close();
+    delete resultFile;
+    resultFile = NULL;
+  }
 
   modelState = oms_modelState_instantiated;
 

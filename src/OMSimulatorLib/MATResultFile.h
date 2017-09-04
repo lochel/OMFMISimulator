@@ -29,43 +29,29 @@
  *
  */
 
-#ifndef _OMS_UTIL_H_
-#define _OMS_UTIL_H_
+#ifndef _OMS_MATRESULTFILE_H_
+#define _OMS_MATRESULTFILE_H_
 
+#include "ResultFile.h"
+
+#include <stdio.h>
 #include <string>
-#include <sstream>
-#include <algorithm>
-#include <cctype>
-#include <locale>
 
-template<typename T>
-std::string toString(const T& value)
+class MATResultFile :
+  public ResultFile
 {
-  std::ostringstream oss;
-  oss << value;
-  return oss.str();
-}
+public:
+  MATResultFile(unsigned int bufferSize);
+  ~MATResultFile();
 
-// trim from start (in place)
-// https://stackoverflow.com/a/217605/7534030
-static inline void ltrim(std::string &s)
-{
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) { return !std::isspace(ch); }));
-}
+protected:
+  bool createFile(const std::string& filename, double startTime, double stopTime);
+  void closeFile();
+  void writeFile();
 
-// trim from end (in place)
-// https://stackoverflow.com/a/217605/7534030
-static inline void rtrim(std::string &s)
-{
-  s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) { return !std::isspace(ch); }).base(), s.end());
-}
-
-// trim from both ends (in place)
-// https://stackoverflow.com/a/217605/7534030
-static inline void trim(std::string &s)
-{
-  ltrim(s);
-  rtrim(s);
-}
+private:
+  FILE *pFile;
+  long pos_data_2;
+};
 
 #endif

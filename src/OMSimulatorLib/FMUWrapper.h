@@ -34,13 +34,14 @@
 
 #include "Variable.h"
 #include "DirectedGraph.h"
-#include "Resultfile.h"
 #include "Clocks.h"
+#include "ResultFile.h"
 
 #include <fmilib.h>
 #include <string>
 #include <vector>
 #include <map>
+#include <unordered_map>
 
 #include "cvode/cvode.h"             /* prototypes for CVODE fcts., consts. */
 #include "nvector/nvector_serial.h"  /* serial N_Vector types, fcts., macros */
@@ -84,6 +85,8 @@ public:
   std::vector<unsigned int>& getAllInputs() {return allInputs;}
   std::vector<unsigned int>& getAllOutputs() {return allOutputs;}
 
+  void registerSignalsForResultFile(ResultFile *resultFile);
+  void updateSignalsForResultFile(ResultFile *resultFile);
 private:
   enum Solver_t { NO_SOLVER, EXPLICIT_EULER, CVODE };
 
@@ -137,13 +140,14 @@ private:
   std::vector<unsigned int> allParameters;
   std::vector<unsigned int> initialUnknowns;
 
+  std::unordered_map<unsigned int /*result file var ID*/, unsigned int /*allVariables ID*/> resultFileMapping;
+
   DirectedGraph outputsGraph;
   DirectedGraph initialUnknownsGraph;
 
   // ME & CS
   fmi2_real_t tcur;
   fmi2_real_t relativeTolerance;
-  Resultfile *omsResultFile;
 
   // ME
   fmi2_boolean_t callEventUpdate;
