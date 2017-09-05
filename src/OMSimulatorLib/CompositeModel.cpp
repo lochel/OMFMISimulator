@@ -72,9 +72,12 @@ CompositeModel::CompositeModel(const char* descriptionPath)
   logTrace();
   importXML(descriptionPath);
 
-  boost::filesystem::path path(descriptionPath);
-  std::string filename = path.stem().string() + "_res.mat";
-  settings.SetResultFile(filename.c_str());
+  if (!settings.GetResultFile())
+  {
+    boost::filesystem::path path(descriptionPath);
+    std::string filename = path.stem().string() + "_res.mat";
+    settings.SetResultFile(filename.c_str());
+  }
 }
 
 CompositeModel::~CompositeModel()
@@ -650,7 +653,12 @@ void CompositeModel::initialize()
         it->second->registerSignalsForResultFile(resultFile);
 
       // create result file
-      resultFile->create(settings.GetResultFile(), tcur, settings.GetStopTime() ? *settings.GetStopTime() : 1.0);
+      bool rc = resultFile->create(settings.GetResultFile(), tcur, settings.GetStopTime() ? *settings.GetStopTime() : 1.0);
+      if (!rc)
+      {
+        delete resultFile;
+        resultFile = NULL;
+      }
       emit();
     }
     OMS_TOC(globalClocks, GLOBALCLOCK_RESULTFILE);

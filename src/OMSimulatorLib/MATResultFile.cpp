@@ -32,10 +32,13 @@
 #include "MATResultFile.h"
 #include "ResultFile.h"
 #include "MatVer4Writer.h"
+#include "Logging.h"
+#include "Util.h"
 
 #include <stdio.h>
 #include <string>
 #include <cstring>
+#include <errno.h>
 
 MATResultFile::MATResultFile(unsigned int bufferSize)
   : ResultFile(bufferSize),
@@ -51,13 +54,16 @@ MATResultFile::~MATResultFile()
 bool MATResultFile::createFile(const std::string& filename, double startTime, double stopTime)
 {
   if (pFile)
+  {
+    logError("MATResultFile::createFile: File is already open");
     return false;
+  }
 
-  pFile = fopen(filename.c_str(), "rb+");
+  pFile = fopen(filename.c_str(), "wb+");
 
   if (!pFile)
   {
-    printf("Datei konnte nicht geöffnet werden\n");
+    logError("MATResultFile::createFile: " + toString(strerror(errno)));
     return false;
   }
 

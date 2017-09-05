@@ -51,7 +51,7 @@ unsigned int ResultFile::addSignal(const std::string& name, const std::string& d
   signal.type = type;
 
   signals.push_back(signal);
-  return signals.size();
+  return (unsigned int) signals.size();
 }
 
 void ResultFile::addParameter(const std::string& name, const std::string& description, SignalType_t type, SignalValue_t value)
@@ -72,22 +72,22 @@ bool ResultFile::create(const std::string& filename, double startTime, double st
 
   data_2 = new double[bufferSize*(signals.size() + 1)];
   nEmits = 0;
-  return false;
+  return true;
 }
 
 void ResultFile::close()
 {
-  if (!data_2)
-    return;
+  if (data_2)
+  {
+    writeFile();
+    delete[] data_2;
+    data_2 = NULL;
 
-  writeFile();
-  closeFile();
+    closeFile();
+  }
 
   signals.clear();
   parameters.clear();
-
-  delete[] data_2;
-  data_2 = NULL;
 }
 
 void ResultFile::updateSignal(unsigned int id, SignalValue_t value)
