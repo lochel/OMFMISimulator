@@ -41,7 +41,7 @@ const bool isBigEndian()
     uint32_t i32;
     uint8_t i8[4];
   } test = { 0x01020304 };
-  return test.i8[0] == 1;
+  return (1 == test.i8[0]);
 }
 
 int writeMatVer4Matrix(FILE* file, const char* name, int rows, int cols, const void* matrixData, MatVer4Type_t type)
@@ -55,7 +55,7 @@ int writeMatVer4Matrix(FILE* file, const char* name, int rows, int cols, const v
     unsigned int namelen;
   } header;
 
-  unsigned int size;
+  size_t size;
   switch (type)
   {
   case MatVer4Type_DOUBLE:
@@ -75,7 +75,7 @@ int writeMatVer4Matrix(FILE* file, const char* name, int rows, int cols, const v
   header.mrows = rows;
   header.ncols = cols;
   header.imagf = 0;
-  header.namelen = strlen(name) + 1;
+  header.namelen = (unsigned int) strlen(name) + 1;
 
   fwrite(&header, sizeof(MatVer4Header), 1, file);
   fwrite(name, sizeof(char), header.namelen, file);
@@ -95,7 +95,7 @@ int appendMatVer4Matrix(FILE* file, long position, const char* name, int rows, i
     unsigned int namelen;
   } header;
 
-  unsigned int size;
+  size_t size;
   switch (type)
   {
   case MatVer4Type_DOUBLE:
@@ -127,7 +127,6 @@ int appendMatVer4Matrix(FILE* file, long position, const char* name, int rows, i
   fseek(file, position, SEEK_SET);
   fwrite(&header, sizeof(MatVer4Header), 1, file);
   fseek(file, eof, SEEK_SET);
-  if (matrixData)
-    fwrite(matrixData, size, rows * cols, file);
+  fwrite(matrixData, size, rows * cols, file);
   return 0;
 }

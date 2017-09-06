@@ -223,10 +223,10 @@ void CompositeModel::exportXML(const char* filename)
   pugi::xml_node simulationparams = model.append_child("SimulationParams");
 
   // add simulation settings
-  std::string startTime = (settings.GetStartTime() ? toString(*(settings.GetStartTime())) : "");
-  std::string stopTime = (settings.GetStopTime() ? toString(*(settings.GetStopTime())) : "");
-  std::string tolerance = (settings.GetTolerance() ? toString(*(settings.GetTolerance())) : "");
-  std::string communicationInterval = (settings.GetCommunicationInterval() ? toString(*(settings.GetCommunicationInterval())) : "");
+  std::string startTime = std::to_string(settings.GetStartTime());
+  std::string stopTime = (settings.GetStopTime() ? std::to_string(*(settings.GetStopTime())) : "");
+  std::string tolerance = (settings.GetTolerance() ? std::to_string(*(settings.GetTolerance())) : "");
+  std::string communicationInterval = (settings.GetCommunicationInterval() ? std::to_string(*(settings.GetCommunicationInterval())) : "");
   if (startTime != "")
   {
     simulationparams.append_attribute("StartTime") = startTime.c_str();
@@ -379,7 +379,7 @@ void CompositeModel::importXML(const char* filename)
   // read the simulation settings and set
   for (pugi::xml_attribute attr = SimulationParams.first_attribute(); attr; attr = attr.next_attribute())
   {
-    std::string value =attr.name();
+    std::string value = attr.name();
     if (value == "StartTime")
     {
       if (toString(attr.value()) != "")
@@ -449,7 +449,7 @@ void CompositeModel::describe()
   }
 
   std::cout << "\n# Simulation settings" << std::endl;
-  std::cout << "  - start time: " << (settings.GetStartTime() ? toString(*(settings.GetStartTime())) : "<undefined>") << std::endl;
+  std::cout << "  - start time: " << settings.GetStartTime() << std::endl;
   std::cout << "  - stop time: " << (settings.GetStopTime() ? toString(*(settings.GetStopTime())) : "<undefined>") << std::endl;
   std::cout << "  - tolerance: " << (settings.GetTolerance() ? toString(*(settings.GetTolerance())) : "<undefined>") << std::endl;
   std::cout << "  - communication interval: " << (settings.GetCommunicationInterval() ? toString(*(settings.GetCommunicationInterval())) : "<undefined>") << std::endl;
@@ -611,7 +611,7 @@ void CompositeModel::initialize()
     logFatal("CompositeModel::initialize: Model is already in simulation mode.");
   }
 
-  tcur = settings.GetStartTime() ? *settings.GetStartTime() : 0.0;
+  tcur = settings.GetStartTime();
   communicationInterval = settings.GetCommunicationInterval() ? *settings.GetCommunicationInterval() : 1e-1;
 
   // Enter initialization

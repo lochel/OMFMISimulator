@@ -715,9 +715,9 @@ void FMUWrapper::exitInitialization()
       flag = CVDense(solverData.cvode.mem, static_cast<long>(n_states));
       if (flag < 0) logFatal("SUNDIALS_ERROR: CVDense() failed with flag = " + toString(flag));
 
-      if (model.getSettings().GetStartTime() && model.getSettings().GetStopTime())
+      if (model.getSettings().GetStopTime())
       {
-        double max_h = (*model.getSettings().GetStopTime() - *model.getSettings().GetStartTime()) / 10.0;
+        double max_h = (*model.getSettings().GetStopTime() - model.getSettings().GetStartTime()) / 10.0;
         logInfo("maximum step size for '" + instanceName + "': " + toString(max_h));
         flag = CVodeSetMaxStep(solverData.cvode.mem, max_h);
         if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxStep() failed with flag = " + toString(flag));
@@ -1011,7 +1011,7 @@ void FMUWrapper::registerSignalsForResultFile(ResultFile *resultFile)
     Variable& var = allVariables[index];
     std::string name = var.getFMUInstanceName() + "." + var.getName();
     const std::string& description = var.getDescription();
-    if (fmi2_base_type_real == var.getBaseType())
+    if (var.isTypeReal())
     {
       unsigned int ID = resultFile->addSignal(name, description, SignalType_REAL);
       resultFileMapping[ID] = index;
@@ -1024,7 +1024,7 @@ void FMUWrapper::registerSignalsForResultFile(ResultFile *resultFile)
     Variable& var = allVariables[index];
     std::string name = var.getFMUInstanceName() + "." + var.getName();
     const std::string& description = var.getDescription();
-    if (fmi2_base_type_real == var.getBaseType())
+    if (var.isTypeReal())
     {
       unsigned int ID = resultFile->addSignal(name, description, SignalType_REAL);
       resultFileMapping[ID] = index;
@@ -1038,7 +1038,7 @@ void FMUWrapper::registerSignalsForResultFile(ResultFile *resultFile)
     std::string name = var.getFMUInstanceName() + "." + var.getName();
     const std::string& description = var.getDescription();
     SignalValue_t value;
-    if (fmi2_base_type_real == var.getBaseType())
+    if (var.isTypeReal())
     {
       value.realValue = getReal(var);
       resultFile->addParameter(name, description, SignalType_REAL, value);
@@ -1058,7 +1058,7 @@ void FMUWrapper::updateSignalsForResultFile(ResultFile *resultFile)
     unsigned int index = it->second;
     Variable& var = allVariables[index];
     SignalValue_t value;
-    if (fmi2_base_type_real == var.getBaseType())
+    if (var.isTypeReal())
     {
       value.realValue = getReal(var);
       resultFile->updateSignal(ID, value);

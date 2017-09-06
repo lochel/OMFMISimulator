@@ -38,7 +38,7 @@
 Settings::Settings()
 {
   logDebug("Initializing settings");
-  startTime = NULL;
+  startTime = 0.0;
   stopTime = NULL;
   tolerance = NULL;
   communicationInterval = NULL;
@@ -48,7 +48,6 @@ Settings::Settings()
 Settings::~Settings()
 {
   logDebug("Free settings");
-  ClearStartTime();
   ClearStopTime();
   ClearTolerance();
   ClearCommunicationInterval();
@@ -57,23 +56,7 @@ Settings::~Settings()
 
 void Settings::SetStartTime(double startTime)
 {
-  if (!this->startTime)
-    this->startTime = new double;
-  *(this->startTime) = startTime;
-}
-
-double* Settings::GetStartTime()
-{
-  return startTime;
-}
-
-void Settings::ClearStartTime()
-{
-  if (startTime)
-  {
-    delete startTime;
-    startTime = NULL;
-  }
+  this->startTime = startTime;
 }
 
 void Settings::SetStopTime(double stopTime)
