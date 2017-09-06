@@ -37,20 +37,15 @@
 
 Settings::Settings()
 {
-  logDebug("Initializing settings");
   startTime = 0.0;
-  stopTime = NULL;
-  tolerance = NULL;
-  communicationInterval = NULL;
+  stopTime = 1.0;
+  tolerance = 1e-4;
+  communicationInterval = 1e-1;
   resultFile = NULL;
 }
 
 Settings::~Settings()
 {
-  logDebug("Free settings");
-  ClearStopTime();
-  ClearTolerance();
-  ClearCommunicationInterval();
   ClearResultFile();
 }
 
@@ -61,65 +56,17 @@ void Settings::SetStartTime(double startTime)
 
 void Settings::SetStopTime(double stopTime)
 {
-  if (!this->stopTime)
-    this->stopTime = new double;
-  *(this->stopTime) = stopTime;
-}
-
-double* Settings::GetStopTime()
-{
-  return stopTime;
-}
-
-void Settings::ClearStopTime()
-{
-  if (stopTime)
-  {
-    delete stopTime;
-    stopTime = NULL;
-  }
+  this->stopTime = stopTime;
 }
 
 void Settings::SetTolerance(double tolerance)
 {
-  if (!this->tolerance)
-    this->tolerance = new double;
-  *(this->tolerance) = tolerance;
-}
-
-double* Settings::GetTolerance()
-{
-  return tolerance;
-}
-
-void Settings::ClearTolerance()
-{
-  if (tolerance)
-  {
-    delete tolerance;
-    tolerance = NULL;
-  }
+  this->tolerance = tolerance;
 }
 
 void Settings::SetCommunicationInterval(double communicationInterval)
 {
-  if (!this->communicationInterval)
-    this->communicationInterval = new double;
-  *(this->communicationInterval) = communicationInterval;
-}
-
-double* Settings::GetCommunicationInterval()
-{
-  return communicationInterval;
-}
-
-void Settings::ClearCommunicationInterval()
-{
-  if (communicationInterval)
-  {
-    delete communicationInterval;
-    communicationInterval = NULL;
-  }
+  this->communicationInterval = communicationInterval;
 }
 
 void Settings::SetResultFile(const char* resultFile)
@@ -127,11 +74,6 @@ void Settings::SetResultFile(const char* resultFile)
   ClearResultFile();
   this->resultFile = new char[std::strlen(resultFile) + 1];
   std::strcpy(this->resultFile, resultFile);
-}
-
-const char* Settings::GetResultFile()
-{
-  return resultFile;
 }
 
 void Settings::ClearResultFile()

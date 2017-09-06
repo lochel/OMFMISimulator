@@ -224,25 +224,14 @@ void CompositeModel::exportXML(const char* filename)
 
   // add simulation settings
   std::string startTime = std::to_string(settings.GetStartTime());
-  std::string stopTime = (settings.GetStopTime() ? std::to_string(*(settings.GetStopTime())) : "");
-  std::string tolerance = (settings.GetTolerance() ? std::to_string(*(settings.GetTolerance())) : "");
-  std::string communicationInterval = (settings.GetCommunicationInterval() ? std::to_string(*(settings.GetCommunicationInterval())) : "");
-  if (startTime != "")
-  {
-    simulationparams.append_attribute("StartTime") = startTime.c_str();
-  }
-  if (stopTime != "")
-  {
-    simulationparams.append_attribute("StopTime") = stopTime.c_str();
-  }
-  if (tolerance != "")
-  {
-    simulationparams.append_attribute("tolerance") = tolerance.c_str();
-  }
-  if (communicationInterval != "")
-  {
-    simulationparams.append_attribute("communicationInterval") = communicationInterval.c_str();
-  }
+  std::string stopTime = std::to_string(settings.GetStopTime());
+  std::string tolerance = std::to_string(settings.GetTolerance());
+  std::string communicationInterval = std::to_string(settings.GetCommunicationInterval());
+
+  simulationparams.append_attribute("StartTime") = startTime.c_str();
+  simulationparams.append_attribute("StopTime") = stopTime.c_str();
+  simulationparams.append_attribute("tolerance") = tolerance.c_str();
+  simulationparams.append_attribute("communicationInterval") = communicationInterval.c_str();
 
   // add list of FMUs
   std::unordered_map<std::string, FMUWrapper*>::iterator it;
@@ -450,9 +439,9 @@ void CompositeModel::describe()
 
   std::cout << "\n# Simulation settings" << std::endl;
   std::cout << "  - start time: " << settings.GetStartTime() << std::endl;
-  std::cout << "  - stop time: " << (settings.GetStopTime() ? toString(*(settings.GetStopTime())) : "<undefined>") << std::endl;
-  std::cout << "  - tolerance: " << (settings.GetTolerance() ? toString(*(settings.GetTolerance())) : "<undefined>") << std::endl;
-  std::cout << "  - communication interval: " << (settings.GetCommunicationInterval() ? toString(*(settings.GetCommunicationInterval())) : "<undefined>") << std::endl;
+  std::cout << "  - stop time: " << settings.GetStopTime() << std::endl;
+  std::cout << "  - tolerance: " << settings.GetTolerance() << std::endl;
+  std::cout << "  - communication interval: " << settings.GetCommunicationInterval() << std::endl;
   std::cout << "  - result file: " << (settings.GetResultFile() ? settings.GetResultFile() : "<no result file>") << std::endl;
   //std::cout << "  - temp directory: " << settings.GetTempDirectory() << std::endl;
 
@@ -521,8 +510,7 @@ oms_status_t CompositeModel::simulate()
     return oms_status_error;
   }
 
-  double* pStopTime = settings.GetStopTime();
-  fmi2_real_t tend = pStopTime ? *pStopTime : 1.0;
+  fmi2_real_t tend = settings.GetStopTime();
 
   return stepUntil(tend);
 }
@@ -612,7 +600,7 @@ void CompositeModel::initialize()
   }
 
   tcur = settings.GetStartTime();
-  communicationInterval = settings.GetCommunicationInterval() ? *settings.GetCommunicationInterval() : 1e-1;
+  communicationInterval = settings.GetCommunicationInterval();
 
   // Enter initialization
   modelState = oms_modelState_initialization;
@@ -653,7 +641,7 @@ void CompositeModel::initialize()
         it->second->registerSignalsForResultFile(resultFile);
 
       // create result file
-      bool rc = resultFile->create(settings.GetResultFile(), tcur, settings.GetStopTime() ? *settings.GetStopTime() : 1.0);
+      bool rc = resultFile->create(settings.GetResultFile(), tcur, settings.GetStopTime());
       if (!rc)
       {
         delete resultFile;

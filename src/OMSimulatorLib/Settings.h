@@ -39,22 +39,19 @@ public:
   ~Settings();
 
   void SetStartTime(double startTime);
-  double GetStartTime() const {return startTime;};
+  double GetStartTime() const {return startTime;}
 
   void SetStopTime(double stopTime);
-  double* GetStopTime();
-  void ClearStopTime();
+  double GetStopTime() const {return stopTime;}
 
   void SetTolerance(double tolerance);
-  double* GetTolerance();
-  void ClearTolerance();
+  double GetTolerance() const {return tolerance;}
 
   void SetCommunicationInterval(double communicationInterval);
-  double* GetCommunicationInterval();
-  void ClearCommunicationInterval();
+  double GetCommunicationInterval() const {return communicationInterval;}
 
   void SetResultFile(const char* resultFile);
-  const char* GetResultFile();
+  const char* GetResultFile() const {return resultFile;}
   void ClearResultFile();
 
 private:
@@ -63,9 +60,9 @@ private:
   Settings& operator=(Settings const& copy); // not implemented
 
   double startTime;
-  double* stopTime;
-  double* tolerance;
-  double* communicationInterval;
+  double stopTime;
+  double tolerance;
+  double communicationInterval;
   char* resultFile;
 };
 

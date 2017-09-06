@@ -578,14 +578,12 @@ void FMUWrapper::enterInitialization(double startTime)
   OMS_TIC(clocks, CLOCK_INITIALIZATION);
   fmi2_status_t fmistatus;
 
-  double* pTolerance = model.getSettings().GetTolerance();
-  relativeTolerance = pTolerance ? *pTolerance : fmi2_import_get_default_experiment_tolerance(fmu);
+  relativeTolerance = fmi2_import_get_default_experiment_tolerance(fmu);
   tcur = startTime;
   const fmi2_boolean_t toleranceControlled = fmi2_true;
   const fmi2_boolean_t StopTimeDefined = fmi2_false;
 
-  double* pStopTime = model.getSettings().GetStopTime();
-  const fmi2_real_t tend = pStopTime ? *pStopTime : fmi2_import_get_default_experiment_stop(fmu);
+  const fmi2_real_t tend = model.getSettings().GetStopTime();
 
   logDebug("start time: " + toString(tcur));
   logDebug("relative tolerance: " + toString(relativeTolerance));
@@ -715,13 +713,10 @@ void FMUWrapper::exitInitialization()
       flag = CVDense(solverData.cvode.mem, static_cast<long>(n_states));
       if (flag < 0) logFatal("SUNDIALS_ERROR: CVDense() failed with flag = " + toString(flag));
 
-      if (model.getSettings().GetStopTime())
-      {
-        double max_h = (*model.getSettings().GetStopTime() - model.getSettings().GetStartTime()) / 10.0;
-        logInfo("maximum step size for '" + instanceName + "': " + toString(max_h));
-        flag = CVodeSetMaxStep(solverData.cvode.mem, max_h);
-        if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxStep() failed with flag = " + toString(flag));
-      }
+      double max_h = (model.getSettings().GetStopTime() - model.getSettings().GetStartTime()) / 10.0;
+      logInfo("maximum step size for '" + instanceName + "': " + toString(max_h));
+      flag = CVodeSetMaxStep(solverData.cvode.mem, max_h);
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxStep() failed with flag = " + toString(flag));
 
       // further settings from cpp runtime
       flag = CVodeSetInitStep(solverData.cvode.mem, 1e-6);        // INITIAL STEPSIZE
@@ -839,7 +834,7 @@ void FMUWrapper::doStep(double stopTime)
 {
   OMS_TIC(clocks, CLOCK_DO_STEP);
   fmi2_status_t fmistatus;
-  const fmi2_real_t hdef = model.getSettings().GetCommunicationInterval() ? *(model.getSettings().GetCommunicationInterval()) : 1e-2;
+  const fmi2_real_t hdef = model.getSettings().GetCommunicationInterval() / 10;
 
   if (fmi2_fmu_kind_me == fmuKind)
   {
