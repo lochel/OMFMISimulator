@@ -240,7 +240,7 @@ void DirectedGraph::calculateSortedConnections()
   {
     if (components[i].size() > 1)
     {
-      logWarning("Unhandled alg. loop (size " + toString(components[i].size()) + ")");
+      logWarning("Unhandled alg. loop (size " + std::to_string(components[i].size()) + ")");
       for (int j = 0; j < components[i].size(); ++j)
       {
         int v = components[i][j];

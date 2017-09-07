@@ -38,14 +38,6 @@
 #include <cctype>
 #include <locale>
 
-template<typename T>
-std::string toString(const T& value)
-{
-  std::ostringstream oss;
-  oss << value;
-  return oss.str();
-}
-
 // trim from start (in place)
 // https://stackoverflow.com/a/217605/7534030
 static inline void ltrim(std::string &s)

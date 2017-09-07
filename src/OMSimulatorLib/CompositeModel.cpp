@@ -368,34 +368,27 @@ void CompositeModel::importXML(const char* filename)
   // read the simulation settings and set
   for (pugi::xml_attribute attr = SimulationParams.first_attribute(); attr; attr = attr.next_attribute())
   {
-    std::string value = attr.name();
-    if (value == "StartTime")
+    std::string name = attr.name();
+    std::string value = attr.value();
+    if (name == "StartTime")
     {
-      if (toString(attr.value()) != "")
-      {
+      if (!value.empty())
         settings.SetStartTime(std::strtod(attr.value(), NULL));
-      }
     }
-    if (value == "StopTime")
+    else if (name == "StopTime")
     {
-      if (toString(attr.value()) != "")
-      {
+      if (!value.empty())
         settings.SetStopTime(std::strtod(attr.value(), NULL));
-      }
     }
-    if (value == "tolerance")
+    else if (name == "tolerance")
     {
-      if (toString(attr.value()) != "")
-      {
+      if (!value.empty())
         settings.SetTolerance(std::strtod(attr.value(), NULL));
-      }
     }
-    if (value == "communicationInterval")
+    else if (name == "communicationInterval")
     {
-      if (toString(attr.value()) != "")
-      {
+      if (!value.empty())
         settings.SetCommunicationInterval(std::strtod(attr.value(), NULL));
-      }
     }
   }
 
@@ -634,7 +627,7 @@ void CompositeModel::initialize()
 
     if (resultFile)
     {
-      logInfo("Result file: " + toString(settings.GetResultFile()));
+      logInfo("Result file: " + std::string(settings.GetResultFile()));
 
       // add all signals
       for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
@@ -686,9 +679,9 @@ void CompositeModel::terminate()
   double cpuStats[GLOBALCLOCK_MAX_INDEX+1];
   globalClocks.getStats(cpuStats, NULL);
   logInfo("time measurement for composite model");
-  logInfo("  total: " + toString(cpuStats[GLOBALCLOCK_MAX_INDEX]) + "s");
+  logInfo("  total: " + std::to_string(cpuStats[GLOBALCLOCK_MAX_INDEX]) + "s");
   for (int i=0; i<GLOBALCLOCK_MAX_INDEX; ++i)
-    logInfo("  " + toString(GlobalClockNames[i]) + ": " + toString(cpuStats[i]) + "s [" + toString(cpuStats[i]/cpuStats[GLOBALCLOCK_MAX_INDEX]*100.0) + "%]");
+    logInfo("  " + std::string(GlobalClockNames[i]) + ": " + std::to_string(cpuStats[i]) + "s [" + std::to_string(cpuStats[i]/cpuStats[GLOBALCLOCK_MAX_INDEX]*100.0) + "%]");
 }
 
 void CompositeModel::reset()

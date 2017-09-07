@@ -63,7 +63,7 @@ bool MATResultFile::createFile(const std::string& filename, double startTime, do
 
   if (!pFile)
   {
-    logError("MATResultFile::createFile: " + toString(strerror(errno)));
+    logError("MATResultFile::createFile: " + std::string(strerror(errno)));
     return false;
   }
 

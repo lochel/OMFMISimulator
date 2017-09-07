@@ -243,7 +243,7 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
   // create variable list
   fmi2_import_variable_list_t *varList = fmi2_import_get_variable_list(fmu, 0);
   size_t varListSize = fmi2_import_get_variable_list_size(varList);
-  logDebug(toString(varListSize) + " variables");
+  logDebug(std::to_string(varListSize) + " variables");
   for (size_t i = 0; i < varListSize; ++i)
   {
     fmi2_import_variable_t* var = fmi2_import_get_variable(varList, i);
@@ -255,7 +255,7 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
   // mark states
   varList = fmi2_import_get_derivatives_list(fmu);
   varListSize = fmi2_import_get_variable_list_size(varList);
-  logDebug(toString(varListSize) + " states");
+  logDebug(std::to_string(varListSize) + " states");
   for (size_t i = 0; i < varListSize; ++i)
   {
     fmi2_import_variable_t* var = fmi2_import_get_variable(varList, i);
@@ -268,10 +268,10 @@ FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string i
       if (state_var)
         state_var->markAsState();
       else
-        logError("Couldn't find " + toString(fmi2_import_get_variable_name(varState)));
+        logError("Couldn't find " + std::string(fmi2_import_get_variable_name(varState)));
     }
     else
-      logError("Couldn't map " + toString(fmi2_import_get_variable_name(var)) + " to the corresponding state variable");
+      logError("Couldn't map " + std::string(fmi2_import_get_variable_name(var)) + " to the corresponding state variable");
   }
   fmi2_import_free_variable_list(varList);
 
@@ -343,7 +343,7 @@ FMUWrapper::~FMUWrapper()
 
   logInfo("time measurement for FMU instance '" + instanceName + "'");
   for (int i=1; i<CLOCK_MAX_INDEX; ++i)
-    logInfo("  " + toString(ClockNames[i]) + ": " + toString(cpuStats[i]) + "s");
+    logInfo("  " + std::string(ClockNames[i]) + ": " + std::to_string(cpuStats[i]) + "s");
 }
 
 double FMUWrapper::getReal(const std::string& var)
@@ -585,8 +585,8 @@ void FMUWrapper::enterInitialization(double startTime)
 
   const fmi2_real_t tend = model.getSettings().GetStopTime();
 
-  logDebug("start time: " + toString(tcur));
-  logDebug("relative tolerance: " + toString(relativeTolerance));
+  logDebug("start time: " + std::to_string(tcur));
+  logDebug("relative tolerance: " + std::to_string(relativeTolerance));
 
   if (fmi2_fmu_kind_me == fmuKind)
   {
@@ -638,8 +638,8 @@ void FMUWrapper::exitInitialization()
     n_states = fmi2_import_get_number_of_continuous_states(fmu);
     n_event_indicators = fmi2_import_get_number_of_event_indicators(fmu);
 
-    logDebug(toString(n_states) + " states");
-    logDebug(toString(n_event_indicators) + " event indicators");
+    logDebug(std::to_string(n_states) + " states");
+    logDebug(std::to_string(n_event_indicators) + " event indicators");
 
     if (n_states < 1)
       solverMethod = NO_SOLVER;
@@ -696,45 +696,45 @@ void FMUWrapper::exitInitialization()
       if (!solverData.cvode.mem) logFatal("SUNDIALS_ERROR: CVodeCreate() failed - returned NULL pointer");
 
       int flag = CVodeSetUserData(solverData.cvode.mem, (void*)this);
-      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetUserData() failed with flag = " + toString(flag));
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetUserData() failed with flag = " + std::to_string(flag));
 
       // Call CVodeInit to initialize the integrator memory and specify the
       // user's right hand side function in y'=cvode_rhs(t,y), the inital time T0, and
       // the initial dependent variable vector y.
       flag = CVodeInit(solverData.cvode.mem, cvode_rhs, tcur, solverData.cvode.y);
-      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeInit() failed with flag = " + toString(flag));
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeInit() failed with flag = " + std::to_string(flag));
 
       // Call CVodeSVtolerances to specify the scalar relative tolerance
       // and vector absolute tolerances
       flag = CVodeSVtolerances(solverData.cvode.mem, relativeTolerance, solverData.cvode.abstol);
-      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSVtolerances() failed with flag = " + toString(flag));
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSVtolerances() failed with flag = " + std::to_string(flag));
 
       // Call CVDense to specify the CVDENSE dense linear solver */
       flag = CVDense(solverData.cvode.mem, static_cast<long>(n_states));
-      if (flag < 0) logFatal("SUNDIALS_ERROR: CVDense() failed with flag = " + toString(flag));
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVDense() failed with flag = " + std::to_string(flag));
 
       double max_h = (model.getSettings().GetStopTime() - model.getSettings().GetStartTime()) / 10.0;
-      logInfo("maximum step size for '" + instanceName + "': " + toString(max_h));
+      logInfo("maximum step size for '" + instanceName + "': " + std::to_string(max_h));
       flag = CVodeSetMaxStep(solverData.cvode.mem, max_h);
-      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxStep() failed with flag = " + toString(flag));
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxStep() failed with flag = " + std::to_string(flag));
 
       // further settings from cpp runtime
       flag = CVodeSetInitStep(solverData.cvode.mem, 1e-6);        // INITIAL STEPSIZE
-      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetInitStep() failed with flag = " + toString(flag));
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetInitStep() failed with flag = " + std::to_string(flag));
       flag = CVodeSetMaxOrd(solverData.cvode.mem, 5);             // MAXIMUM ORDER
-      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxOrd() failed with flag = " + toString(flag));
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxOrd() failed with flag = " + std::to_string(flag));
       flag = CVodeSetMaxConvFails(solverData.cvode.mem, 100);     // MAXIMUM NUMBER OF NONLINEAR CONVERGENCE FAILURES
-      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxConvFails() failed with flag = " + toString(flag));
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxConvFails() failed with flag = " + std::to_string(flag));
       flag = CVodeSetStabLimDet(solverData.cvode.mem, TRUE);      // STABILITY DETECTION
-      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetStabLimDet() failed with flag = " + toString(flag));
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetStabLimDet() failed with flag = " + std::to_string(flag));
       flag = CVodeSetMinStep(solverData.cvode.mem, 1e-12);        // MINIMUM STEPSIZE
-      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMinStep() failed with flag = " + toString(flag));
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMinStep() failed with flag = " + std::to_string(flag));
       flag = CVodeSetMaxNonlinIters(solverData.cvode.mem, 5);     // MAXIMUM NUMBER OF ITERATIONS
-      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxNonlinIters() failed with flag = " + toString(flag));
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxNonlinIters() failed with flag = " + std::to_string(flag));
       flag = CVodeSetMaxErrTestFails(solverData.cvode.mem, 100);  // MAXIMUM NUMBER OF ERROR TEST FAILURES
-      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxErrTestFails() failed with flag = " + toString(flag));
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxErrTestFails() failed with flag = " + std::to_string(flag));
       flag = CVodeSetMaxNumSteps(solverData.cvode.mem, 1000);     // MAXIMUM NUMBER OF STEPS
-      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxNumSteps() failed with flag = " + toString(flag));
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeSetMaxNumSteps() failed with flag = " + std::to_string(flag));
     }
     else
       logFatal("Unknown solver method");
@@ -768,21 +768,21 @@ void FMUWrapper::terminate()
       int flag;
 
       flag = CVodeGetNumSteps(solverData.cvode.mem, &nst);
-      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeGetNumSteps() failed with flag = " + toString(flag));
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeGetNumSteps() failed with flag = " + std::to_string(flag));
       flag = CVodeGetNumRhsEvals(solverData.cvode.mem, &nfe);
-      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeGetNumRhsEvals() failed with flag = " + toString(flag));
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeGetNumRhsEvals() failed with flag = " + std::to_string(flag));
       flag = CVodeGetNumLinSolvSetups(solverData.cvode.mem, &nsetups);
-      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeGetNumLinSolvSetups() failed with flag = " + toString(flag));
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeGetNumLinSolvSetups() failed with flag = " + std::to_string(flag));
       flag = CVodeGetNumErrTestFails(solverData.cvode.mem, &netf);
-      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeGetNumErrTestFails() failed with flag = " + toString(flag));
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeGetNumErrTestFails() failed with flag = " + std::to_string(flag));
       flag = CVodeGetNumNonlinSolvIters(solverData.cvode.mem, &nni);
-      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeGetNumNonlinSolvIters() failed with flag = " + toString(flag));
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeGetNumNonlinSolvIters() failed with flag = " + std::to_string(flag));
       flag = CVodeGetNumNonlinSolvConvFails(solverData.cvode.mem, &ncfn);
-      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeGetNumNonlinSolvConvFails() failed with flag = " + toString(flag));
+      if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeGetNumNonlinSolvConvFails() failed with flag = " + std::to_string(flag));
 
       logInfo("Final Statistics for '" + instanceName + "':");
-      logInfo("NumSteps = " + toString(nst) + " NumRhsEvals  = " + toString(nfe) + " NumLinSolvSetups = " + toString(nsetups));
-      logInfo("NumNonlinSolvIters = " + toString(nni) + " NumNonlinSolvConvFails = " + toString(ncfn) + " NumErrTestFails = " + toString(netf));
+      logInfo("NumSteps = " + std::to_string(nst) + " NumRhsEvals  = " + std::to_string(nfe) + " NumLinSolvSetups = " + std::to_string(nsetups));
+      logInfo("NumNonlinSolvIters = " + std::to_string(nni) + " NumNonlinSolvConvFails = " + std::to_string(ncfn) + " NumErrTestFails = " + std::to_string(netf));
 
       N_VDestroy_Serial(solverData.cvode.y);
       N_VDestroy_Serial(solverData.cvode.abstol);
@@ -893,7 +893,7 @@ void FMUWrapper::doStep(double stopTime)
           for (size_t i = 0; i < n_states; ++i)
             NV_Ith_S(solverData.cvode.y, i) = states[i];
           int flag = CVodeReInit(solverData.cvode.mem, tcur, solverData.cvode.y);
-          if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeReInit() failed with flag = " + toString(flag));
+          if (flag < 0) logFatal("SUNDIALS_ERROR: CVodeReInit() failed with flag = " + std::to_string(flag));
         }
       }
       OMS_TOC(clocks, CLOCK_EVENTS);
@@ -928,7 +928,7 @@ void FMUWrapper::doStep(double stopTime)
         while (cvode_time < tcur)
         {
           int flag = CVode(solverData.cvode.mem, tcur, solverData.cvode.y, &cvode_time, CV_ONE_STEP);
-          if (flag < 0) logFatal("SUNDIALS_ERROR: CVode() failed with flag = " + toString(flag));
+          if (flag < 0) logFatal("SUNDIALS_ERROR: CVode() failed with flag = " + std::to_string(flag));
         }
         tcur = cvode_time;
       }
@@ -991,7 +991,7 @@ std::string FMUWrapper::GetSolverMethodString() const
   case CVODE:
     return std::string("cvode");
   default:
-    logError("FMUWrapper::GetSolverMethodString: Unknown solver method " + toString(solverMethod));
+    logError("FMUWrapper::GetSolverMethodString: Unknown solver method " + std::to_string(solverMethod));
     return std::string("unknown");
   }
 }
