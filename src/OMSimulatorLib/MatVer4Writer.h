@@ -41,7 +41,7 @@ enum MatVer4Type_t
   MatVer4Type_CHAR = 51
 };
 
-int writeMatVer4Matrix(FILE* file, const char* name, int rows, int cols, const void* matrixData, MatVer4Type_t type);
-int appendMatVer4Matrix(FILE* file, long position, const char* name, int rows, int cols, const void* matrixData, MatVer4Type_t type);
+int writeMatVer4Matrix(FILE* file, const char* name, size_t rows, size_t cols, const void* matrixData, MatVer4Type_t type);
+int appendMatVer4Matrix(FILE* file, long position, const char* name, size_t rows, size_t cols, const void* matrixData, MatVer4Type_t type);
 
 #endif

@@ -31,6 +31,8 @@
 
 #include "MatVer4Writer.h"
 
+#include <climits>
+#include <stdexcept>
 #include <stdint.h>
 #include <string.h>
 
@@ -44,7 +46,14 @@ const bool isBigEndian()
   return (1 == test.i8[0]);
 }
 
-int writeMatVer4Matrix(FILE* file, const char* name, int rows, int cols, const void* matrixData, MatVer4Type_t type)
+unsigned int size2uint(size_t value)
+{
+  if (value > UINT_MAX)
+    throw std::out_of_range("Converting 'size_t' to 'unsigned int' failed.");
+  return static_cast<unsigned int>(value);
+}
+
+int writeMatVer4Matrix(FILE* file, const char* name, size_t rows, size_t cols, const void* matrixData, MatVer4Type_t type)
 {
   struct MatVer4Header
   {
@@ -72,8 +81,8 @@ int writeMatVer4Matrix(FILE* file, const char* name, int rows, int cols, const v
   }
 
   header.type = (isBigEndian() ? 1000 : 0) + type;
-  header.mrows = rows;
-  header.ncols = cols;
+  header.mrows = size2uint(rows);
+  header.ncols = size2uint(cols);
   header.imagf = 0;
   header.namelen = (unsigned int) strlen(name) + 1;
 
@@ -84,7 +93,7 @@ int writeMatVer4Matrix(FILE* file, const char* name, int rows, int cols, const v
   return 0;
 }
 
-int appendMatVer4Matrix(FILE* file, long position, const char* name, int rows, int cols, const void* matrixData, MatVer4Type_t type)
+int appendMatVer4Matrix(FILE* file, long position, const char* name, size_t rows, size_t cols, const void* matrixData, MatVer4Type_t type)
 {
   struct MatVer4Header
   {
@@ -118,7 +127,7 @@ int appendMatVer4Matrix(FILE* file, long position, const char* name, int rows, i
     return -1;
   if (header.mrows != rows)
     return -1;
-  header.ncols += cols;
+  header.ncols += size2uint(cols);
   if (header.imagf != 0)
     return -1;
   if (header.namelen != strlen(name) + 1)

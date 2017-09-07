@@ -80,7 +80,7 @@ bool MATResultFile::createFile(const std::string& filename, double startTime, do
   // Dimensions: maxLength x nVars
   // Class Type: Character Array
   //  Data Type: 8-bit, unsigned integer
-  unsigned int maxLength = 4;
+  size_t maxLength = 4;
   for (int i = 0; i < signals.size(); ++i)
     if (signals[i].name.size() > maxLength)
       maxLength = signals[i].name.size();
