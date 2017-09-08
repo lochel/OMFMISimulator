@@ -31,7 +31,7 @@
 
 #include "MATResultFile.h"
 #include "ResultFile.h"
-#include "MatVer4Writer.h"
+#include "MatVer4.h"
 #include "Logging.h"
 #include "Util.h"
 

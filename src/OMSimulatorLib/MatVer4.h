@@ -29,8 +29,8 @@
  *
  */
 
-#ifndef _OMS_MATVER4WRITER_H_
-#define _OMS_MATVER4WRITER_H_
+#ifndef _OMS_MATVER4_H_
+#define _OMS_MATVER4_H_
 
 #include <stdio.h>
 
@@ -41,7 +41,27 @@ enum MatVer4Type_t
   MatVer4Type_CHAR = 51
 };
 
+struct MatVer4Header
+{
+  unsigned int type;
+  unsigned int mrows;
+  unsigned int ncols;
+  unsigned int imagf;
+  unsigned int namelen;
+};
+
+struct MatVer4Matrix
+{
+  MatVer4Header header;
+  void *data;
+};
+
 int writeMatVer4Matrix(FILE* file, const char* name, size_t rows, size_t cols, const void* matrixData, MatVer4Type_t type);
 int appendMatVer4Matrix(FILE* file, long position, const char* name, size_t rows, size_t cols, const void* matrixData, MatVer4Type_t type);
+
+MatVer4Matrix* readMatVer4Matrix(FILE* file);
+int skipMatVer4Matrix(FILE* file);
+
+void deleteMatVer4Matrix(MatVer4Matrix** matrix);
 
 #endif

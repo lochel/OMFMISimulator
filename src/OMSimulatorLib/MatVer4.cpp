@@ -29,7 +29,7 @@
  *
  */
 
-#include "MatVer4Writer.h"
+#include "MatVer4.h"
 
 #include <climits>
 #include <stdexcept>
@@ -138,4 +138,78 @@ int appendMatVer4Matrix(FILE* file, long position, const char* name, size_t rows
   fseek(file, eof, SEEK_SET);
   fwrite(matrixData, size, rows * cols, file);
   return 0;
+}
+
+MatVer4Matrix* readMatVer4Matrix(FILE* file)
+{
+  MatVer4Matrix *matrix = new MatVer4Matrix();
+  if (!matrix)
+    return NULL;
+
+  fread(&matrix->header, sizeof(MatVer4Header), 1, file);
+
+  // skip name
+  fseek(file, matrix->header.namelen, SEEK_CUR);
+
+  size_t size;
+  switch (matrix->header.type % 100)
+  {
+  case MatVer4Type_DOUBLE:
+    size = sizeof(double);
+    break;
+  case MatVer4Type_INT32:
+    size = sizeof(int32_t);
+    break;
+  case MatVer4Type_CHAR:
+    size = sizeof(uint8_t);
+    break;
+  default:
+    delete matrix;
+    return NULL;
+  }
+
+  matrix->data = new char[matrix->header.mrows*matrix->header.ncols*size];
+  fread(matrix->data, size, matrix->header.mrows*matrix->header.ncols, file);
+
+  return matrix;
+}
+
+int skipMatVer4Matrix(FILE* file)
+{
+  MatVer4Header header;
+  fread(&header, sizeof(MatVer4Header), 1, file);
+
+  // skip name
+  fseek(file, header.namelen, SEEK_CUR);
+
+  size_t size;
+  switch (header.type % 100)
+  {
+  case MatVer4Type_DOUBLE:
+    size = sizeof(double);
+    break;
+  case MatVer4Type_INT32:
+    size = sizeof(int32_t);
+    break;
+  case MatVer4Type_CHAR:
+    size = sizeof(uint8_t);
+    break;
+  default:
+    return -1;
+  }
+
+  // skip data
+  fseek(file, header.mrows*header.ncols*size, SEEK_CUR);
+  return 0;
+}
+
+void deleteMatVer4Matrix(MatVer4Matrix** matrix)
+{
+  if (*matrix)
+  {
+    if ((*matrix)->data)
+      delete[] ((char*)(*matrix)->data);
+    delete *matrix;
+    *matrix = NULL;
+  }
 }
