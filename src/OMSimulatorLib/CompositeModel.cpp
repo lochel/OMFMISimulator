@@ -541,7 +541,7 @@ oms_status_t CompositeModel::doSteps(const int numberOfSteps)
     for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
       it->second->doStep(tcur+communicationInterval);
     tcur += communicationInterval;
-    //emit();
+    emit();
 
     // input = output
     updateInputs(outputsGraph);
@@ -571,7 +571,7 @@ oms_status_t CompositeModel::stepUntil(const double timeValue)
     std::unordered_map<std::string, FMUWrapper*>::iterator it;
     for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
       it->second->doStep(tcur);
-    //emit();
+    emit();
 
     // input = output
     updateInputs(outputsGraph);
