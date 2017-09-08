@@ -29,51 +29,34 @@
  *
  */
 
-#ifndef _OMS_UTIL_H_
-#define _OMS_UTIL_H_
+#ifndef _OMS_MATREADER_H_
+#define _OMS_MATREADER_H_
 
-#include <string>
-#include <sstream>
-#include <algorithm>
-#include <cctype>
-#include <locale>
+#include "MatVer4.h"
 
-// trim from start (in place)
-// https://stackoverflow.com/a/217605/7534030
-static inline void ltrim(std::string &s)
+class MatReader
 {
-  s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) { return !std::isspace(ch); }));
-}
+public:
+  struct Series
+  {
+    unsigned int length;
+    double *time;
+    double *value;
+  };
 
-// trim from end (in place)
-// https://stackoverflow.com/a/217605/7534030
-static inline void rtrim(std::string &s)
-{
-  s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) { return !std::isspace(ch); }).base(), s.end());
-}
+  MatReader(const char* filename);
+  ~MatReader();
 
-// trim from both ends (in place)
-// https://stackoverflow.com/a/217605/7534030
-static inline void trim(std::string &s)
-{
-  ltrim(s);
-  rtrim(s);
-}
+  Series*getSeries(const char* var);
 
-const double DOUBLEEQUAL_ABSTOL = 0.0000000001;
-const double DOUBLEEQUAL_RELTOL = 0.00001;
+  static void deleteSeries(Series** series);
+  static bool compareSeries(Series* seriesA, Series* seriesB);
 
-// http://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
-static inline bool almostEqualRelativeAndAbs(double a, double b, double reltol=DOUBLEEQUAL_RELTOL, double abstol=DOUBLEEQUAL_ABSTOL)
-{
-  double diff = fabs(a - b);
-  if (diff <= abstol)
-    return true;
-
-  if (diff <= fmax(fabs(a), fabs(b)) * reltol)
-    return false;
-
-  return false;
-}
+private:
+  MatVer4Matrix* name;
+  MatVer4Matrix* dataInfo;
+  MatVer4Matrix* data_1;
+  MatVer4Matrix* data_2;
+};
 
 #endif

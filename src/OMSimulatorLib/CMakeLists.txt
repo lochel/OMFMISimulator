@@ -2,7 +2,7 @@ project(OMSimulatorLib)
 
 set(CMAKE_INSTALL_RPATH "$ORIGIN")
 
-set(OMSIMULATORLIB_SOURCES Logging.cpp FMUWrapper.cpp CompositeModel.cpp ResultFile.cpp CSVResultFile.cpp MATResultFile.cpp MatVer4.cpp DirectedGraph.cpp OMSimulator.cpp GlobalSettings.cpp Settings.cpp Variable.cpp Clock.cpp Clocks.cpp)
+set(OMSIMULATORLIB_SOURCES Logging.cpp FMUWrapper.cpp CompositeModel.cpp ResultFile.cpp CSVResultFile.cpp MATResultFile.cpp MatVer4.cpp MatReader.cpp DirectedGraph.cpp OMSimulator.cpp GlobalSettings.cpp Settings.cpp Variable.cpp Clock.cpp Clocks.cpp)
 
 configure_file("${CMAKE_CURRENT_SOURCE_DIR}/Version.cpp.in" "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp" @ONLY)
 list(APPEND OMSIMULATORLIB_SOURCES "${CMAKE_CURRENT_BINARY_DIR}/Version.cpp")
