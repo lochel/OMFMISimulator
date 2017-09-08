@@ -40,7 +40,8 @@ ResultFile::ResultFile(unsigned int bufferSize)
 
 ResultFile::~ResultFile()
 {
-  close();
+  if (data_2)
+    delete[] data_2;
 }
 
 unsigned int ResultFile::addSignal(const std::string& name, const std::string& description, SignalType_t type)
@@ -77,13 +78,12 @@ bool ResultFile::create(const std::string& filename, double startTime, double st
 
 void ResultFile::close()
 {
+  closeFile();
+
   if (data_2)
   {
-    writeFile();
     delete[] data_2;
     data_2 = NULL;
-
-    closeFile();
   }
 
   signals.clear();

@@ -179,6 +179,7 @@ void MATResultFile::closeFile()
 {
   if (pFile)
   {
+    writeFile();
     fclose(pFile);
     pFile = NULL;
   }

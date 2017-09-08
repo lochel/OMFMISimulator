@@ -67,6 +67,7 @@ void CSVResultFile::closeFile()
 {
   if (pFile)
   {
+    writeFile();
     fclose(pFile);
     pFile = NULL;
   }
