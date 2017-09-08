@@ -110,7 +110,7 @@ void MatReader::deleteSeries(Series** series)
   }
 }
 
-bool MatReader::compareSeries(Series* seriesA, Series* seriesB)
+bool MatReader::compareSeries(Series* seriesA, Series* seriesB, double relTol, double absTol)
 {
   if (!seriesA || !seriesA->time || !seriesA->value || seriesA->length < 2 ||
     !seriesB || !seriesB->time || !seriesB->value || seriesB->length < 2)
@@ -122,13 +122,13 @@ bool MatReader::compareSeries(Series* seriesA, Series* seriesB)
   unsigned int lengthA = seriesA->length;
   unsigned int lengthB = seriesB->length;
 
-  if (!almostEqualRelativeAndAbs(seriesA->time[0], seriesB->time[0]))
+  if (!almostEqualRelativeAndAbs(seriesA->time[0], seriesB->time[0], relTol, absTol))
   {
     logWarning("MatReader::compareSeries: start times are different");
     return false;
   }
 
-  if (!almostEqualRelativeAndAbs(seriesA->time[seriesA->length - 1], seriesB->time[seriesB->length - 1]))
+  if (!almostEqualRelativeAndAbs(seriesA->time[seriesA->length - 1], seriesB->time[seriesB->length - 1], relTol, absTol))
   {
     logWarning("MatReader::compareSeries: stop times are different");
     return false;
@@ -176,13 +176,14 @@ bool MatReader::compareSeries(Series* seriesA, Series* seriesB)
 
     valueA = mA*t + bA;
     valueB = mB*t + bB;
-    if (!almostEqualRelativeAndAbs(valueA, valueB))
+    if (!almostEqualRelativeAndAbs(valueA, valueB, relTol, absTol))
     {
       logWarning("MatReader::compareSeries: different values at time " + std::to_string(t));
+      logWarning("MatReader::compareSeries: valueA: " + std::to_string(valueA) + ", valueB: " + std::to_string(valueB));
       return false;
     }
 
-    if (almostEqualRelativeAndAbs(timeA2, timeB2))
+    if (almostEqualRelativeAndAbs(timeA2, timeB2, relTol, absTol))
     {
       do iA++; while (iA < lengthA-1 && seriesA->time[iA] >= seriesA->time[iA + 1]);
       do iB++; while (iB < lengthB-1 && seriesB->time[iB] >= seriesB->time[iB + 1]);

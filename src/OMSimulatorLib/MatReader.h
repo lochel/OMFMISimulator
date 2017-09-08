@@ -47,10 +47,10 @@ public:
   MatReader(const char* filename);
   ~MatReader();
 
-  Series*getSeries(const char* var);
+  Series* getSeries(const char* var);
 
   static void deleteSeries(Series** series);
-  static bool compareSeries(Series* seriesA, Series* seriesB);
+  static bool compareSeries(Series* seriesA, Series* seriesB, double relTol, double absTol);
 
 private:
   MatVer4Matrix* name;

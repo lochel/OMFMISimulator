@@ -189,6 +189,11 @@ void oms_logToStdStream(int useStdStream);
  */
 const char* oms_getVersion();
 
+/**
+ * \brief Compares simulation results.
+ */
+int oms_compareSimulationResults(const char* filenameA, const char* varA, const char* filenameB, const char* varB, double relTol, double absTol);
+
 #ifdef __cplusplus
 }
 #endif

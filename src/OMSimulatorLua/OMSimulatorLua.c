@@ -412,35 +412,59 @@ static int OMSimulatorLua_getVersion(lua_State *L)
   return 1;
 }
 
+//int oms_compareSimulationResults(const char* filenameA, const char* varA, const char* filenameB, const char* varB, double relTol, double absTol);
+static int OMSimulatorLua_compareSimulationResults(lua_State *L)
+{
+  if (lua_gettop(L) != 6)
+    return luaL_error(L, "expecting exactly 6 arguments");
+  luaL_checktype(L, 1, LUA_TSTRING);
+  luaL_checktype(L, 2, LUA_TSTRING);
+  luaL_checktype(L, 3, LUA_TSTRING);
+  luaL_checktype(L, 4, LUA_TSTRING);
+  luaL_checktype(L, 5, LUA_TNUMBER);
+  luaL_checktype(L, 6, LUA_TNUMBER);
+
+  const char *filenameA = lua_tostring(L, 1);
+  const char *varA = lua_tostring(L, 2);
+  const char *filenameB = lua_tostring(L, 3);
+  const char *varB = lua_tostring(L, 4);
+  double relTol = lua_tonumber(L, 5);
+  double absTol = lua_tonumber(L, 6);
+  int rc = oms_compareSimulationResults(filenameA, varA, filenameB, varB, relTol, absTol);
+  lua_pushinteger(L, rc);
+  return 1;
+}
+
 DLLEXPORT int luaopen_OMSimulatorLua(lua_State *L)
 {
-  REGISTER_LUA_CALL(newModel);
-  REGISTER_LUA_CALL(loadModel);
-  REGISTER_LUA_CALL(unload);
-  REGISTER_LUA_CALL(instantiateFMU);
-  REGISTER_LUA_CALL(setReal);
-  REGISTER_LUA_CALL(getReal);
   REGISTER_LUA_CALL(addConnection);
-  REGISTER_LUA_CALL(simulate);
-  REGISTER_LUA_CALL(doSteps);
-  REGISTER_LUA_CALL(stepUntil);
+  REGISTER_LUA_CALL(compareSimulationResults);
   REGISTER_LUA_CALL(describe);
+  REGISTER_LUA_CALL(doSteps);
   REGISTER_LUA_CALL(exportDependencyGraph);
-  REGISTER_LUA_CALL(initialize);
-  REGISTER_LUA_CALL(terminate);
-  REGISTER_LUA_CALL(reset);
+  REGISTER_LUA_CALL(exportXML);
   REGISTER_LUA_CALL(getCurrentTime);
-  REGISTER_LUA_CALL(setStartTime);
-  REGISTER_LUA_CALL(setStopTime);
-  REGISTER_LUA_CALL(setTolerance);
+  REGISTER_LUA_CALL(getReal);
+  REGISTER_LUA_CALL(getVersion);
+  REGISTER_LUA_CALL(importXML);
+  REGISTER_LUA_CALL(initialize);
+  REGISTER_LUA_CALL(instantiateFMU);
+  REGISTER_LUA_CALL(loadModel);
+  REGISTER_LUA_CALL(logToStdStream);
+  REGISTER_LUA_CALL(newModel);
+  REGISTER_LUA_CALL(reset);
   REGISTER_LUA_CALL(setCommunicationInterval);
-  REGISTER_LUA_CALL(setTempDirectory);
-  REGISTER_LUA_CALL(setWorkingDirectory);
+  REGISTER_LUA_CALL(setReal);
   REGISTER_LUA_CALL(setResultFile);
   REGISTER_LUA_CALL(setSolverMethod);
-  REGISTER_LUA_CALL(logToStdStream);
-  REGISTER_LUA_CALL(getVersion);
-  REGISTER_LUA_CALL(exportXML);
-  REGISTER_LUA_CALL(importXML);
+  REGISTER_LUA_CALL(setStartTime);
+  REGISTER_LUA_CALL(setStopTime);
+  REGISTER_LUA_CALL(setTempDirectory);
+  REGISTER_LUA_CALL(setTolerance);
+  REGISTER_LUA_CALL(setWorkingDirectory);
+  REGISTER_LUA_CALL(simulate);
+  REGISTER_LUA_CALL(stepUntil);
+  REGISTER_LUA_CALL(terminate);
+  REGISTER_LUA_CALL(unload);
   return 0;
 }

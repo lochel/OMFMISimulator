@@ -36,6 +36,7 @@
 #include "GlobalSettings.h"
 #include "Version.h"
 #include "Types.h"
+#include "MatReader.h"
 
 #include <string>
 
@@ -334,4 +335,25 @@ void oms_logToStdStream(int useStdStream)
 const char* oms_getVersion()
 {
   return oms_git_version;
+}
+
+int oms_compareSimulationResults(const char* filenameA, const char* varA, const char* filenameB, const char* varB, double relTol, double absTol)
+{
+  MatReader readerA(filenameA);
+  MatReader readerB(filenameB);
+
+  MatReader::Series* seriesA = readerA.getSeries(varA);
+  MatReader::Series* seriesB = readerB.getSeries(varB);
+
+  //for (int i=0; i<seriesA->length; ++i)
+  //  std::cout << seriesA->time[i] << " - " << seriesA->value[i] << std::endl;
+  //for (int i=0; i<seriesB->length; ++i)
+  //  std::cout << seriesB->time[i] << " - " << seriesB->value[i] << std::endl;
+
+  bool rc = MatReader::compareSeries(seriesA, seriesB, relTol, absTol);
+
+  MatReader::deleteSeries(&seriesA);
+  MatReader::deleteSeries(&seriesB);
+
+  return rc ? 1 : 0;
 }
