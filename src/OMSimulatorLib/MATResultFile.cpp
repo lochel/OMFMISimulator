@@ -80,13 +80,13 @@ bool MATResultFile::createFile(const std::string& filename, double startTime, do
   // Dimensions: maxLength x nVars
   // Class Type: Character Array
   //  Data Type: 8-bit, unsigned integer
-  size_t maxLength = 4;
+  size_t maxLength = 5;
   for (int i = 0; i < signals.size(); ++i)
-    if (signals[i].name.size() > maxLength)
-      maxLength = signals[i].name.size();
+    if (signals[i].name.size() + 1 > maxLength)
+      maxLength = signals[i].name.size() + 1;
   for (int i = 0; i < parameters.size(); ++i)
-    if (parameters[i].signal.name.size() > maxLength)
-      maxLength = parameters[i].signal.name.size();
+    if (parameters[i].signal.name.size() + 1 > maxLength)
+      maxLength = parameters[i].signal.name.size() + 1;
   char* name = new char[maxLength * (1 + signals.size() + parameters.size())]();
   memcpy(name, "time", 4);
   for (int i = 0; i < signals.size(); ++i)
@@ -102,13 +102,13 @@ bool MATResultFile::createFile(const std::string& filename, double startTime, do
   // Dimensions: maxLength x nVars
   // Class Type: Character Array
   //  Data Type: 8-bit, unsigned integer
-  maxLength = 9;
+  maxLength = 10;
   for (int i = 0; i < signals.size(); ++i)
-    if (signals[i].description.size() > maxLength)
-      maxLength = signals[i].description.size();
+    if (signals[i].description.size() + 1 > maxLength)
+      maxLength = signals[i].description.size() + 1;
   for (int i = 0; i < parameters.size(); ++i)
-    if (parameters[i].signal.description.size() > maxLength)
-      maxLength = parameters[i].signal.description.size();
+    if (parameters[i].signal.description.size() + 1 > maxLength)
+      maxLength = parameters[i].signal.description.size() + 1;
   char* description = new char[maxLength * (1 + signals.size() + parameters.size())]();
   memcpy(description, "Time in s", 9);
   for (int i = 0; i < signals.size(); ++i)

@@ -66,7 +66,10 @@ MatReader::Series* MatReader::getSeries(const char* var)
       index = i;
 
   if (index == -1)
+  {
+    logWarning("MatReader::getSeries: series " + std::string(var) + " not found");
     return NULL;
+  }
 
   int32_t info[4];
   memcpy(&info, (int32_t*)dataInfo->data + 4 * index, 4 * sizeof(int32_t));

@@ -60,8 +60,8 @@ static inline void trim(std::string &s)
   rtrim(s);
 }
 
-const double DOUBLEEQUAL_ABSTOL = 0.0000000001;
-const double DOUBLEEQUAL_RELTOL = 0.00001;
+const double DOUBLEEQUAL_ABSTOL = 1e-10;
+const double DOUBLEEQUAL_RELTOL = 1e-5;
 
 // http://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
 static inline bool almostEqualRelativeAndAbs(double a, double b, double reltol=DOUBLEEQUAL_RELTOL, double abstol=DOUBLEEQUAL_ABSTOL)

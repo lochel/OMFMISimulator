@@ -192,7 +192,7 @@ const char* oms_getVersion();
 /**
  * \brief Compares simulation results.
  */
-int oms_compareSimulationResults(const char* filenameA, const char* varA, const char* filenameB, const char* varB, double relTol, double absTol);
+int oms_compareSimulationResults(const char* filenameA, const char* filenameB, const char* var, double relTol, double absTol);
 
 #ifdef __cplusplus
 }

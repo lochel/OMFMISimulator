@@ -337,13 +337,13 @@ const char* oms_getVersion()
   return oms_git_version;
 }
 
-int oms_compareSimulationResults(const char* filenameA, const char* varA, const char* filenameB, const char* varB, double relTol, double absTol)
+int oms_compareSimulationResults(const char* filenameA, const char* filenameB, const char* var, double relTol, double absTol)
 {
   MatReader readerA(filenameA);
   MatReader readerB(filenameB);
 
-  MatReader::Series* seriesA = readerA.getSeries(varA);
-  MatReader::Series* seriesB = readerB.getSeries(varB);
+  MatReader::Series* seriesA = readerA.getSeries(var);
+  MatReader::Series* seriesB = readerB.getSeries(var);
 
   //for (int i=0; i<seriesA->length; ++i)
   //  std::cout << seriesA->time[i] << " - " << seriesA->value[i] << std::endl;
