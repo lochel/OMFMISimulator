@@ -29,20 +29,20 @@
  *
  */
 
-#ifndef _OMS_MATRESULTFILE_H_
-#define _OMS_MATRESULTFILE_H_
+#ifndef _OMS_MATWRITER_H_
+#define _OMS_MATWRITER_H_
 
-#include "ResultFile.h"
+#include "ResultWriter.h"
 
 #include <stdio.h>
 #include <string>
 
-class MATResultFile :
-  public ResultFile
+class MATWriter :
+  public ResultWriter
 {
 public:
-  MATResultFile(unsigned int bufferSize);
-  ~MATResultFile();
+  MATWriter(unsigned int bufferSize);
+  ~MATWriter();
 
 protected:
   bool createFile(const std::string& filename, double startTime, double stopTime);

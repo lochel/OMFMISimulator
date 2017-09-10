@@ -29,22 +29,22 @@
  *
  */
 
-#include "ResultFile.h"
+#include "ResultWriter.h"
 
-ResultFile::ResultFile(unsigned int bufferSize)
+ResultWriter::ResultWriter(unsigned int bufferSize)
   : bufferSize(bufferSize),
     nEmits(0),
     data_2(NULL)
 {
 }
 
-ResultFile::~ResultFile()
+ResultWriter::~ResultWriter()
 {
   if (data_2)
     delete[] data_2;
 }
 
-unsigned int ResultFile::addSignal(const std::string& name, const std::string& description, SignalType_t type)
+unsigned int ResultWriter::addSignal(const std::string& name, const std::string& description, SignalType_t type)
 {
   Signal signal;
   signal.name = name;
@@ -55,7 +55,7 @@ unsigned int ResultFile::addSignal(const std::string& name, const std::string& d
   return (unsigned int) signals.size();
 }
 
-void ResultFile::addParameter(const std::string& name, const std::string& description, SignalType_t type, SignalValue_t value)
+void ResultWriter::addParameter(const std::string& name, const std::string& description, SignalType_t type, SignalValue_t value)
 {
   Parameter parameter;
   parameter.signal.name = name;
@@ -66,7 +66,7 @@ void ResultFile::addParameter(const std::string& name, const std::string& descri
   parameters.push_back(parameter);
 }
 
-bool ResultFile::create(const std::string& filename, double startTime, double stopTime)
+bool ResultWriter::create(const std::string& filename, double startTime, double stopTime)
 {
   if (!createFile(filename, startTime, stopTime))
     return false;
@@ -76,7 +76,7 @@ bool ResultFile::create(const std::string& filename, double startTime, double st
   return true;
 }
 
-void ResultFile::close()
+void ResultWriter::close()
 {
   closeFile();
 
@@ -90,7 +90,7 @@ void ResultFile::close()
   parameters.clear();
 }
 
-void ResultFile::updateSignal(unsigned int id, SignalValue_t value)
+void ResultWriter::updateSignal(unsigned int id, SignalValue_t value)
 {
   if (!data_2)
     return;
@@ -98,7 +98,7 @@ void ResultFile::updateSignal(unsigned int id, SignalValue_t value)
   data_2[nEmits*(signals.size() + 1) + id] = value.realValue;
 }
 
-void ResultFile::emit(double time)
+void ResultWriter::emit(double time)
 {
   if (!data_2)
     return;

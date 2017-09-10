@@ -35,7 +35,7 @@
 #include "Variable.h"
 #include "DirectedGraph.h"
 #include "Clocks.h"
-#include "ResultFile.h"
+#include "ResultWriter.h"
 
 #include <fmilib.h>
 #include <string>
@@ -85,8 +85,8 @@ public:
   std::vector<unsigned int>& getAllInputs() {return allInputs;}
   std::vector<unsigned int>& getAllOutputs() {return allOutputs;}
 
-  void registerSignalsForResultFile(ResultFile *resultFile);
-  void updateSignalsForResultFile(ResultFile *resultFile);
+  void registerSignalsForResultFile(ResultWriter *resultFile);
+  void updateSignalsForResultFile(ResultWriter *resultFile);
 private:
   enum Solver_t { NO_SOLVER, EXPLICIT_EULER, CVODE };
 

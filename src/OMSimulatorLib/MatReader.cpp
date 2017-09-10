@@ -33,11 +33,11 @@
 #include "MatVer4.h"
 
 #include "Logging.h"
-#include "Util.h"
 
 #include <string.h>
 
 MatReader::MatReader(const char* filename)
+  : ResultReader(filename)
 {
   FILE *pFile = fopen(filename, "rb");
   skipMatVer4Matrix(pFile);
@@ -57,7 +57,7 @@ MatReader::~MatReader()
   deleteMatVer4Matrix(&data_2);
 }
 
-MatReader::Series* MatReader::getSeries(const char* var)
+ResultReader::Series* MatReader::getSeries(const char* var)
 {
   // find index
   int index = -1;
@@ -98,105 +98,4 @@ MatReader::Series* MatReader::getSeries(const char* var)
   }
 
   return series;
-}
-
-void MatReader::deleteSeries(Series** series)
-{
-  if (*series)
-  {
-    if ((*series)->time)
-      delete[](*series)->time;
-    if ((*series)->value)
-      delete[](*series)->value;
-    delete *series;
-    *series = NULL;
-  }
-}
-
-bool MatReader::compareSeries(Series* seriesA, Series* seriesB, double relTol, double absTol)
-{
-  if (!seriesA || !seriesA->time || !seriesA->value || seriesA->length < 2 ||
-    !seriesB || !seriesB->time || !seriesB->value || seriesB->length < 2)
-  {
-    logError("MatReader::compareSeries: invalid input");
-    return false;
-  }
-
-  unsigned int lengthA = seriesA->length;
-  unsigned int lengthB = seriesB->length;
-
-  if (!almostEqualRelativeAndAbs(seriesA->time[0], seriesB->time[0], relTol, absTol))
-  {
-    logWarning("MatReader::compareSeries: start times are different");
-    return false;
-  }
-
-  if (!almostEqualRelativeAndAbs(seriesA->time[seriesA->length - 1], seriesB->time[seriesB->length - 1], relTol, absTol))
-  {
-    logWarning("MatReader::compareSeries: stop times are different");
-    return false;
-  }
-
-  if (seriesA->time[0] >= seriesA->time[seriesA->length - 1] ||
-    seriesB->time[0] >= seriesB->time[seriesB->length - 1])
-  {
-    logWarning("MatReader::compareSeries: invalid time frame");
-    return false;
-  }
-
-  int iA = 0;
-  int iB = 0;
-  while (seriesA->time[iA] >= seriesA->time[iA + 1])
-    iA++;
-  while (seriesB->time[iB] >= seriesB->time[iB + 1])
-    iB++;
-
-  double t;
-  double stopTime = fmin(seriesA->time[seriesA->length - 1], seriesB->time[seriesB->length - 1]);
-
-  double mA, bA, valueA, valueA1, valueA2, timeA1, timeA2;
-  double mB, bB, valueB, valueB1, valueB2, timeB1, timeB2;
-
-  do
-  {
-    valueA1 = seriesA->value[iA];
-    valueA2 = seriesA->value[iA + 1];
-    timeA1 = seriesA->time[iA];
-    timeA2 = seriesA->time[iA + 1];
-
-    valueB1 = seriesB->value[iB];
-    valueB2 = seriesB->value[iB + 1];
-    timeB1 = seriesB->time[iB];
-    timeB2 = seriesB->time[iB + 1];
-
-    t = fmax(timeA1, timeB1);
-
-    mA = (valueA2 - valueA1) / (timeA2 - timeA1);
-    bA = valueA1 - mA*timeA1;
-
-    mB = (valueB2 - valueB1) / (timeB2 - timeB1);
-    bB = valueB1 - mB*timeB1;
-
-    valueA = mA*t + bA;
-    valueB = mB*t + bB;
-    if (!almostEqualRelativeAndAbs(valueA, valueB, relTol, absTol))
-    {
-      logWarning("MatReader::compareSeries: different values at time " + std::to_string(t));
-      logWarning("MatReader::compareSeries: valueA: " + std::to_string(valueA) + ", valueB: " + std::to_string(valueB));
-      return false;
-    }
-
-    if (almostEqualRelativeAndAbs(timeA2, timeB2, relTol, absTol))
-    {
-      do iA++; while (iA < lengthA-1 && seriesA->time[iA] >= seriesA->time[iA + 1]);
-      do iB++; while (iB < lengthB-1 && seriesB->time[iB] >= seriesB->time[iB + 1]);
-    }
-    else if (timeA2 < timeB2)
-      do iA++; while (iA < lengthA-1 && seriesA->time[iA] >= seriesA->time[iA + 1]);
-    else
-      do iB++; while (iB < lengthB-1 && seriesB->time[iB] >= seriesB->time[iB + 1]);
-
-  } while (iA < lengthA && iB < lengthB);
-
-  return true;
 }

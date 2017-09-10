@@ -29,28 +29,59 @@
  *
  */
 
-#ifndef _OMS_CSVRESULTFILE_H_
-#define _OMS_CSVRESULTFILE_H_
-
-#include "ResultFile.h"
+#include "CSVWriter.h"
+#include "ResultWriter.h"
 
 #include <stdio.h>
 #include <string>
 
-class CSVResultFile :
-  public ResultFile
+CSVWriter::CSVWriter(unsigned int bufferSize)
+  : ResultWriter(bufferSize),
+    pFile(NULL)
 {
-public:
-  CSVResultFile(unsigned int bufferSize);
-  ~CSVResultFile();
+}
 
-protected:
-  bool createFile(const std::string& filename, double startTime, double stopTime);
-  void closeFile();
-  void writeFile();
+CSVWriter::~CSVWriter()
+{
+  closeFile();
+}
 
-private:
-  FILE *pFile;
-};
+bool CSVWriter::createFile(const std::string& filename, double startTime, double stopTime)
+{
+  if (pFile)
+    return false;
 
-#endif
+  pFile = fopen(filename.c_str(), "w");
+  fprintf(pFile, "\"time\"");
+
+  for (int i = 0; i < signals.size(); ++i)
+  {
+    fprintf(pFile, ", \"%s\"", signals[i].name.c_str());
+  }
+  fprintf(pFile, "\n");
+
+  return true;
+}
+
+void CSVWriter::closeFile()
+{
+  if (pFile)
+  {
+    writeFile();
+    fclose(pFile);
+    pFile = NULL;
+  }
+}
+
+void CSVWriter::writeFile()
+{
+  for (int i = 0; i < nEmits; ++i)
+  {
+    fprintf(pFile, "%.12g", data_2[i * (signals.size() + 1) + 0]);
+
+    for (int j = 1; j < signals.size() + 1; ++j)
+      fprintf(pFile, ", %.12g", data_2[i * (signals.size() + 1) + j]);
+
+    fprintf(pFile, "\n");
+  }
+}

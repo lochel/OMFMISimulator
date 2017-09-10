@@ -38,7 +38,7 @@
 #include "CompositeModel.h"
 #include "Util.h"
 #include "Clocks.h"
-#include "ResultFile.h"
+#include "ResultWriter.h"
 
 #include <fmilib.h>
 #include <JM/jm_portability.h>
@@ -996,7 +996,7 @@ std::string FMUWrapper::GetSolverMethodString() const
   }
 }
 
-void FMUWrapper::registerSignalsForResultFile(ResultFile *resultFile)
+void FMUWrapper::registerSignalsForResultFile(ResultWriter *resultFile)
 {
   OMS_TIC(globalClocks, GLOBALCLOCK_RESULTFILE);
 
@@ -1043,7 +1043,7 @@ void FMUWrapper::registerSignalsForResultFile(ResultFile *resultFile)
   OMS_TOC(globalClocks, GLOBALCLOCK_RESULTFILE);
 }
 
-void FMUWrapper::updateSignalsForResultFile(ResultFile *resultFile)
+void FMUWrapper::updateSignalsForResultFile(ResultWriter *resultFile)
 {
   OMS_TIC(globalClocks, GLOBALCLOCK_RESULTFILE);
 

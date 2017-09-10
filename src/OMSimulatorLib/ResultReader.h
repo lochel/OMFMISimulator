@@ -29,59 +29,33 @@
  *
  */
 
-#include "CSVResultFile.h"
-#include "ResultFile.h"
+#ifndef _OMS_RESULTREADER_H_
+#define _OMS_RESULTREADER_H_
 
-#include <stdio.h>
-#include <string>
-
-CSVResultFile::CSVResultFile(unsigned int bufferSize)
-  : ResultFile(bufferSize),
-    pFile(NULL)
+class ResultReader
 {
-}
-
-CSVResultFile::~CSVResultFile()
-{
-  closeFile();
-}
-
-bool CSVResultFile::createFile(const std::string& filename, double startTime, double stopTime)
-{
-  if (pFile)
-    return false;
-
-  pFile = fopen(filename.c_str(), "w");
-  fprintf(pFile, "\"time\"");
-
-  for (int i = 0; i < signals.size(); ++i)
+public:
+  struct Series
   {
-    fprintf(pFile, ", \"%s\"", signals[i].name.c_str());
-  }
-  fprintf(pFile, "\n");
+    unsigned int length;
+    double* time;
+    double* value;
+  };
 
-  return true;
-}
+  ResultReader(const char* filename);
+  virtual ~ResultReader();
 
-void CSVResultFile::closeFile()
-{
-  if (pFile)
-  {
-    writeFile();
-    fclose(pFile);
-    pFile = NULL;
-  }
-}
+  static ResultReader* newReader(const char* filename);
 
-void CSVResultFile::writeFile()
-{
-  for (int i = 0; i < nEmits; ++i)
-  {
-    fprintf(pFile, "%.12g", data_2[i * (signals.size() + 1) + 0]);
+  virtual Series* getSeries(const char* var) = 0;
 
-    for (int j = 1; j < signals.size() + 1; ++j)
-      fprintf(pFile, ", %.12g", data_2[i * (signals.size() + 1) + j]);
+  static void deleteSeries(Series** series);
+  static bool compareSeries(Series* seriesA, Series* seriesB, double relTol, double absTol);
 
-    fprintf(pFile, "\n");
-  }
-}
+private:
+  // Stop the compiler generating methods for copying the object
+  ResultReader(ResultReader const& copy);            // Not Implemented
+  ResultReader& operator=(ResultReader const& copy); // Not Implemented
+};
+
+#endif

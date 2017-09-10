@@ -29,8 +29,8 @@
  *
  */
 
-#ifndef _OMS_RESULTFILE_H_
-#define _OMS_RESULTFILE_H_
+#ifndef _OMS_RESULTWRITER_H_
+#define _OMS_RESULTWRITER_H_
 
 #include <string>
 #include <vector>
@@ -62,11 +62,11 @@ struct Parameter
   SignalValue_t value;
 };
 
-class ResultFile
+class ResultWriter
 {
 public:
-  ResultFile(unsigned int bufferSize);
-  virtual ~ResultFile();
+  ResultWriter(unsigned int bufferSize);
+  virtual ~ResultWriter();
 
   unsigned int addSignal(const std::string& name, const std::string& description, SignalType_t type);
   void addParameter(const std::string& name, const std::string& description, SignalType_t type, SignalValue_t value);
@@ -79,8 +79,8 @@ public:
 
 private:
   // Stop the compiler generating methods for copying the object
-  ResultFile(ResultFile const& copy);            // Not Implemented
-  ResultFile& operator=(ResultFile const& copy); // Not Implemented
+  ResultWriter(ResultWriter const& copy);            // Not Implemented
+  ResultWriter& operator=(ResultWriter const& copy); // Not Implemented
 
 protected:
   virtual bool createFile(const std::string& filename, double startTime, double stopTime) = 0;

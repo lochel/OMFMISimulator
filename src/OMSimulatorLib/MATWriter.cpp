@@ -29,8 +29,8 @@
  *
  */
 
-#include "MATResultFile.h"
-#include "ResultFile.h"
+#include "MATWriter.h"
+#include "ResultWriter.h"
 #include "MatVer4.h"
 #include "Logging.h"
 #include "Util.h"
@@ -40,22 +40,22 @@
 #include <cstring>
 #include <errno.h>
 
-MATResultFile::MATResultFile(unsigned int bufferSize)
-  : ResultFile(bufferSize),
+MATWriter::MATWriter(unsigned int bufferSize)
+  : ResultWriter(bufferSize),
     pFile(NULL)
 {
 }
 
-MATResultFile::~MATResultFile()
+MATWriter::~MATWriter()
 {
   closeFile();
 }
 
-bool MATResultFile::createFile(const std::string& filename, double startTime, double stopTime)
+bool MATWriter::createFile(const std::string& filename, double startTime, double stopTime)
 {
   if (pFile)
   {
-    logError("MATResultFile::createFile: File is already open");
+    logError("MATWriter::createFile: File is already open");
     return false;
   }
 
@@ -63,7 +63,7 @@ bool MATResultFile::createFile(const std::string& filename, double startTime, do
 
   if (!pFile)
   {
-    logError("MATResultFile::createFile: " + std::string(strerror(errno)));
+    logError("MATWriter::createFile: " + std::string(strerror(errno)));
     return false;
   }
 
@@ -175,7 +175,7 @@ bool MATResultFile::createFile(const std::string& filename, double startTime, do
   return true;
 }
 
-void MATResultFile::closeFile()
+void MATWriter::closeFile()
 {
   if (pFile)
   {
@@ -185,7 +185,7 @@ void MATResultFile::closeFile()
   }
 }
 
-void MATResultFile::writeFile()
+void MATWriter::writeFile()
 {
   appendMatVer4Matrix(pFile, pos_data_2, "data_2", 1 + signals.size(), nEmits, data_2, MatVer4Type_DOUBLE);
 }

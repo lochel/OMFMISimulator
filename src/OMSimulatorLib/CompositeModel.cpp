@@ -36,9 +36,9 @@
 #include "Types.h"
 #include "Util.h"
 #include "Clocks.h"
-#include "ResultFile.h"
-#include "CSVResultFile.h"
-#include "MATResultFile.h"
+#include "ResultWriter.h"
+#include "CSVWriter.h"
+#include "MATWriter.h"
 
 #include <fmilib.h>
 #include <JM/jm_portability.h>
@@ -619,9 +619,9 @@ void CompositeModel::initialize()
     std::string extension = boost::filesystem::extension(settings.GetResultFile());
 
     if (".csv" == extension)
-      resultFile = new CSVResultFile(1);
+      resultFile = new CSVWriter(1);
     else if (".mat" == extension)
-      resultFile = new MATResultFile(1024);
+      resultFile = new MATWriter(1024);
     else
       logWarning("Unknown result file type: " + extension);
 

@@ -29,25 +29,28 @@
  *
  */
 
-#ifndef _OMS_MATREADER_H_
-#define _OMS_MATREADER_H_
+#ifndef _OMS_CSVWRITER_H_
+#define _OMS_CSVWRITER_H_
 
-#include "MatVer4.h"
-#include "ResultReader.h"
+#include "ResultWriter.h"
 
-class MatReader : public ResultReader
+#include <stdio.h>
+#include <string>
+
+class CSVWriter :
+  public ResultWriter
 {
 public:
-  MatReader(const char* filename);
-  ~MatReader();
+  CSVWriter(unsigned int bufferSize);
+  ~CSVWriter();
 
-  ResultReader::Series* getSeries(const char* var);
+protected:
+  bool createFile(const std::string& filename, double startTime, double stopTime);
+  void closeFile();
+  void writeFile();
 
 private:
-  MatVer4Matrix* name;
-  MatVer4Matrix* dataInfo;
-  MatVer4Matrix* data_1;
-  MatVer4Matrix* data_2;
+  FILE *pFile;
 };
 
 #endif

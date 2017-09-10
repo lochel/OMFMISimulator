@@ -29,25 +29,25 @@
  *
  */
 
-#ifndef _OMS_MATREADER_H_
-#define _OMS_MATREADER_H_
+#ifndef _OMS_CSVReader_H_
+#define _OMS_CSVReader_H_
 
-#include "MatVer4.h"
 #include "ResultReader.h"
+#include <vector>
+#include <string>
 
-class MatReader : public ResultReader
+class CSVReader : public ResultReader
 {
 public:
-  MatReader(const char* filename);
-  ~MatReader();
+  CSVReader(const char* filename);
+  ~CSVReader();
 
   ResultReader::Series* getSeries(const char* var);
 
 private:
-  MatVer4Matrix* name;
-  MatVer4Matrix* dataInfo;
-  MatVer4Matrix* data_1;
-  MatVer4Matrix* data_2;
+  std::vector<std::string> names;
+  double* data;
+  unsigned int length;
 };
 
 #endif

@@ -36,6 +36,7 @@
 #include "GlobalSettings.h"
 #include "Version.h"
 #include "Types.h"
+#include "ResultReader.h"
 #include "MatReader.h"
 
 #include <string>
@@ -339,21 +340,24 @@ const char* oms_getVersion()
 
 int oms_compareSimulationResults(const char* filenameA, const char* filenameB, const char* var, double relTol, double absTol)
 {
-  MatReader readerA(filenameA);
-  MatReader readerB(filenameB);
+  ResultReader* readerA = ResultReader::newReader(filenameA);
+  ResultReader* readerB = ResultReader::newReader(filenameB);
 
-  MatReader::Series* seriesA = readerA.getSeries(var);
-  MatReader::Series* seriesB = readerB.getSeries(var);
+  ResultReader::Series* seriesA = readerA->getSeries(var);
+  ResultReader::Series* seriesB = readerB->getSeries(var);
 
   //for (int i=0; i<seriesA->length; ++i)
   //  std::cout << seriesA->time[i] << " - " << seriesA->value[i] << std::endl;
   //for (int i=0; i<seriesB->length; ++i)
   //  std::cout << seriesB->time[i] << " - " << seriesB->value[i] << std::endl;
 
-  bool rc = MatReader::compareSeries(seriesA, seriesB, relTol, absTol);
+  bool rc = ResultReader::compareSeries(seriesA, seriesB, relTol, absTol);
 
-  MatReader::deleteSeries(&seriesA);
-  MatReader::deleteSeries(&seriesB);
+  ResultReader::deleteSeries(&seriesA);
+  ResultReader::deleteSeries(&seriesB);
+
+  delete readerA;
+  delete readerB;
 
   return rc ? 1 : 0;
 }

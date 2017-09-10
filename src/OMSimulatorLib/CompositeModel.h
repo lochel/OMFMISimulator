@@ -35,7 +35,7 @@
 #include "FMUWrapper.h"
 #include "DirectedGraph.h"
 #include "Settings.h"
-#include "ResultFile.h"
+#include "ResultWriter.h"
 #include "Types.h"
 
 #include <fmilib.h>
@@ -79,7 +79,7 @@ private:
 
 private:
   Settings settings;
-  ResultFile *resultFile;
+  ResultWriter *resultFile;
   std::unordered_map<std::string, FMUWrapper*> fmuInstances;
   std::unordered_map<std::string,double> ParameterList;
   DirectedGraph outputsGraph;
