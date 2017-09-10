@@ -73,6 +73,8 @@ public:
   Settings& getSettings() {return settings;}
   void SetSolverMethod(std::string instanceName, std::string method);
 
+  void setVariableFilter(const char* instanceFilter, const char* variableFilter);
+
 private:
   void updateInputs(DirectedGraph& graph);
   void emit();

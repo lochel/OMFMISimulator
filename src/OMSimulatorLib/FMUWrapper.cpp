@@ -48,6 +48,7 @@
 #include <map>
 #include <stdlib.h>
 #include <unordered_map>
+#include <regex>
 
 #include <boost/filesystem.hpp>
 
@@ -151,7 +152,7 @@ int cvode_rhs(realtype t, N_Vector y, N_Vector ydot, void *user_data)
 }
 
 FMUWrapper::FMUWrapper(CompositeModel& model, std::string fmuPath, std::string instanceName)
-  : model(model), fmuPath(fmuPath), instanceName(instanceName), solverMethod(EXPLICIT_EULER), clocks(CLOCK_MAX_INDEX)
+  : model(model), fmuPath(fmuPath), instanceName(instanceName), solverMethod(EXPLICIT_EULER), clocks(CLOCK_MAX_INDEX), variableFilter(".*")
 {
   logTrace();
   OMS_TIC(clocks, CLOCK_INSTANTIATION);
@@ -1000,43 +1001,34 @@ void FMUWrapper::registerSignalsForResultFile(ResultWriter *resultFile)
 {
   OMS_TIC(globalClocks, GLOBALCLOCK_RESULTFILE);
 
-  for(int i=0; i<allInputs.size(); ++i)
-  {
-    unsigned int index = allInputs[i];
-    Variable& var = allVariables[index];
-    std::string name = var.getFMUInstanceName() + "." + var.getName();
-    const std::string& description = var.getDescription();
-    if (var.isTypeReal())
-    {
-      unsigned int ID = resultFile->addSignal(name, description, SignalType_REAL);
-      resultFileMapping[ID] = index;
-    }
-  }
+  std::regex exp(variableFilter);
 
-  for(int i=0; i<allOutputs.size(); ++i)
+  for (int i=0; i<allVariables.size(); ++i)
   {
-    unsigned int index = allOutputs[i];
-    Variable& var = allVariables[index];
-    std::string name = var.getFMUInstanceName() + "." + var.getName();
-    const std::string& description = var.getDescription();
-    if (var.isTypeReal())
+    Variable& var = allVariables[i];
+    if (std::regex_match(var.getName(), exp))
     {
-      unsigned int ID = resultFile->addSignal(name, description, SignalType_REAL);
-      resultFileMapping[ID] = index;
-    }
-  }
-
-  for(int i=0; i<allParameters.size(); ++i)
-  {
-    unsigned int index = allParameters[i];
-    Variable& var = allVariables[index];
-    std::string name = var.getFMUInstanceName() + "." + var.getName();
-    const std::string& description = var.getDescription();
-    SignalValue_t value;
-    if (var.isTypeReal())
-    {
-      value.realValue = getReal(var);
-      resultFile->addParameter(name, description, SignalType_REAL, value);
+      if (var.isParameter())
+      {
+        std::string name = var.getFMUInstanceName() + "." + var.getName();
+        const std::string& description = var.getDescription();
+        SignalValue_t value;
+        if (var.isTypeReal())
+        {
+          value.realValue = getReal(var);
+          resultFile->addParameter(name, description, SignalType_REAL, value);
+        }
+      }
+      else
+      {
+        std::string name = var.getFMUInstanceName() + "." + var.getName();
+        const std::string& description = var.getDescription();
+        if (var.isTypeReal())
+        {
+          unsigned int ID = resultFile->addSignal(name, description, SignalType_REAL);
+          resultFileMapping[ID] = i;
+        }
+      }
     }
   }
 
@@ -1062,3 +1054,4 @@ void FMUWrapper::updateSignalsForResultFile(ResultWriter *resultFile)
 
   OMS_TOC(globalClocks, GLOBALCLOCK_RESULTFILE);
 }
+

@@ -52,6 +52,7 @@
 #include <cstdlib>
 #include <stdlib.h>
 #include <deque>
+#include <regex>
 
 #include <boost/filesystem.hpp>
 
@@ -720,4 +721,14 @@ void CompositeModel::SetSolverMethod(std::string instanceName, std::string metho
   }
 
   fmuInstances[instanceName]->SetSolverMethod(method);
+}
+
+void CompositeModel::setVariableFilter(const char* instanceFilter, const char* variableFilter)
+{
+  std::regex exp(instanceFilter);
+
+  std::unordered_map<std::string, FMUWrapper*>::iterator it;
+  for (it=fmuInstances.begin(); it != fmuInstances.end(); it++)
+    if (std::regex_match(it->first, exp))
+      it->second->setVariableFilter(variableFilter);
 }

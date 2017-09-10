@@ -361,3 +361,16 @@ int oms_compareSimulationResults(const char* filenameA, const char* filenameB, c
 
   return rc ? 1 : 0;
 }
+
+void oms_setVariableFilter(void* model, const char* instanceFilter, const char* variableFilter)
+{
+  logTrace();
+  if (!model)
+  {
+    logError("oms_unload: invalid pointer");
+    return;
+  }
+
+  CompositeModel* pModel = (CompositeModel*)model;
+  pModel->setVariableFilter(instanceFilter, variableFilter);
+}

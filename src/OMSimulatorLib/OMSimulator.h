@@ -194,6 +194,15 @@ const char* oms_getVersion();
  */
 int oms_compareSimulationResults(const char* filenameA, const char* filenameB, const char* var, double relTol, double absTol);
 
+/**
+ * \brief Sets the variable filter
+ *
+ * @param model          [in] Model as opaque pointer.
+ * @param instanceFilter [in] Regex to select the FMU instances.
+ * @param variableFilter [in] Regex to select the variables.
+ */
+void oms_setVariableFilter(void* model, const char* instanceFilter, const char* variableFilter);
+
 #ifdef __cplusplus
 }
 #endif

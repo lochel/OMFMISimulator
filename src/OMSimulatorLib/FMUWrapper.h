@@ -87,6 +87,8 @@ public:
 
   void registerSignalsForResultFile(ResultWriter *resultFile);
   void updateSignalsForResultFile(ResultWriter *resultFile);
+
+  void setVariableFilter(const char* variableFilter) {this->variableFilter = variableFilter;}
 private:
   enum Solver_t { NO_SOLVER, EXPLICIT_EULER, CVODE };
 
@@ -148,6 +150,7 @@ private:
   // ME & CS
   fmi2_real_t tcur;
   fmi2_real_t relativeTolerance;
+  std::string variableFilter;
 
   // ME
   fmi2_boolean_t callEventUpdate;

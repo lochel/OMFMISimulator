@@ -433,6 +433,22 @@ static int OMSimulatorLua_compareSimulationResults(lua_State *L)
   return 1;
 }
 
+//void oms_setVariableFilter(void* model, const char* instanceFilter, const char* variableFilter);
+static int OMSimulatorLua_setVariableFilter(lua_State *L)
+{
+  if (lua_gettop(L) != 3)
+    return luaL_error(L, "expecting exactly 3 arguments");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TSTRING);
+  luaL_checktype(L, 3, LUA_TSTRING);
+
+  void *model = topointer(L, 1);
+  const char *instanceFilter = lua_tostring(L, 2);
+  const char *variableFilter = lua_tostring(L, 3);
+  oms_setVariableFilter(model, instanceFilter, variableFilter);
+  return 0;
+}
+
 DLLEXPORT int luaopen_OMSimulatorLua(lua_State *L)
 {
   REGISTER_LUA_CALL(addConnection);
@@ -459,6 +475,7 @@ DLLEXPORT int luaopen_OMSimulatorLua(lua_State *L)
   REGISTER_LUA_CALL(setStopTime);
   REGISTER_LUA_CALL(setTempDirectory);
   REGISTER_LUA_CALL(setTolerance);
+  REGISTER_LUA_CALL(setVariableFilter);
   REGISTER_LUA_CALL(setWorkingDirectory);
   REGISTER_LUA_CALL(simulate);
   REGISTER_LUA_CALL(stepUntil);
