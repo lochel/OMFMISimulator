@@ -233,6 +233,7 @@ void CompositeModel::exportXML(const char* filename)
   simulationparams.append_attribute("StopTime") = stopTime.c_str();
   simulationparams.append_attribute("tolerance") = tolerance.c_str();
   simulationparams.append_attribute("communicationInterval") = communicationInterval.c_str();
+  simulationparams.append_attribute("variableFilter") = ".*";
 
   // add list of FMUs
   std::unordered_map<std::string, FMUWrapper*>::iterator it;
@@ -390,6 +391,10 @@ void CompositeModel::importXML(const char* filename)
     {
       if (!value.empty())
         settings.SetCommunicationInterval(std::strtod(attr.value(), NULL));
+    }
+    else if (name == "variableFilter")
+    {
+      setVariableFilter(".*", attr.value());
     }
   }
 
