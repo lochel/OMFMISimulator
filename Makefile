@@ -1,7 +1,7 @@
 RM=rm -rf
 MKDIR=mkdir -p
 
-.PHONY: OMSimulator config config-OMSimulator config-fmil config-lua config-cvode config-3rdParty distclean testsuite
+.PHONY: OMSimulator config config-OMSimulator config-fmil config-lua config-cvode config-kinsol config-3rdParty distclean testsuite
 
 OMSimulator:
 	@echo
@@ -10,7 +10,7 @@ OMSimulator:
 	@$(MAKE) -C build/linux install
 
 config: config-OMSimulator
-config-3rdParty: config-fmil config-lua config-cvode
+config-3rdParty: config-fmil config-lua config-cvode config-kinsol
 
 config-OMSimulator:
 	@echo
@@ -44,6 +44,15 @@ config-cvode:
 	$(RM) 3rdParty/cvode/install/linux
 	$(MKDIR) 3rdParty/cvode/build-linux
 	cd 3rdParty/cvode/build-linux && cmake -DCMAKE_INSTALL_PREFIX=../install/linux .. -DEXAMPLES_ENABLE:BOOL="0" -DBUILD_SHARED_LIBS:BOOL="0" -DCMAKE_C_FLAGS="-fPIC" && $(MAKE) install
+
+config-kinsol:
+	@echo
+	@echo "# config kinsol"
+	@echo
+	$(RM) 3rdParty/kinsol/build-linux
+	$(RM) 3rdParty/kinsol/install/linux
+	$(MKDIR) 3rdParty/kinsol/build-linux
+	cd 3rdParty/kinsol/build-linux && cmake -DCMAKE_INSTALL_PREFIX=../install/linux .. -DEXAMPLES_ENABLE:BOOL="0" -DBUILD_SHARED_LIBS:BOOL="0" -DCMAKE_C_FLAGS="-fPIC" && $(MAKE) install
 
 distclean:
 	@echo

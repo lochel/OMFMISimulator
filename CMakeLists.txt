@@ -65,6 +65,13 @@ ELSE()
 ENDIF()
 find_package(CVODELibrary REQUIRED)
 
+IF (WIN32)
+  set(KINSOLLibrary_ROOT ${PROJECT_SOURCE_DIR}/3rdParty/kinsol/install/win)
+ELSE()
+  set(KINSOLLibrary_ROOT ${PROJECT_SOURCE_DIR}/3rdParty/kinsol/install/linux)
+ENDIF()
+find_package(KINSOLLibrary REQUIRED)
+
 set(PUGIXML_INCLUDEDIR ${PROJECT_SOURCE_DIR}/3rdParty/PugiXml)
 
 option(OMFIT "Enable the OMFIT module for parameter estimation support." OFF)

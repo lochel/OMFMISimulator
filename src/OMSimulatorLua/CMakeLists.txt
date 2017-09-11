@@ -8,13 +8,14 @@ link_directories(${Boost_LIBRARY_DIRS})
 link_directories(${FMILibrary_LIBRARYDIR})
 link_directories(${LUALibrary_LIBRARYDIR})
 link_directories(${CVODELibrary_LIBRARYDIR})
+link_directories(${KINSOLLibrary_LIBRARYDIR})
 
 # Shared library version
 add_library(OMSimulatorLua SHARED OMSimulatorLua.c)
 IF (WIN32)
-  target_link_libraries(OMSimulatorLua OMSimulatorLib_shared fmilib_shared sundials_cvode sundials_nvecserial lua)
+  target_link_libraries(OMSimulatorLua OMSimulatorLib_shared fmilib_shared sundials_kinsol sundials_cvode sundials_nvecserial lua)
 ELSE ()
-  target_link_libraries(OMSimulatorLua OMSimulatorLib_shared fmilib_shared sundials_cvode sundials_nvecserial)
+  target_link_libraries(OMSimulatorLua OMSimulatorLib_shared fmilib_shared sundials_kinsol sundials_cvode sundials_nvecserial)
 ENDIF ()
 
 install(TARGETS OMSimulatorLua DESTINATION lib)

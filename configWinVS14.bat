@@ -28,6 +28,16 @@ CD ..\..\..
 echo # build cvode
 msbuild.exe "3rdParty\cvode\build-win\INSTALL.vcxproj" /t:Build /p:configuration=Debug
 
+echo # config kinsol
+if exist "3rdParty\kinsol\build-win\" RMDIR /S /Q 3rdParty\kinsol\build-win
+if exist "3rdParty\kinsol\install\win\" RMDIR /S /Q 3rdParty\kinsol\install\win
+MKDIR 3rdParty\kinsol\build-win
+CD 3rdParty\kinsol\build-win
+cmake -G "Visual Studio 14 2015 Win64" -DCMAKE_INSTALL_PREFIX=..\install\win .. -DEXAMPLES_ENABLE:BOOL="0" -DBUILD_SHARED_LIBS:BOOL="0"
+CD ..\..\..
+echo # build kinsol
+msbuild.exe "3rdParty\kinsol\build-win\INSTALL.vcxproj" /t:Build /p:configuration=Debug
+
 echo # config OMFMISimulator
 if exist "build\win\" RMDIR /S /Q build\win
 MKDIR build\win
