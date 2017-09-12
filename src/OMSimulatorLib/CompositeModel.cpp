@@ -556,24 +556,31 @@ void CompositeModel::solveAlgLoop(DirectedGraph& graph, const std::vector< std::
     {
       int output = SCC[i].first;
       int input = SCC[i].second;
-      const std::string& outputFMU = graph.nodes[output].getFMUInstanceName();
-      //std::string& outputVar = graph.nodes[output].getName();
-      const std::string& inputFMU = graph.nodes[input].getFMUInstanceName();
-      //std::string& inputVar = graph.nodes[input].getName();
-      res[i] = fmuInstances[outputFMU]->getReal(graph.nodes[output]);
-      fmuInstances[inputFMU]->setRealInput(graph.nodes[input], res[i]);
-      //std::cout << inputFMU << "." << inputVar << " = " << outputFMU << "." << outputVar << std::endl;
+      if (graph.nodes[output].isOutput() && graph.nodes[input].isInput())
+      {
+        const std::string& outputFMU = graph.nodes[output].getFMUInstanceName();
+        //std::string& outputVar = graph.nodes[output].getName();
+        const std::string& inputFMU = graph.nodes[input].getFMUInstanceName();
+        //std::string& inputVar = graph.nodes[input].getName();
+        res[i] = fmuInstances[outputFMU]->getReal(graph.nodes[output]);
+        fmuInstances[inputFMU]->setRealInput(graph.nodes[input], res[i]);
+        //std::cout << inputFMU << "." << inputVar << " = " << outputFMU << "." << outputVar << std::endl;
+      }
     }
 
     maxRes = 0.0;
     for (int i=0; i<size; ++i)
     {
       int output = SCC[i].first;
-      const std::string& outputFMU = graph.nodes[output].getFMUInstanceName();
-      res[i] -= fmuInstances[outputFMU]->getReal(graph.nodes[output]);
+      int input = SCC[i].second;
+      if (graph.nodes[output].isOutput() && graph.nodes[input].isInput())
+      {
+        const std::string& outputFMU = graph.nodes[output].getFMUInstanceName();
+        res[i] -= fmuInstances[outputFMU]->getReal(graph.nodes[output]);
 
-      if (fabs(res[i]) > maxRes)
-        maxRes = fabs(res[i]);
+        if (fabs(res[i]) > maxRes)
+          maxRes = fabs(res[i]);
+      }
     }
   } while(maxRes > tolerance && it < 10);
 
