@@ -78,6 +78,7 @@ public:
 private:
   void updateInputs(DirectedGraph& graph);
   void emit();
+  void solveAlgLoop(DirectedGraph& graph, const std::vector< std::pair<int, int> >& SCC);
 
 private:
   Settings settings;

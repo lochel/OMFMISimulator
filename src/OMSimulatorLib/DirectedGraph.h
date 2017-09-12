@@ -39,6 +39,7 @@
 #include <vector>
 #include <map>
 #include <deque>
+#include <stack>
 
 class DirectedGraph
 {
@@ -53,17 +54,18 @@ public:
 
   void includeGraph(const DirectedGraph& graph);
 
-  const std::vector< std::pair<int, int> >& getSortedConnections();
+  const std::vector< std::vector< std::pair<int, int> > >& getSortedConnections();
   std::vector<Variable> nodes;
   std::vector< std::pair<int, int> > edges;
 
 private:
   std::deque< std::vector<int> > getSCCs();
   void calculateSortedConnections();
+  void strongconnect(int v, std::vector< std::vector<int> > G, int& index, int *d, int *low, std::stack<int>& S, bool *stacked, std::deque< std::vector<int> >& components);
 
 private:
   std::vector< std::vector<int> > G;
-  std::vector< std::pair<int, int> > sortedConnections;
+  std::vector< std::vector< std::pair<int, int> > > sortedConnections;
   bool sortedConnectionsAreValid;
 };
 

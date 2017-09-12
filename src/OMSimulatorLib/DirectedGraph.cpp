@@ -137,7 +137,17 @@ void DirectedGraph::includeGraph(const DirectedGraph& graph)
     addEdge(graph.nodes[graph.edges[i].first], graph.nodes[graph.edges[i].second]);
 }
 
-void strongconnect(int v, std::vector< std::vector<int> > G, int& index, int *d, int *low, std::stack<int>& S, bool *stacked, std::deque< std::vector<int> >& components)
+int getEdgeIndex(const std::vector< std::pair<int, int> >& edges, int from, int to)
+{
+  for (int i = 0; i < edges.size(); ++i)
+    if (edges[i].first == from && edges[i].second == to)
+      return i;
+
+  logFatal("getEdgeIndex failed");
+  return -1;
+}
+
+void DirectedGraph::strongconnect(int v, std::vector< std::vector<int> > G, int& index, int *d, int *low, std::stack<int>& S, bool *stacked, std::deque< std::vector<int> >& components)
 {
   // Set the depth index for v to the smallest unused index
   d[v] = index;
@@ -147,10 +157,10 @@ void strongconnect(int v, std::vector< std::vector<int> > G, int& index, int *d,
   stacked[v] = true;
 
   // Consider successors of v
-  std::vector<int> successors = G[v];
+  std::vector<int> successors = G[edges[v].second];
   for (int i = 0; i < successors.size(); ++i)
   {
-    int w = successors[i];
+    int w = getEdgeIndex(edges, edges[v].second, successors[i]);
     if (d[w] == -1)
     {
       // Successor w has not yet been visited; recurse on it
@@ -189,7 +199,7 @@ std::deque< std::vector<int> > DirectedGraph::getSCCs()
 {
   //std::cout << "Tarjan's strongly connected components algorithm" << std::endl;
 
-  size_t numVertices = nodes.size();
+  size_t numVertices = edges.size();
   int *d = new int[numVertices];
   std::fill(d, d + numVertices, -1);
   int *low = new int[numVertices];
@@ -224,7 +234,7 @@ std::deque< std::vector<int> > DirectedGraph::getSCCs()
   return components;
 }
 
-const std::vector< std::pair<int, int> >& DirectedGraph::getSortedConnections()
+const std::vector< std::vector< std::pair<int, int> > >& DirectedGraph::getSortedConnections()
 {
   if (!sortedConnectionsAreValid)
     calculateSortedConnections();
@@ -234,32 +244,23 @@ const std::vector< std::pair<int, int> >& DirectedGraph::getSortedConnections()
 void DirectedGraph::calculateSortedConnections()
 {
   std::deque< std::vector<int> > components = getSCCs();
+  std::vector< std::pair<int, int> > SCC;
   sortedConnections.clear();
 
   for (int i = 0; i < components.size(); ++i)
   {
-    if (components[i].size() > 1)
-    {
-      logWarning("Unhandled alg. loop (size " + std::to_string(components[i].size()) + ")");
-      for (int j = 0; j < components[i].size(); ++j)
-      {
-        int v = components[i][j];
-        logInfo("  - " + nodes[v].getFMUInstanceName() + "." + nodes[v].getName());
-      }
-    }
+    SCC.clear();
     for (int j = 0; j < components[i].size(); ++j)
     {
-      int v = components[i][j];
-      if (nodes[v].isOutput())
-      {
-        for (int k = 0; k < G[v].size(); ++k)
-        {
-          int w = G[v][k];
-          if (nodes[w].isInput())
-            sortedConnections.push_back(std::pair<int, int>(v, w));
-        }
-      }
+      if (edges[components[i][j]].first != edges[components[i][j]].second)
+        SCC.push_back(std::pair<int, int>(edges[components[i][j]]));
     }
+
+    if (SCC.size() > 0)
+      sortedConnections.push_back(SCC);
+
+    if (SCC.size() > 1)
+      logWarning("Alg. loop (size " + std::to_string(components[i].size()) + ")");
   }
 
   sortedConnectionsAreValid = true;

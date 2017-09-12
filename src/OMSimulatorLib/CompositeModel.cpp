@@ -252,20 +252,27 @@ void CompositeModel::exportXML(const char* filename)
   }
 
   // add connection information
-  const std::vector< std::pair<int, int> >& connectionsOutputs = outputsGraph.getSortedConnections();
+  const std::vector< std::vector< std::pair<int, int> > >& connectionsOutputs = outputsGraph.getSortedConnections();
   for(int i=0; i<connectionsOutputs.size(); i++)
   {
-    pugi::xml_node connection = connections.append_child("Connection");
-    int output = connectionsOutputs[i].first;
-    int input = connectionsOutputs[i].second;
-    std::string outputFMU = outputsGraph.nodes[output].getFMUInstanceName();
-    std::string outputVar = outputsGraph.nodes[output].getName();
-    std::string inputFMU = outputsGraph.nodes[input].getFMUInstanceName();
-    std::string inputVar = outputsGraph.nodes[input].getName();
-    std::string fromfmu = outputFMU + '.' + outputVar;
-    std::string tofmu = inputFMU + '.' + inputVar;
-    connection.append_attribute("From") = fromfmu.c_str();
-    connection.append_attribute("To") = tofmu.c_str();
+    for(int j=0; j<connectionsOutputs[i].size(); j++)
+    {
+      int output = connectionsOutputs[i][j].first;
+      int input = connectionsOutputs[i][j].second;
+      if (outputsGraph.nodes[output].isOutput() && outputsGraph.nodes[input].isInput())
+      {
+        std::string outputFMU = outputsGraph.nodes[output].getFMUInstanceName();
+        std::string outputVar = outputsGraph.nodes[output].getName();
+        std::string inputFMU = outputsGraph.nodes[input].getFMUInstanceName();
+        std::string inputVar = outputsGraph.nodes[input].getName();
+        std::string fromfmu = outputFMU + '.' + outputVar;
+        std::string tofmu = inputFMU + '.' + inputVar;
+
+        pugi::xml_node connection = connections.append_child("Connection");
+        connection.append_attribute("From") = fromfmu.c_str();
+        connection.append_attribute("To") = tofmu.c_str();
+      }
+    }
   }
 
   // add simulation parameters
@@ -447,53 +454,163 @@ void CompositeModel::describe()
   std::cout << "\n# Composite structure" << std::endl;
   std::cout << "## Initialization" << std::endl;
   // calculate sorting
-  const std::vector< std::pair<int, int> >& connectionsInitialUnknowns = initialUnknownsGraph.getSortedConnections();
+  const std::vector< std::vector< std::pair<int, int> > >& connectionsInitialUnknowns = initialUnknownsGraph.getSortedConnections();
   for(int i=0; i<connectionsInitialUnknowns.size(); i++)
   {
-    int output = connectionsInitialUnknowns[i].first;
-    int input = connectionsInitialUnknowns[i].second;
-    std::string outputFMU = initialUnknownsGraph.nodes[output].getFMUInstanceName();
-    std::string outputVar = initialUnknownsGraph.nodes[output].getName();
-    std::string inputFMU = initialUnknownsGraph.nodes[input].getFMUInstanceName();
-    std::string inputVar = initialUnknownsGraph.nodes[input].getName();
-    std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
+    if (connectionsInitialUnknowns[i].size() == 1)
+    {
+      int output = connectionsInitialUnknowns[i][0].first;
+      int input = connectionsInitialUnknowns[i][0].second;
+      if (initialUnknownsGraph.nodes[output].isOutput() && initialUnknownsGraph.nodes[input].isInput())
+      {
+        std::string outputFMU = initialUnknownsGraph.nodes[output].getFMUInstanceName();
+        std::string outputVar = initialUnknownsGraph.nodes[output].getName();
+        std::string inputFMU = initialUnknownsGraph.nodes[input].getFMUInstanceName();
+        std::string inputVar = initialUnknownsGraph.nodes[input].getName();
+        std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
+      }
+    }
+    else
+    {
+      // Alg. loop
+      std::cout << "{";
+      bool sep = false;
+      for(int j=0; j<connectionsInitialUnknowns[i].size(); j++)
+      {
+        int output = connectionsInitialUnknowns[i][j].first;
+        int input = connectionsInitialUnknowns[i][j].second;
+        if (initialUnknownsGraph.nodes[output].isOutput() && initialUnknownsGraph.nodes[input].isInput())
+        {
+          if (sep)
+            std::cout << "; ";
+          sep = true;
+          std::string outputFMU = initialUnknownsGraph.nodes[output].getFMUInstanceName();
+          std::string outputVar = initialUnknownsGraph.nodes[output].getName();
+          std::string inputFMU = initialUnknownsGraph.nodes[input].getFMUInstanceName();
+          std::string inputVar = initialUnknownsGraph.nodes[input].getName();
+          std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar;
+        }
+      }
+      std::cout << "}" << std::endl;
+    }
   }
 
   std::cout << "\n## Simulation" << std::endl;
   // calculate sorting
-  const std::vector< std::pair<int, int> >& connectionsOutputs = outputsGraph.getSortedConnections();
+  const std::vector< std::vector< std::pair<int, int> > >& connectionsOutputs = outputsGraph.getSortedConnections();
   for(int i=0; i<connectionsOutputs.size(); i++)
   {
-    int output = connectionsOutputs[i].first;
-    int input = connectionsOutputs[i].second;
-    std::string outputFMU = outputsGraph.nodes[output].getFMUInstanceName();
-    std::string outputVar = outputsGraph.nodes[output].getName();
-    std::string inputFMU = outputsGraph.nodes[input].getFMUInstanceName();
-    std::string inputVar = outputsGraph.nodes[input].getName();
-    std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
+    if (connectionsOutputs[i].size() == 1)
+    {
+      int output = connectionsOutputs[i][0].first;
+      int input = connectionsOutputs[i][0].second;
+      if (outputsGraph.nodes[output].isOutput() && outputsGraph.nodes[input].isInput())
+      {
+        std::string outputFMU = outputsGraph.nodes[output].getFMUInstanceName();
+        std::string outputVar = outputsGraph.nodes[output].getName();
+        std::string inputFMU = outputsGraph.nodes[input].getFMUInstanceName();
+        std::string inputVar = outputsGraph.nodes[input].getName();
+        std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
+      }
+    }
+    else
+    {
+      // Alg. loop
+      std::cout << "{";
+      bool sep = false;
+      for(int j=0; j<connectionsOutputs[i].size(); j++)
+      {
+        int output = connectionsOutputs[i][j].first;
+        int input = connectionsOutputs[i][j].second;
+        if (outputsGraph.nodes[output].isOutput() && outputsGraph.nodes[input].isInput())
+        {
+          if (sep)
+            std::cout << "; ";
+          sep = true;
+          std::string outputFMU = outputsGraph.nodes[output].getFMUInstanceName();
+          std::string outputVar = outputsGraph.nodes[output].getName();
+          std::string inputFMU = outputsGraph.nodes[input].getFMUInstanceName();
+          std::string inputVar = outputsGraph.nodes[input].getName();
+          std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar;
+        }
+      }
+      std::cout << "}" << std::endl;
+    }
   }
 
   std::cout << std::endl;
+}
+
+void CompositeModel::solveAlgLoop(DirectedGraph& graph, const std::vector< std::pair<int, int> >& SCC)
+{
+  int size = SCC.size();
+  double *res = new double[size]();
+  double maxRes;
+  int it=0;
+  const double tolerance = settings.GetTolerance();
+
+  do
+  {
+    it++;
+    for (int i=0; i<size; ++i)
+    {
+      int output = SCC[i].first;
+      int input = SCC[i].second;
+      const std::string& outputFMU = graph.nodes[output].getFMUInstanceName();
+      //std::string& outputVar = graph.nodes[output].getName();
+      const std::string& inputFMU = graph.nodes[input].getFMUInstanceName();
+      //std::string& inputVar = graph.nodes[input].getName();
+      res[i] = fmuInstances[outputFMU]->getReal(graph.nodes[output]);
+      fmuInstances[inputFMU]->setRealInput(graph.nodes[input], res[i]);
+      //std::cout << inputFMU << "." << inputVar << " = " << outputFMU << "." << outputVar << std::endl;
+    }
+
+    maxRes = 0.0;
+    for (int i=0; i<size; ++i)
+    {
+      int output = SCC[i].first;
+      const std::string& outputFMU = graph.nodes[output].getFMUInstanceName();
+      res[i] -= fmuInstances[outputFMU]->getReal(graph.nodes[output]);
+
+      if (fabs(res[i]) > maxRes)
+        maxRes = fabs(res[i]);
+    }
+  } while(maxRes > tolerance && it < 10);
+
+  delete[] res;
+
+  if (it >= 10)
+    logFatal("CompositeModel::solveAlgLoop: max. number of iterations exceeded");
 }
 
 void CompositeModel::updateInputs(DirectedGraph& graph)
 {
   OMS_TIC(globalClocks, GLOBALCLOCK_COMMUNICATION);
 
-  const std::vector< std::pair<int, int> >& sortedConnections = graph.getSortedConnections();
+  const std::vector< std::vector< std::pair<int, int> > >& sortedConnections = graph.getSortedConnections();
 
   // input = output
   for(int i=0; i<sortedConnections.size(); i++)
   {
-    int output = sortedConnections[i].first;
-    int input = sortedConnections[i].second;
-    const std::string& outputFMU = graph.nodes[output].getFMUInstanceName();
-    //std::string& outputVar = graph.nodes[output].getName();
-    const std::string& inputFMU = graph.nodes[input].getFMUInstanceName();
-    //std::string& inputVar = graph.nodes[input].getName();
-    double value = fmuInstances[outputFMU]->getReal(graph.nodes[output]);
-    fmuInstances[inputFMU]->setRealInput(graph.nodes[input], value);
-    //std::cout << inputFMU << "." << inputVar << " = " << outputFMU << "." << outputVar << std::endl;
+    if (sortedConnections[i].size() == 1)
+    {
+      int output = sortedConnections[i][0].first;
+      int input = sortedConnections[i][0].second;
+      if (graph.nodes[output].isOutput() && graph.nodes[input].isInput())
+      {
+        const std::string& outputFMU = graph.nodes[output].getFMUInstanceName();
+        //std::string& outputVar = graph.nodes[output].getName();
+        const std::string& inputFMU = graph.nodes[input].getFMUInstanceName();
+        //std::string& inputVar = graph.nodes[input].getName();
+        double value = fmuInstances[outputFMU]->getReal(graph.nodes[output]);
+        fmuInstances[inputFMU]->setRealInput(graph.nodes[input], value);
+        //std::cout << inputFMU << "." << inputVar << " = " << outputFMU << "." << outputVar << std::endl;
+      }
+    }
+    else
+    {
+      solveAlgLoop(graph, sortedConnections[i]);
+    }
   }
 
   OMS_TOC(globalClocks, GLOBALCLOCK_COMMUNICATION);
