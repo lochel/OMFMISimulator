@@ -259,19 +259,16 @@ void CompositeModel::exportXML(const char* filename)
     {
       int output = connectionsOutputs[i][j].first;
       int input = connectionsOutputs[i][j].second;
-      if (outputsGraph.nodes[output].isOutput() && outputsGraph.nodes[input].isInput())
-      {
-        std::string outputFMU = outputsGraph.nodes[output].getFMUInstanceName();
-        std::string outputVar = outputsGraph.nodes[output].getName();
-        std::string inputFMU = outputsGraph.nodes[input].getFMUInstanceName();
-        std::string inputVar = outputsGraph.nodes[input].getName();
-        std::string fromfmu = outputFMU + '.' + outputVar;
-        std::string tofmu = inputFMU + '.' + inputVar;
+      std::string outputFMU = outputsGraph.nodes[output].getFMUInstanceName();
+      std::string outputVar = outputsGraph.nodes[output].getName();
+      std::string inputFMU = outputsGraph.nodes[input].getFMUInstanceName();
+      std::string inputVar = outputsGraph.nodes[input].getName();
+      std::string fromfmu = outputFMU + '.' + outputVar;
+      std::string tofmu = inputFMU + '.' + inputVar;
 
-        pugi::xml_node connection = connections.append_child("Connection");
-        connection.append_attribute("From") = fromfmu.c_str();
-        connection.append_attribute("To") = tofmu.c_str();
-      }
+      pugi::xml_node connection = connections.append_child("Connection");
+      connection.append_attribute("From") = fromfmu.c_str();
+      connection.append_attribute("To") = tofmu.c_str();
     }
   }
 
@@ -461,35 +458,27 @@ void CompositeModel::describe()
     {
       int output = connectionsInitialUnknowns[i][0].first;
       int input = connectionsInitialUnknowns[i][0].second;
-      if (initialUnknownsGraph.nodes[output].isOutput() && initialUnknownsGraph.nodes[input].isInput())
-      {
-        std::string outputFMU = initialUnknownsGraph.nodes[output].getFMUInstanceName();
-        std::string outputVar = initialUnknownsGraph.nodes[output].getName();
-        std::string inputFMU = initialUnknownsGraph.nodes[input].getFMUInstanceName();
-        std::string inputVar = initialUnknownsGraph.nodes[input].getName();
-        std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
-      }
+      std::string outputFMU = initialUnknownsGraph.nodes[output].getFMUInstanceName();
+      std::string outputVar = initialUnknownsGraph.nodes[output].getName();
+      std::string inputFMU = initialUnknownsGraph.nodes[input].getFMUInstanceName();
+      std::string inputVar = initialUnknownsGraph.nodes[input].getName();
+      std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
     }
     else
     {
       // Alg. loop
       std::cout << "{";
-      bool sep = false;
       for(int j=0; j<connectionsInitialUnknowns[i].size(); j++)
       {
         int output = connectionsInitialUnknowns[i][j].first;
         int input = connectionsInitialUnknowns[i][j].second;
-        if (initialUnknownsGraph.nodes[output].isOutput() && initialUnknownsGraph.nodes[input].isInput())
-        {
-          if (sep)
-            std::cout << "; ";
-          sep = true;
-          std::string outputFMU = initialUnknownsGraph.nodes[output].getFMUInstanceName();
-          std::string outputVar = initialUnknownsGraph.nodes[output].getName();
-          std::string inputFMU = initialUnknownsGraph.nodes[input].getFMUInstanceName();
-          std::string inputVar = initialUnknownsGraph.nodes[input].getName();
-          std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar;
-        }
+        if (j > 0)
+          std::cout << "; ";
+        std::string outputFMU = initialUnknownsGraph.nodes[output].getFMUInstanceName();
+        std::string outputVar = initialUnknownsGraph.nodes[output].getName();
+        std::string inputFMU = initialUnknownsGraph.nodes[input].getFMUInstanceName();
+        std::string inputVar = initialUnknownsGraph.nodes[input].getName();
+        std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar;
       }
       std::cout << "}" << std::endl;
     }
@@ -504,35 +493,27 @@ void CompositeModel::describe()
     {
       int output = connectionsOutputs[i][0].first;
       int input = connectionsOutputs[i][0].second;
-      if (outputsGraph.nodes[output].isOutput() && outputsGraph.nodes[input].isInput())
-      {
-        std::string outputFMU = outputsGraph.nodes[output].getFMUInstanceName();
-        std::string outputVar = outputsGraph.nodes[output].getName();
-        std::string inputFMU = outputsGraph.nodes[input].getFMUInstanceName();
-        std::string inputVar = outputsGraph.nodes[input].getName();
-        std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
-      }
+      std::string outputFMU = outputsGraph.nodes[output].getFMUInstanceName();
+      std::string outputVar = outputsGraph.nodes[output].getName();
+      std::string inputFMU = outputsGraph.nodes[input].getFMUInstanceName();
+      std::string inputVar = outputsGraph.nodes[input].getName();
+      std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar << std::endl;
     }
     else
     {
       // Alg. loop
       std::cout << "{";
-      bool sep = false;
       for(int j=0; j<connectionsOutputs[i].size(); j++)
       {
         int output = connectionsOutputs[i][j].first;
         int input = connectionsOutputs[i][j].second;
-        if (outputsGraph.nodes[output].isOutput() && outputsGraph.nodes[input].isInput())
-        {
-          if (sep)
-            std::cout << "; ";
-          sep = true;
-          std::string outputFMU = outputsGraph.nodes[output].getFMUInstanceName();
-          std::string outputVar = outputsGraph.nodes[output].getName();
-          std::string inputFMU = outputsGraph.nodes[input].getFMUInstanceName();
-          std::string inputVar = outputsGraph.nodes[input].getName();
-          std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar;
-        }
+        if (j > 0)
+          std::cout << "; ";
+        std::string outputFMU = outputsGraph.nodes[output].getFMUInstanceName();
+        std::string outputVar = outputsGraph.nodes[output].getName();
+        std::string inputFMU = outputsGraph.nodes[input].getFMUInstanceName();
+        std::string inputVar = outputsGraph.nodes[input].getName();
+        std::cout << outputFMU << "." << outputVar << " -> " << inputFMU << "." << inputVar;
       }
       std::cout << "}" << std::endl;
     }
@@ -556,16 +537,13 @@ void CompositeModel::solveAlgLoop(DirectedGraph& graph, const std::vector< std::
     {
       int output = SCC[i].first;
       int input = SCC[i].second;
-      if (graph.nodes[output].isOutput() && graph.nodes[input].isInput())
-      {
-        const std::string& outputFMU = graph.nodes[output].getFMUInstanceName();
-        //std::string& outputVar = graph.nodes[output].getName();
-        const std::string& inputFMU = graph.nodes[input].getFMUInstanceName();
-        //std::string& inputVar = graph.nodes[input].getName();
-        res[i] = fmuInstances[outputFMU]->getReal(graph.nodes[output]);
-        fmuInstances[inputFMU]->setRealInput(graph.nodes[input], res[i]);
-        //std::cout << inputFMU << "." << inputVar << " = " << outputFMU << "." << outputVar << std::endl;
-      }
+      const std::string& outputFMU = graph.nodes[output].getFMUInstanceName();
+      //std::string& outputVar = graph.nodes[output].getName();
+      const std::string& inputFMU = graph.nodes[input].getFMUInstanceName();
+      //std::string& inputVar = graph.nodes[input].getName();
+      res[i] = fmuInstances[outputFMU]->getReal(graph.nodes[output]);
+      fmuInstances[inputFMU]->setRealInput(graph.nodes[input], res[i]);
+      //std::cout << inputFMU << "." << inputVar << " = " << outputFMU << "." << outputVar << std::endl;
     }
 
     maxRes = 0.0;
@@ -573,14 +551,11 @@ void CompositeModel::solveAlgLoop(DirectedGraph& graph, const std::vector< std::
     {
       int output = SCC[i].first;
       int input = SCC[i].second;
-      if (graph.nodes[output].isOutput() && graph.nodes[input].isInput())
-      {
-        const std::string& outputFMU = graph.nodes[output].getFMUInstanceName();
-        res[i] -= fmuInstances[outputFMU]->getReal(graph.nodes[output]);
+      const std::string& outputFMU = graph.nodes[output].getFMUInstanceName();
+      res[i] -= fmuInstances[outputFMU]->getReal(graph.nodes[output]);
 
-        if (fabs(res[i]) > maxRes)
-          maxRes = fabs(res[i]);
-      }
+      if (fabs(res[i]) > maxRes)
+        maxRes = fabs(res[i]);
     }
   } while(maxRes > tolerance && it < 10);
 
@@ -603,16 +578,13 @@ void CompositeModel::updateInputs(DirectedGraph& graph)
     {
       int output = sortedConnections[i][0].first;
       int input = sortedConnections[i][0].second;
-      if (graph.nodes[output].isOutput() && graph.nodes[input].isInput())
-      {
-        const std::string& outputFMU = graph.nodes[output].getFMUInstanceName();
-        //std::string& outputVar = graph.nodes[output].getName();
-        const std::string& inputFMU = graph.nodes[input].getFMUInstanceName();
-        //std::string& inputVar = graph.nodes[input].getName();
-        double value = fmuInstances[outputFMU]->getReal(graph.nodes[output]);
-        fmuInstances[inputFMU]->setRealInput(graph.nodes[input], value);
-        //std::cout << inputFMU << "." << inputVar << " = " << outputFMU << "." << outputVar << std::endl;
-      }
+      const std::string& outputFMU = graph.nodes[output].getFMUInstanceName();
+      //std::string& outputVar = graph.nodes[output].getName();
+      const std::string& inputFMU = graph.nodes[input].getFMUInstanceName();
+      //std::string& inputVar = graph.nodes[input].getName();
+      double value = fmuInstances[outputFMU]->getReal(graph.nodes[output]);
+      fmuInstances[inputFMU]->setRealInput(graph.nodes[input], value);
+      //std::cout << inputFMU << "." << inputVar << " = " << outputFMU << "." << outputVar << std::endl;
     }
     else
     {

@@ -251,16 +251,14 @@ void DirectedGraph::calculateSortedConnections()
   {
     SCC.clear();
     for (int j = 0; j < components[i].size(); ++j)
-    {
-      if (edges[components[i][j]].first != edges[components[i][j]].second)
+      if (nodes[edges[components[i][j]].first].isOutput() && nodes[edges[components[i][j]].second].isInput())
         SCC.push_back(std::pair<int, int>(edges[components[i][j]]));
-    }
 
     if (SCC.size() > 0)
       sortedConnections.push_back(SCC);
 
     if (SCC.size() > 1)
-      logWarning("Alg. loop (size " + std::to_string(components[i].size()) + ")");
+      logWarning("Alg. loop (size " + std::to_string(SCC.size()) + ")");
   }
 
   sortedConnectionsAreValid = true;
