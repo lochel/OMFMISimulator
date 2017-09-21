@@ -75,6 +75,11 @@ public:
 
   void setVariableFilter(const char* instanceFilter, const char* variableFilter);
 
+  int getNumberOfInterfaces();
+  oms_causality_t getInterfaceCausality(int idx);
+  const char* getInterfaceName(int idx);
+  const char* getInterfaceVariable(int idx);
+
 private:
   void updateInputs(DirectedGraph& graph);
   void emit();
@@ -90,6 +95,9 @@ private:
   double tcur;
   oms_modelState_t modelState;
   double communicationInterval;
+
+  std::vector<std::string>  interfaceNames;
+  std::vector<std::string>  interfaceVariables;
 };
 
 #endif

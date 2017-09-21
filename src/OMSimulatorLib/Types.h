@@ -53,6 +53,13 @@ typedef enum {
   oms_modelState_simulation
 } oms_modelState_t;
 
+typedef enum {
+  oms_causality_input,
+  oms_causality_output,
+  oms_causality_parameter,
+  oms_causality_undefined,
+} oms_causality_t;
+
 #ifdef __cplusplus
 }
 #endif

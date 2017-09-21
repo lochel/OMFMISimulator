@@ -374,3 +374,49 @@ void oms_setVariableFilter(void* model, const char* instanceFilter, const char* 
   CompositeModel* pModel = (CompositeModel*)model;
   pModel->setVariableFilter(instanceFilter, variableFilter);
 }
+
+int oms_getNumberOfInterfaces(void *model)
+{
+  if (!model)
+  {
+    return -1;
+  }
+
+  CompositeModel* pModel = (CompositeModel*)model;
+  return pModel->getNumberOfInterfaces();
+}
+
+oms_causality_t oms_getInterfaceCausality(void *model, int idx)
+{
+  if (!model)
+  {
+    return oms_causality_undefined;
+  }
+
+  CompositeModel* pModel = (CompositeModel*)model;
+  return pModel->getInterfaceCausality(idx);
+}
+
+const char *oms_getInterfaceName(void *model, int idx)
+{
+  if (!model)
+  {
+    logError("oms_getInterfaceName: invalid pointer");
+    return NULL;
+  }
+
+  CompositeModel* pModel = (CompositeModel*)model;
+  return pModel->getInterfaceName(idx);
+}
+
+const char *oms_getInterfaceVariable(void *model, int idx)
+{
+  if (!model)
+  {
+    logError("oms_getInterfaceName: invalid pointer");
+    return NULL;
+  }
+
+  CompositeModel* pModel = (CompositeModel*)model;
+  return pModel->getInterfaceVariable(idx);
+}

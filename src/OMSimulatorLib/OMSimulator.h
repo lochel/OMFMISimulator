@@ -203,6 +203,41 @@ int oms_compareSimulationResults(const char* filenameA, const char* filenameB, c
  */
 void oms_setVariableFilter(void* model, const char* instanceFilter, const char* variableFilter);
 
+/**
+ * \brief Returns the number of external interfaces
+ *
+ * @param model   [in] Model as opaque pointer.
+ * @return        Number of interfaces
+ */
+int oms_getNumberOfInterfaces(void* model);
+
+/**
+ * \brief Returns the causality for specified external interface
+ *
+ * @param model   [in] Model as opaque pointer.
+ * @param idx     [in] Interface index
+ * @return        Interface causality
+ */
+oms_causality_t oms_getInterfaceCausality(void* model, int idx);
+
+/**
+ * \brief Returns the name for specified external interface
+ *
+ * @param model   [in] Model as opaque pointer.
+ * @param idx     [in] Interface index
+ * @return        Interface name
+ */
+const char* oms_getInterfaceName(void* model, int idx);
+
+/**
+ * \brief Returns the local variable mapped to specified external interface
+ *
+ * @param model   [in] Model as opaque pointer.
+ * @param idx     [in] Interface index
+ * @return        Mapped variable
+ */
+const char* oms_getInterfaceVariable(void* model, int idx);
+
 #ifdef __cplusplus
 }
 #endif

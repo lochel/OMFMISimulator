@@ -312,6 +312,30 @@ void CompositeModel::importXML(const char* filename)
   pugi::xml_node connection = root.child("Connections");
   pugi::xml_node SimulationParams = root.child("SimulationParams");
 
+  // read interfaces (for interfacing with other master simulators)
+  for(pugi::xml_node_iterator it = root.begin(); it != root.end(); ++it)
+  {
+    std::string name = it->name();
+    if(name == "Interface") {
+      std::string InterfaceName, VariableName;
+      for (pugi::xml_attribute_iterator ait = it->attributes_begin(); ait != it->attributes_end(); ++ait)
+      {
+        std::string value =ait->name();
+        if (value == "Name")
+        {
+          InterfaceName = ait->value();
+        }
+        if (value == "Variable")
+        {
+          VariableName = ait->value();
+        }
+      }
+
+      interfaceNames.push_back(InterfaceName);
+      interfaceVariables.push_back(VariableName);
+    }
+  }
+
   // instantiate FMUs after reading from xml
   for (pugi::xml_node_iterator it = submodel.begin(); it != submodel.end(); ++it)
   {
@@ -837,3 +861,50 @@ void CompositeModel::setVariableFilter(const char* instanceFilter, const char* v
     if (std::regex_match(it->first, exp))
       it->second->setVariableFilter(variableFilter);
 }
+
+int CompositeModel::getNumberOfInterfaces()
+{
+  return interfaceNames.size();
+}
+
+oms_causality_t CompositeModel::getInterfaceCausality(int idx)
+{
+  std::string variableName = interfaceVariables.at(idx);
+  std::string fmuInstance;
+  std::string fmuVar;
+  std::stringstream var_(variableName);
+  std::getline(var_, fmuInstance, '.');
+  std::getline(var_, fmuVar);
+
+  Variable* var = fmuInstances[fmuInstance]->getVariable(fmuVar);
+  if(var->isInput())
+    return oms_causality_input;
+  else if(var->isOutput())
+    return oms_causality_output;
+  else if(var->isParameter())
+    return oms_causality_parameter;
+
+  return oms_causality_undefined;
+}
+
+const char* CompositeModel::getInterfaceName(int idx)
+{
+  if(interfaceNames.size() <= idx) {
+    logError("Query for interface name for non-existing interface.");
+    return NULL;
+  }
+
+  return interfaceNames.at(idx).c_str();
+}
+
+const char* CompositeModel::getInterfaceVariable(int idx)
+{
+  if(interfaceVariables.size() <= idx) {
+    logError("Query for interface variable for non-existing interface.");
+    return NULL;
+  }
+
+  return interfaceVariables.at(idx).c_str();
+}
+
+
