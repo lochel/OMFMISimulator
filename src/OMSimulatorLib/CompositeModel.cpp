@@ -524,45 +524,49 @@ void CompositeModel::describe()
 
 void CompositeModel::solveAlgLoop(DirectedGraph& graph, const std::vector< std::pair<int, int> >& SCC)
 {
-  int size = SCC.size();
-  double *res = new double[size]();
-  double maxRes;
-  int it=0;
+  const int size = SCC.size();
   const double tolerance = settings.GetTolerance();
+  const int maxIterations = 100;
+  double maxRes;
+  double *res = new double[size]();
 
+  int it=0;
   do
   {
     it++;
+    // get old values
     for (int i=0; i<size; ++i)
     {
       int output = SCC[i].first;
-      int input = SCC[i].second;
       const std::string& outputFMU = graph.nodes[output].getFMUInstanceName();
-      //std::string& outputVar = graph.nodes[output].getName();
-      const std::string& inputFMU = graph.nodes[input].getFMUInstanceName();
-      //std::string& inputVar = graph.nodes[input].getName();
       res[i] = fmuInstances[outputFMU]->getReal(graph.nodes[output]);
-      fmuInstances[inputFMU]->setRealInput(graph.nodes[input], res[i]);
-      //std::cout << inputFMU << "." << inputVar << " = " << outputFMU << "." << outputVar << std::endl;
     }
 
+    // update inputs
+    for (int i=0; i<size; ++i)
+    {
+      int input = SCC[i].second;
+      const std::string& inputFMU = graph.nodes[input].getFMUInstanceName();
+      fmuInstances[inputFMU]->setRealInput(graph.nodes[input], res[i]);
+    }
+
+    // calculate residuals
     maxRes = 0.0;
     for (int i=0; i<size; ++i)
     {
       int output = SCC[i].first;
-      int input = SCC[i].second;
       const std::string& outputFMU = graph.nodes[output].getFMUInstanceName();
       res[i] -= fmuInstances[outputFMU]->getReal(graph.nodes[output]);
 
       if (fabs(res[i]) > maxRes)
         maxRes = fabs(res[i]);
     }
-  } while(maxRes > tolerance && it < 10);
+  } while(maxRes > tolerance && it < maxIterations);
 
   delete[] res;
 
-  if (it >= 10)
-    logFatal("CompositeModel::solveAlgLoop: max. number of iterations exceeded");
+  if (it >= maxIterations)
+    logFatal("CompositeModel::solveAlgLoop: max. number of iterations (" + std::to_string(maxIterations) + ") exceeded");
 }
 
 void CompositeModel::updateInputs(DirectedGraph& graph)
