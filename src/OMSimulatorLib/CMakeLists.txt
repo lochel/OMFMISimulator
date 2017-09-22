@@ -29,4 +29,4 @@ set_target_properties(OMSimulatorLib PROPERTIES OUTPUT_NAME OMSimulatorLib)
 set_target_properties(OMSimulatorLib PROPERTIES POSITION_INDEPENDENT_CODE ON)
 install(TARGETS OMSimulatorLib DESTINATION lib)
 
-install(FILES OMSimulator.h DESTINATION include)
+install(FILES OMSimulator.h Types.h DESTINATION include)
