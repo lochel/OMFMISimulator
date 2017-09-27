@@ -28,6 +28,10 @@ config-fmil:
 	$(RM) 3rdParty/FMIL/install/linux
 	$(MKDIR) 3rdParty/FMIL/build/linux
 	cd 3rdParty/FMIL/build/linux && cmake -DFMILIB_INSTALL_PREFIX=../../install/linux ../.. && $(MAKE) install
+	$(MKDIR) install/bin/
+	$(MKDIR) install/lib/
+	cp 3rdParty/FMIL/install/linux/lib/libfmilib_shared.so install/bin/
+	cp 3rdParty/FMIL/install/linux/lib/libfmilib_shared.so install/lib/
 
 config-lua:
 	@echo

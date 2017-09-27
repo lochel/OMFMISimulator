@@ -9,6 +9,7 @@ OpenModelica FMI &amp; TLM based simulator
   - Lua
   - PugiXML
   - SUNDIALS CVODE
+  - SUNDIALS KINSOL
 
 ## Compilation
 
@@ -17,11 +18,6 @@ OpenModelica FMI &amp; TLM based simulator
 ```bash
 > make config-3rdParty
 > make config-OMSimulator
-```
-
-```bash
-> cp 3rdParty/FMIL/install/linux/lib/libfmilib_shared.so install/bin/
-> cp 3rdParty/FMIL/install/linux/lib/libfmilib_shared.so install/lib/
 ```
 
 2. build OMSimulator
