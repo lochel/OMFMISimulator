@@ -52,7 +52,11 @@ public:
 
   void instantiateFMU(const std::string& filename, const std::string& instanceName);
   void setReal(const std::string& var, double value);
+  void setInteger(const std::string& var, int value);
+  void setBoolean(const std::string& var, bool value);
   double getReal(const std::string& var);
+  int getInteger(const std::string& var);
+  bool getBoolean(const std::string& var);
   void addConnection(const std::string& from, const std::string& to);
   void exportDependencyGraph(const std::string& prefix);
 
@@ -84,12 +88,15 @@ private:
   void updateInputs(DirectedGraph& graph);
   void emit();
   void solveAlgLoop(DirectedGraph& graph, const std::vector< std::pair<int, int> >& SCC);
+  Variable* getVariable(const std::string& varName);
 
 private:
   Settings settings;
   ResultWriter *resultFile;
   std::unordered_map<std::string, FMUWrapper*> fmuInstances;
-  std::unordered_map<std::string,double> ParameterList;
+  std::unordered_map<std::string, double> realParameterList;
+  std::unordered_map<std::string, int> integerParameterList;
+  std::unordered_map<std::string, bool> booleanParameterList;
   DirectedGraph outputsGraph;
   DirectedGraph initialUnknownsGraph;
   double tcur;

@@ -72,6 +72,8 @@ public:
   const std::string& getDescription() const {return description;}
 
   bool isTypeReal() const {return fmi2_base_type_real == baseType;}
+  bool isTypeInteger() const {return fmi2_base_type_int == baseType;}
+  bool isTypeBoolean() const {return fmi2_base_type_bool == baseType;}
 
 protected:
   std::string name;

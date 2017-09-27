@@ -53,6 +53,7 @@
 #include <stdlib.h>
 #include <deque>
 #include <regex>
+#include <algorithm>
 
 #include <boost/filesystem.hpp>
 
@@ -122,14 +123,76 @@ void CompositeModel::setReal(const std::string& var, double value)
   {
     bool success = fmuInstances[fmuInstance]->setRealParameter(fmuVar, value);
 
-    // store the list of modified parameter values
+    // store the list of modified parameters
     if (success)
-      ParameterList[var] = value;
+      realParameterList[var] = value;
   }
   else if (v && v->isInput())
     fmuInstances[fmuInstance]->setRealInput(fmuVar, value);
   else
     logError("CompositeModel::setReal failed");
+}
+
+void CompositeModel::setInteger(const std::string& var, int value)
+{
+  logTrace();
+  std::stringstream var_(var);
+  std::string fmuInstance;
+  std::string fmuVar;
+
+  std::getline(var_, fmuInstance, '.');
+  std::getline(var_, fmuVar);
+
+  if (fmuInstances.find(fmuInstance) == fmuInstances.end())
+  {
+    logError("CompositeModel::setInteger: FMU instance \"" + fmuInstance + "\" doesn't exist in model");
+    return;
+  }
+
+  Variable *v = fmuInstances[fmuInstance]->getVariable(fmuVar);
+  if (v && v->isParameter())
+  {
+    bool success = fmuInstances[fmuInstance]->setIntegerParameter(fmuVar, value);
+
+    // store the list of modified parameters
+    if (success)
+      integerParameterList[var] = value;
+  }
+  else if (v && v->isInput())
+    fmuInstances[fmuInstance]->setIntegerInput(fmuVar, value);
+  else
+    logError("CompositeModel::setInteger failed");
+}
+
+void CompositeModel::setBoolean(const std::string& var, bool value)
+{
+  logTrace();
+  std::stringstream var_(var);
+  std::string fmuInstance;
+  std::string fmuVar;
+
+  std::getline(var_, fmuInstance, '.');
+  std::getline(var_, fmuVar);
+
+  if (fmuInstances.find(fmuInstance) == fmuInstances.end())
+  {
+    logError("CompositeModel::setBoolean: FMU instance \"" + fmuInstance + "\" doesn't exist in model");
+    return;
+  }
+
+  Variable *v = fmuInstances[fmuInstance]->getVariable(fmuVar);
+  if (v && v->isParameter())
+  {
+    bool success = fmuInstances[fmuInstance]->setBooleanParameter(fmuVar, value);
+
+    // store the list of modified parameters
+    if (success)
+      booleanParameterList[var] = value;
+  }
+  else if (v && v->isInput())
+    fmuInstances[fmuInstance]->setBooleanInput(fmuVar, value);
+  else
+    logError("CompositeModel::setBoolean failed");
 }
 
 double CompositeModel::getReal(const std::string& var)
@@ -149,6 +212,44 @@ double CompositeModel::getReal(const std::string& var)
   }
 
   return fmuInstances[fmuInstance]->getReal(fmuVar);
+}
+
+int CompositeModel::getInteger(const std::string& var)
+{
+  logTrace();
+  std::stringstream var_(var);
+  std::string fmuInstance;
+  std::string fmuVar;
+
+  std::getline(var_, fmuInstance, '.');
+  std::getline(var_, fmuVar);
+
+  if (fmuInstances.find(fmuInstance) == fmuInstances.end())
+  {
+    // TODO: Provide suitable return value to handle unsuccessful calls.
+    logFatal("CompositeModel::getInteger: FMU instance \"" + fmuInstance + "\" doesn't exist in model");
+  }
+
+  return fmuInstances[fmuInstance]->getInteger(fmuVar);
+}
+
+bool CompositeModel::getBoolean(const std::string& var)
+{
+  logTrace();
+  std::stringstream var_(var);
+  std::string fmuInstance;
+  std::string fmuVar;
+
+  std::getline(var_, fmuInstance, '.');
+  std::getline(var_, fmuVar);
+
+  if (fmuInstances.find(fmuInstance) == fmuInstances.end())
+  {
+    // TODO: Provide suitable return value to handle unsuccessful calls.
+    logFatal("CompositeModel::getBoolean: FMU instance \"" + fmuInstance + "\" doesn't exist in model");
+  }
+
+  return fmuInstances[fmuInstance]->getBoolean(fmuVar);
 }
 
 void CompositeModel::addConnection(const std::string& from, const std::string& to)
@@ -273,22 +374,56 @@ void CompositeModel::exportXML(const char* filename)
   }
 
   // add simulation parameters
-  std::unordered_map<std::string, double>::iterator param;
-  for (param=ParameterList.begin(); param!=ParameterList.end(); ++param)
+  for (auto realParam = realParameterList.begin(); realParam != realParameterList.end(); ++realParam)
   {
-     std::string varname= param->first;
-     double varvalue=param->second;
-     std::string name;
-     std::string value;
-     std::stringstream var_(varname);
-     std::getline(var_, name, '.');
-     std::getline(var_, value);
+    std::string varname = realParam->first;
+    double varvalue = realParam->second;
 
-     // find the appropriate node instances and add the ModelParams
-     pugi::xml_node param = submodels.find_child_by_attribute("SubModel", "Name", name.c_str());
-     pugi::xml_node modelparams = param.append_child("ModelParams");
-     modelparams.append_attribute("Name") = value.c_str();
-     modelparams.append_attribute("Value") = varvalue;
+    std::string fmuInstance;
+    std::string fmuVar;
+    std::stringstream var_(varname);
+    std::getline(var_, fmuInstance, '.');
+    std::getline(var_, fmuVar);
+
+    // find the appropriate node instances and add the ModelParams
+    pugi::xml_node param = submodels.find_child_by_attribute("SubModel", "Name", fmuInstance.c_str());
+    pugi::xml_node modelparams = param.append_child("ModelParams");
+    modelparams.append_attribute("Name") = fmuVar.c_str();
+    modelparams.append_attribute("Value") = varvalue;
+  }
+  for (auto integerParam = integerParameterList.begin(); integerParam != integerParameterList.end(); ++integerParam)
+  {
+    std::string varname = integerParam->first;
+    int varvalue = integerParam->second;
+
+    std::string fmuInstance;
+    std::string fmuVar;
+    std::stringstream var_(varname);
+    std::getline(var_, fmuInstance, '.');
+    std::getline(var_, fmuVar);
+
+    // find the appropriate node instances and add the ModelParams
+    pugi::xml_node param = submodels.find_child_by_attribute("SubModel", "Name", fmuInstance.c_str());
+    pugi::xml_node modelparams = param.append_child("ModelParams");
+    modelparams.append_attribute("Name") = fmuVar.c_str();
+    modelparams.append_attribute("Value") = varvalue;
+  }
+  for (auto booleanParam = booleanParameterList.begin(); booleanParam != booleanParameterList.end(); ++booleanParam)
+  {
+    std::string varname = booleanParam->first;
+    int varvalue = booleanParam->second;
+
+    std::string fmuInstance;
+    std::string fmuVar;
+    std::stringstream var_(varname);
+    std::getline(var_, fmuInstance, '.');
+    std::getline(var_, fmuVar);
+
+    // find the appropriate node instances and add the ModelParams
+    pugi::xml_node param = submodels.find_child_by_attribute("SubModel", "Name", fmuInstance.c_str());
+    pugi::xml_node modelparams = param.append_child("ModelParams");
+    modelparams.append_attribute("Name") = fmuVar.c_str();
+    modelparams.append_attribute("Value") = varvalue;
   }
 
   bool saveSucceeded = doc.save_file(filename);
@@ -427,6 +562,24 @@ void CompositeModel::importXML(const char* filename)
   }
 
   OMS_TOC(globalClocks, GLOBALCLOCK_INSTANTIATION);
+}
+
+Variable* CompositeModel::getVariable(const std::string& name)
+{
+  std::stringstream name_(name);
+  std::string fmuInstance;
+  std::string fmuVar;
+
+  std::getline(name_, fmuInstance, '.');
+  std::getline(name_, fmuVar);
+
+  if (fmuInstances.find(fmuInstance) == fmuInstances.end())
+  {
+    logError("CompositeModel::getVariable: FMU instance \"" + fmuInstance + "\" doesn't exist in model");
+    return NULL;
+  }
+
+  return fmuInstances[fmuInstance]->getVariable(fmuVar);
 }
 
 void CompositeModel::describe()

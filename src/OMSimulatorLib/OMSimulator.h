@@ -66,8 +66,8 @@ void oms_unload(void* model);
 /**
  * \brief Instantiates a FMU.
  *
- * @param model Model as opaque pointer.
- * @param filename Full path to the FMU.
+ * @param model        Model as opaque pointer.
+ * @param filename     Full path to the FMU.
  * @param instanceName Instance name for further access.
  */
 void oms_instantiateFMU(void* model, const char* filename, const char* instanceName);
@@ -76,24 +76,58 @@ void oms_instantiateFMU(void* model, const char* filename, const char* instanceN
  * \brief Set parameter and input values of type real.
  *
  * @param model Model as opaque pointer.
- * @param var
- * @param value
+ * @param var   Variable name as string.
+ * @param value New value of the given variable.
  */
 void oms_setReal(void *model, const char *var, double value);
-// TODO: setInteger
-// TODO: setBoolean
+
+/**
+ * \brief Set parameter and input values of type integer.
+ *
+ * @param model Model as opaque pointer.
+ * @param var   Variable name as string.
+ * @param value New value of the given variable.
+ */
+void oms_setInteger(void *model, const char *var, int value);
+
+/**
+ * \brief Set parameter and input values of type boolean.
+ *
+ * @param model Model as opaque pointer.
+ * @param var   Variable name as string.
+ * @param value New value of the given variable.
+ */
+void oms_setBoolean(void *model, const char *var, int value);
+
 // TODO: setString
 
 /**
  * \brief Get real value.
  *
  * @param model Model as opaque pointer.
- * @param var
- * @return value
+ * @param var   Variable name as string.
+ * @return value of given variable
  */
 double oms_getReal(void *model, const char *var);
-// TODO: getInteger
-// TODO: getBoolean
+
+/**
+ * \brief Get integer value.
+ *
+ * @param model Model as opaque pointer.
+ * @param var   Variable name as string.
+ * @return value of given variable
+ */
+int oms_getInteger(void *model, const char *var);
+
+/**
+ * \brief Get boolean value.
+ *
+ * @param model Model as opaque pointer.
+ * @param var   Variable name as string.
+ * @return value of given variable
+ */
+int oms_getBoolean(void *model, const char *var);
+
 // TODO: getString
 
 /**

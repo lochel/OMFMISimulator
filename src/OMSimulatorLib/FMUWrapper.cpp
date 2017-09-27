@@ -373,6 +373,58 @@ double FMUWrapper::getReal(const Variable& var)
   return value;
 }
 
+int FMUWrapper::getInteger(const std::string& var)
+{
+  logTrace();
+  if (!fmu)
+    logFatal("FMUWrapper::getInteger failed");
+
+  Variable* v = getVariable(var);
+  if (!v)
+    logFatal("FMUWrapper::getInteger failed");
+
+  return getInteger(*v);
+}
+
+int FMUWrapper::getInteger(const Variable& var)
+{
+  logTrace();
+  if (!fmu)
+    logFatal("FMUWrapper::getInteger failed");
+
+  int value;
+  fmi2_value_reference_t vr = var.getValueReference();
+  fmi2_import_get_integer(fmu, &vr, 1, &value);
+
+  return value;
+}
+
+bool FMUWrapper::getBoolean(const std::string& var)
+{
+  logTrace();
+  if (!fmu)
+    logFatal("FMUWrapper::getBoolean failed");
+
+  Variable* v = getVariable(var);
+  if (!v)
+    logFatal("FMUWrapper::getBoolean failed");
+
+  return getBoolean(*v);
+}
+
+bool FMUWrapper::getBoolean(const Variable& var)
+{
+  logTrace();
+  if (!fmu)
+    logFatal("FMUWrapper::getBoolean failed");
+
+  int value;
+  fmi2_value_reference_t vr = var.getValueReference();
+  fmi2_import_get_boolean(fmu, &vr, 1, &value);
+
+  return value;
+}
+
 bool FMUWrapper::setRealInput(const std::string& var, double value)
 {
   logTrace();
@@ -406,6 +458,73 @@ bool FMUWrapper::setRealInput(const Variable& var, double value)
   return true;
 }
 
+bool FMUWrapper::setIntegerInput(const std::string& var, int value)
+{
+  logTrace();
+  if (!fmu)
+    logFatal("FMUWrapper::setIntegerInput failed");
+
+  Variable* v = getVariable(var);
+  if (v)
+    return setIntegerInput(*v, value);
+  else
+  {
+    logError("FMUWrapper::setIntegerInput: FMU '" + instanceName + "' doesn't contain input integer " + var);
+    return false;
+  }
+}
+
+bool FMUWrapper::setIntegerInput(const Variable& var, int value)
+{
+  logTrace();
+  if (!fmu)
+    logFatal("FMUWrapper::setIntegerInput failed");
+
+  if (!var.isInput() || !var.isTypeInteger())
+  {
+    logError("FMUWrapper::setIntegerInput: FMU '" + instanceName + "' doesn't contain input integer " + var.getName());
+    return false;
+  }
+
+  fmi2_value_reference_t vr = var.getValueReference();
+  fmi2_import_set_integer(fmu, &vr, 1, &value);
+  return true;
+}
+
+bool FMUWrapper::setBooleanInput(const std::string& var, bool value)
+{
+  logTrace();
+  if (!fmu)
+    logFatal("FMUWrapper::setBooleanInput failed");
+
+  Variable* v = getVariable(var);
+  if (v)
+    return setBooleanInput(*v, value);
+  else
+  {
+    logError("FMUWrapper::setBooleanInput: FMU '" + instanceName + "' doesn't contain input boolean " + var);
+    return false;
+  }
+}
+
+bool FMUWrapper::setBooleanInput(const Variable& var, bool value)
+{
+  logTrace();
+  if (!fmu)
+    logFatal("FMUWrapper::setBooleanInput failed");
+
+  if (!var.isInput() || !var.isTypeBoolean())
+  {
+    logError("FMUWrapper::setBooleanInput: FMU '" + instanceName + "' doesn't contain input boolean " + var.getName());
+    return false;
+  }
+
+  int value_ = value;
+  fmi2_value_reference_t vr = var.getValueReference();
+  fmi2_import_set_boolean(fmu, &vr, 1, &value_);
+  return true;
+}
+
 bool FMUWrapper::setRealParameter(const std::string& var, double value)
 {
   logTrace();
@@ -422,6 +541,45 @@ bool FMUWrapper::setRealParameter(const std::string& var, double value)
 
   fmi2_value_reference_t vr = v->getValueReference();
   fmi2_import_set_real(fmu, &vr, 1, &value);
+  return true;
+}
+
+bool FMUWrapper::setIntegerParameter(const std::string& var, int value)
+{
+  logTrace();
+  if (!fmu)
+    logFatal("FMUWrapper::setIntegerParameter failed");
+
+  Variable* v = getVariable(var);
+
+  if (!v || !v->isParameter() || !v->isTypeInteger())
+  {
+    logError("FMUWrapper::setIntegerParameter: FMU '" + instanceName + "' doesn't contain parameter integer " + var);
+    return false;
+  }
+
+  fmi2_value_reference_t vr = v->getValueReference();
+  fmi2_import_set_integer(fmu, &vr, 1, &value);
+  return true;
+}
+
+bool FMUWrapper::setBooleanParameter(const std::string& var, bool value)
+{
+  logTrace();
+  if (!fmu)
+    logFatal("FMUWrapper::setBooleanParameter failed");
+
+  Variable* v = getVariable(var);
+
+  if (!v || !v->isParameter() || !v->isTypeInteger())
+  {
+    logError("FMUWrapper::setBooleanParameter: FMU '" + instanceName + "' doesn't contain parameter boolean " + var);
+    return false;
+  }
+
+  int value_ = value;
+  fmi2_value_reference_t vr = v->getValueReference();
+  fmi2_import_set_boolean(fmu, &vr, 1, &value_);
   return true;
 }
 

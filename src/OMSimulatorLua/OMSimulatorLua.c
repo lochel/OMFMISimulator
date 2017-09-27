@@ -92,8 +92,37 @@ static int OMSimulatorLua_setReal(lua_State *L)
   return 0;
 }
 
-// TODO: setInteger
-// TODO: setBoolean
+//void oms_setInteger(void* model, const char* var, int value);
+static int OMSimulatorLua_setInteger(lua_State *L)
+{
+  if (lua_gettop(L) != 3)
+    return luaL_error(L, "expecting exactly 3 arguments");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TSTRING);
+  luaL_checktype(L, 3, LUA_TNUMBER);
+
+  void *model = topointer(L, 1);
+  const char *var = lua_tostring(L, 2);
+  int value = lua_tonumber(L, 3);
+  oms_setInteger(model, var, value);
+  return 0;
+}
+
+//void oms_setBoolean(void* model, const char* var, int value);
+static int OMSimulatorLua_setBoolean(lua_State *L)
+{
+  if (lua_gettop(L) != 3)
+    return luaL_error(L, "expecting exactly 3 arguments");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TSTRING);
+  luaL_checktype(L, 3, LUA_TNUMBER);
+
+  void *model = topointer(L, 1);
+  const char *var = lua_tostring(L, 2);
+  int value = lua_tonumber(L, 3);
+  oms_setBoolean(model, var, value);
+  return 0;
+}
 // TODO: setString
 
 //double oms_getReal(void* model, const char* var);
@@ -111,8 +140,38 @@ static int OMSimulatorLua_getReal(lua_State *L)
   lua_pushnumber(L, value);
   return 1;
 }
-// TODO: getInteger
-// TODO: getBoolean
+
+//double oms_getInteger(void* model, const char* var);
+static int OMSimulatorLua_getInteger(lua_State *L)
+{
+  if (lua_gettop(L) != 2)
+    return luaL_error(L, "expecting exactly 2 arguments");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TSTRING);
+
+  void *model = topointer(L, 1);
+  const char *var = lua_tostring(L, 2);
+
+  int value = oms_getInteger(model, var);
+  lua_pushnumber(L, value);
+  return 1;
+}
+
+//double oms_getBoolean(void* model, const char* var);
+static int OMSimulatorLua_getBoolean(lua_State *L)
+{
+  if (lua_gettop(L) != 2)
+    return luaL_error(L, "expecting exactly 2 arguments");
+  luaL_checktype(L, 1, LUA_TUSERDATA);
+  luaL_checktype(L, 2, LUA_TSTRING);
+
+  void *model = topointer(L, 1);
+  const char *var = lua_tostring(L, 2);
+
+  int value = oms_getBoolean(model, var);
+  lua_pushnumber(L, value);
+  return 1;
+}
 // TODO: getString
 
 //void oms_addConnection(void* model, const char* from, const char* to);
@@ -459,6 +518,8 @@ DLLEXPORT int luaopen_OMSimulatorLua(lua_State *L)
   REGISTER_LUA_CALL(exportXML);
   REGISTER_LUA_CALL(getCurrentTime);
   REGISTER_LUA_CALL(getReal);
+  REGISTER_LUA_CALL(getInteger);
+  REGISTER_LUA_CALL(getBoolean);
   REGISTER_LUA_CALL(getVersion);
   REGISTER_LUA_CALL(importXML);
   REGISTER_LUA_CALL(initialize);
@@ -469,6 +530,8 @@ DLLEXPORT int luaopen_OMSimulatorLua(lua_State *L)
   REGISTER_LUA_CALL(reset);
   REGISTER_LUA_CALL(setCommunicationInterval);
   REGISTER_LUA_CALL(setReal);
+  REGISTER_LUA_CALL(setInteger);
+  REGISTER_LUA_CALL(setBoolean);
   REGISTER_LUA_CALL(setResultFile);
   REGISTER_LUA_CALL(setSolverMethod);
   REGISTER_LUA_CALL(setStartTime);

@@ -56,9 +56,19 @@ public:
 
   double getReal(const std::string& var);
   double getReal(const Variable& var);
+  int getInteger(const std::string& var);
+  int getInteger(const Variable& var);
+  bool getBoolean(const std::string& var);
+  bool getBoolean(const Variable& var);
   bool setRealInput(const std::string& var, double value);
   bool setRealInput(const Variable& var, double value);
+  bool setIntegerInput(const std::string& var, int value);
+  bool setIntegerInput(const Variable& var, int value);
+  bool setBooleanInput(const std::string& var, bool value);
+  bool setBooleanInput(const Variable& var, bool value);
   bool setRealParameter(const std::string& var, double value);
+  bool setIntegerParameter(const std::string& var, int value);
+  bool setBooleanParameter(const std::string& var, bool value);
 
   void enterInitialization(double startTime);
   void exitInitialization();

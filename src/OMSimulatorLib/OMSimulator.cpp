@@ -96,6 +96,32 @@ void oms_setReal(void *model, const char *var, double value)
   pModel->setReal(var, value);
 }
 
+void oms_setInteger(void *model, const char *var, int value)
+{
+  logTrace();
+  if (!model)
+  {
+    logError("oms_setInteger: invalid pointer");
+    return;
+  }
+
+  CompositeModel *pModel = (CompositeModel *)model;
+  pModel->setInteger(var, value);
+}
+
+void oms_setBoolean(void *model, const char *var, int value)
+{
+  logTrace();
+  if (!model)
+  {
+    logError("oms_setBoolean: invalid pointer");
+    return;
+  }
+
+  CompositeModel *pModel = (CompositeModel *)model;
+  pModel->setBoolean(var, value);
+}
+
 double oms_getReal(void *model, const char *var)
 {
   logTrace();
@@ -107,6 +133,32 @@ double oms_getReal(void *model, const char *var)
 
   CompositeModel *pModel = (CompositeModel *)model;
   return pModel->getReal(var);
+}
+
+int oms_getInteger(void *model, const char *var)
+{
+  logTrace();
+  if (!model)
+  {
+    // TODO: Provide suitable return value to handle unsuccessful calls.
+    logFatal("oms_getInteger: invalid pointer");
+  }
+
+  CompositeModel *pModel = (CompositeModel *)model;
+  return pModel->getInteger(var);
+}
+
+int oms_getBoolean(void *model, const char *var)
+{
+  logTrace();
+  if (!model)
+  {
+    // TODO: Provide suitable return value to handle unsuccessful calls.
+    logFatal("oms_getBoolean: invalid pointer");
+  }
+
+  CompositeModel *pModel = (CompositeModel *)model;
+  return pModel->getBoolean(var);
 }
 
 void oms_addConnection(void* model, const char* from, const char* to)
